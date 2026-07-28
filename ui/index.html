@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Jugalbandi — Raga RL Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <h1>Jugal<span>bandi</span></h1>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <span>Raga: <strong id="raga-label">—</strong></span>
+    <span id="phase-label">Press Start</span>
+    <span>Step: <strong id="step-label">0</strong></span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="dial-row">
+      <label>Raga dial</label>
+      <input type="range" id="raga-dial" min="0" max="1" step="0.01" value="0" />
+      <span id="dial-value">0.00</span>
+    </div>
+    <div class="dial-raga-labels">
+      <span>← Yaman (evening)</span>
+      <span>Bhairav (morning) →</span>
+    </div>
+    <div class="btn-row">
+      <button id="start-btn">Start</button>
+      <button id="reset-btn" disabled>Reset</button>
+    </div>
+  </div>
+
+  <!-- Sitar (7 strings) -->
+  <div id="sitar-container" role="region" aria-label="Sitar strings — swipe to pluck"></div>
+
+  <!-- Tabla beat visualiser (16 dots = teentaal) -->
+  <div class="tala-row" id="tala-dots" aria-label="Tala position">
+    <!-- Beat dots injected by JS below -->
+  </div>
+  <div style="font-size:0.8rem; color:var(--muted)" id="tala-display">Beat 1/16</div>
+
+  <!-- Reward -->
+  <div class="reward-panel">
+    <div style="color:var(--muted); margin-bottom:4px">Total Reward</div>
+    <div class="reward-big" id="reward-display">0.00</div>
+  </div>
+
+  <!-- Event log -->
+  <div id="reward-log" aria-live="polite"></div>
+
+  <script type="module">
+    // Inject 16 beat dots; mark sam (0) and khali (8) specially
+    const dotContainer = document.getElementById("tala-dots");
+    for (let i = 0; i < 16; i++) {
+      const d = document.createElement("div");
+      d.className = "beat-dot" + (i === 0 ? " sam" : i === 8 ? " khali" : "");
+      d.setAttribute("data-beat", i);
+      dotContainer.appendChild(d);
+    }
+  </script>
+
+  <!-- Set server URL before loading app (override in prod) -->
+  <script>window.ENV_SERVER_URL = "http://localhost:7860";</script>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

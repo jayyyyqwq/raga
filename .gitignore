@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+raagarl_env/
+*.egg
+
+# Env + secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Data / models
+*.sf2
+*.pt
+*.safetensors
+assets/reward_curves/*.png
+assets/reward_curves/*.jpg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# graphify internals
+.graphify_python
+.graphify_detect.json
+.graphify_extract.json
+.graphify_ast.json
+.graphify_semantic.json
+.graphify_analysis.json
+.graphify_labels.json
+.graphify_cached.json
+.graphify_uncached.txt
+.graphify_semantic_new.json
+.graphify_chunk_*.json

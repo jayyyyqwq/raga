@@ -1,0 +1,93 @@
+import pytest
+import numpy as np
+from raaga_env.env import RaagaEnv
+from raaga_env.jugalbandi_env import JugalbandiEnv
+
+
+# ── Base env ──────────────────────────────────────────────────────────
+
+def test_reset_obs_shape():
+    env = RaagaEnv(raga="yaman")
+    obs, info = env.reset()
+    assert obs.shape == (14,)
+    assert np.all((obs >= 0.0) & (obs <= 1.0))
+
+def test_vadi_gives_positive_reward():
+    env = RaagaEnv(raga="yaman")
+    env.reset()
+    # action = note (4=Ga, vadi of Yaman), duration 0 → action index 4
+    _, reward, _, _, _ = env.step(4)
+    assert reward > 0
+
+def test_forbidden_note_penalty():
+    env = RaagaEnv(raga="yaman")
+    env.reset()
+    # natural Ma = note 5, duration 0 → action 5
+    _, reward, _, _, info = env.step(5)
+    assert reward == -2.0
+    assert info["forbidden_note_count"] == 1
+
+def test_episode_terminates_at_length():
+    env = RaagaEnv(raga="yaman", episode_length=16)
+    env.reset()
+    steps = 0
+    done = False
+    while not done:
+        _, _, term, trunc, _ = env.step(env.action_space.sample())
+        done = term or trunc
+        steps += 1
+    assert steps == 16
+
+def test_obs_always_in_bounds():
+    env = RaagaEnv(raga="yaman")
+    env.reset()
+    for _ in range(50):
+        obs, _, _, _, _ = env.step(env.action_space.sample())
+        assert env.observation_space.contains(obs), f"Obs out of bounds: {obs}"
+
+def test_pakad_detection():
+    env = RaagaEnv(raga="yaman")
+    env.reset()
+    # Ni(11) Dha(9) Pa(7) is a pakad of Yaman
+    env.step(11)
+    env.step(9)
+    _, _, _, _, info = env.step(7)
+    assert info["pakad_completions"] >= 1
+
+def test_bhairav_forbidden():
+    env = RaagaEnv(raga="bhairav")
+    env.reset()
+    # natural Re = note 2, forbidden in Bhairav → action 2
+    _, reward, _, _, _ = env.step(2)
+    assert reward == -2.0
+
+
+# ── Jugalbandi env ────────────────────────────────────────────────────
+
+def test_jugalbandi_obs_shape():
+    env = JugalbandiEnv()
+    obs, _ = env.reset()
+    assert obs.shape == (22,)
+
+def test_dial_switches_raga():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset()
+    assert env.drift.active_raga_name == "yaman"
+    switched = env.set_dial(0.75)
+    assert switched is True
+    assert env.drift.active_raga_name == "bhairav"
+
+def test_grace_period_reduces_penalty():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset()
+    env.set_dial(0.75)  # switch to bhairav, enter grace period
+    # natural Re (note 2) is forbidden in Bhairav
+    _, reward, _, _, _ = env.step(2)
+    # grace factor 0.2 → penalty should be -0.4 not -2.0
+    assert -1.0 < reward < 0.0, f"Expected reduced penalty, got {reward}"
+
+def test_set_call_updates_tension():
+    env = JugalbandiEnv()
+    env.reset()
+    env.set_call([2, 6, 9, 11])   # ends on Ni (far from Ga, vadi of Yaman)
+    assert env.call_tension > 0.0

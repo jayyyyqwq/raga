@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import graphify; print\\(graphify.__version__ if hasattr\\(graphify, '__version__'\\) else 'installed'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -m graphify claude install)",
+      "Bash(python -m graphify update .)"
+    ]
+  }
+}
