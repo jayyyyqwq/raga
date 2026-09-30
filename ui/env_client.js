@@ -26,4 +26,5 @@ export const EnvClient = {
   submitCall: (notes)              => _post("/call",   { notes }),
   state: ()                        => _get("/state"),
   health: ()                       => _get("/health"),
+  infer: ()                        => _post("/infer",  {}),
 };

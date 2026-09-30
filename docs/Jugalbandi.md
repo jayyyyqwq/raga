@@ -1,7 +1,5 @@
 # Jugalbandi: The Pitch
 
-> Strict Schema Adherence Under Dynamic Constraint Drift
-> Meta PyTorch OpenEnv Hackathon | Grand Finale | Scaler Bangalore | April 25-26
 
 ---
 
@@ -106,7 +104,7 @@ Half the room at Scaler grew up hearing this music. When the demo plays a recogn
 
 ### Showing Improvement in Rewards (20% of score)
 
-We have four distinct metrics that show improvement, not one. Episode reward climbs from -8 to +4 over training. Forbidden note rate drops from 25% to under 5%. Pakad completion rate rises from near zero to 2+ per episode. Adaptation speed after schema drift drops from "never adapts" to 3-4 steps on average with 60-80% success rate. Every one of these is a chart we can show.
+We have four distinct metrics that show improvement, not one: episode reward, forbidden-note rate, pakad completion rate, and adaptation speed after schema drift. **[TARGET, not yet measured — no model has been trained as of this writing.]** The four scripted baselines that calibrate what these charts should look like (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`) have been run for real — see `docs/EXPERIMENT_PLAN.md` §8 for their actual numbers, and §7 for exactly how each metric is computed. Once `grpo-ORACLE`/`DIAL`/`HIDDEN` are trained (see that document's §9–10), their real numbers replace this paragraph — a specific number belongs here only once it has actually been measured.
 
 ### Reward and Training Pipeline (10% of score)
 
@@ -122,9 +120,9 @@ We use Unsloth for efficient LoRA fine-tuning of Qwen-0.5B. We use GRPO (not PPO
 
 **Act 2 -- Trained solo (30 seconds):** Click "Generate Trained." Recognizable Yaman phrase plays. Green and blue squares. Pakad completion flashes. Audience visibly reacts.
 
-**Act 3 -- Jugalbandi (45 seconds):** Click 4 notes on the human keyboard. Click "Respond." Agent plays a coherent response. Tension resolves. Point to the metrics: "response coherence 89%, valid note rate 100%."
+**Act 3 -- Jugalbandi (45 seconds):** Click 4 notes on the human keyboard. Click "Respond." Agent plays a coherent response. Tension resolves. Point to the metrics on screen — **whatever `jugalbandi_coherence` and `valid_raga_adherence` actually read for the deployed model** (`docs/EXPERIMENT_PLAN.md` §7.1, §7.6 define these precisely); do not recite a memorized number here, read the live panel.
 
-**Act 4 -- The drift moment (45 seconds):** Start another jugalbandi turn. While the agent is mid-response, drag the raga slider from 0.2 to 0.8. Point at the piano roll: "see that orange note? That's the grace period -- we don't punish it heavily because the schema just changed. Now watch the next three steps." The agent lands on Ma (Bhairav's vadi) and completes a Bhairav pakad. Blue flash. "That adaptation took 4 steps. Across 100 evaluation episodes, we measured an average of 3.4 steps, with a 72% success rate. The agent is not hardcoded to know the slider moved. It's inferring from a raw float."
+**Act 4 -- The drift moment (45 seconds):** Start another jugalbandi turn. While the agent is mid-response, drag the raga slider from 0.2 to 0.8. Point at the piano roll: "see that orange note? That's the grace period -- we don't punish it heavily because the schema just changed. Now watch the next few steps." If the agent lands on Ma (Bhairav's vadi) and completes a Bhairav pakad, that's the adaptation bonus firing live. **Cite `drift_adaptation_speed`'s real median-and-censoring-rate from the trained model's evaluation** (`docs/EXPERIMENT_PLAN.md` §7.2), not a specific step count and success rate memorized in advance — those numbers do not exist yet for any trained arm, and reciting invented ones here is exactly the failure mode `updatedplan.md` finding F12 documents.
 
 That is the demo. Four acts, three minutes. No slides during demo, just the interface.
 
@@ -142,13 +140,13 @@ That is the demo. Four acts, three minutes. No slides during demo, just the inte
 
 **Q:** "How does the agent know the raga has changed?"
 
-**A:** "It doesn't, explicitly. The observation vector contains the raw slider float -- 0.25 means Yaman, 0.75 means Bhairav, but the agent is never told this mapping. It has to learn the correlation between dial values and reward distributions during training. We deliberately withheld the explicit flag so the implicit learning claim is genuine. The evidence this works is our adaptation speed metric -- a lucky agent would show high variance around 15-20 steps, we show mean 3-4 with low variance."
+**A:** "For the DIAL and HIDDEN arms specifically, it doesn't get an explicit flag — see `docs/EXPERIMENT_PLAN.md` §4 for exactly what each arm's prompt does and doesn't contain. It has one more channel than a bare float, though: a rule-agnostic 'was my last action rewarded or penalised' line (`StepFeedback`, `updatedplan.md` Phase 2.3), which is what makes *in-context* adaptation possible at all — without it, reward is never in the model's context, so there's nothing for it to correlate against within a single episode. The honest evidence this works, once it exists, is `drift_adaptation_speed` for `grpo-HIDDEN` sitting meaningfully closer to `scripted-oracle`'s ceiling than to `random-valid`'s floor (`docs/EXPERIMENT_PLAN.md` §5, §8) — reported with its censoring rate, not a cherry-picked step count. If `grpo-HIDDEN` doesn't clear that bar, that is itself the honest, reportable result (§12 of that document), not a reason to quietly move the goalposts."
 
 ### The Exploit Question
 
 **Q:** "How does the agent avoid just repeating the safest note forever to game the reward?"
 
-**A:** "Three mechanisms. First, a repetition penalty of -0.3 for any note appearing 3+ times consecutively. Second, pakad drought -- the agent is penalized increasingly for not completing any characteristic phrase, which forces multi-note exploration. Third, vadi drought -- same mechanism for not emphasizing the raga's king note. Together these prevent the trivial degenerate policy. We watched this fail in early training runs before we added them, which is how we know they matter."
+**A:** "Three mechanisms. First, a repetition penalty of -0.3 for any note appearing 3+ times consecutively. Second, pakad drought -- the agent is penalized for not completing any characteristic phrase for too long, which forces multi-note exploration. Third, vadi drought -- same mechanism for not emphasizing the raga's king note. These exist to close a specific, *named* exploit, not a vaguely-remembered one: there is a four-note set — Sa, Ga, Pa, Ni — that is penalised in neither raga (`updatedplan.md` finding F13), so a policy confined to it would score a perfect `valid_raga_adherence` while demonstrating zero real adaptation to drift. `safe_set_occupancy` (`docs/EXPERIMENT_PLAN.md` §7.8) measures exactly this directly, on every policy we evaluate, rather than relying on having happened to notice it in a training log. No model had been trained when these penalties were designed — they anticipate this failure mode, they weren't observed and then patched, and we don't say otherwise."
 
 ### The Algorithm Choice Question
 
@@ -160,7 +158,7 @@ That is the demo. Four acts, three minutes. No slides during demo, just the inte
 
 **Q:** "What's your evidence the agent is genuinely adapting and not just getting lucky?"
 
-**A:** "Adaptation speed measured across 100 evaluation episodes with randomized slider switch timing. A lucky agent shows high variance and mean around 15-20 steps to first new-raga pakad. Our trained agent shows mean of 3-4 steps with standard deviation under 1.5. That's structural adaptation, not luck. We also ablate by withholding the dial value entirely from the obs -- that agent never adapts below 18 steps, confirming the dial float is what's being learned."
+**A:** "This is exactly what `docs/EXPERIMENT_PLAN.md` is designed to answer honestly, and the answer isn't in yet — no model has been trained. The protocol: `drift_adaptation_speed` measured across a fixed, shared set of 200 evaluation episodes with pre-generated, randomized switch timing (§6–§7.2 of that document), reported as a median *and* a censoring rate, paired against `scripted-oracle` (the real ceiling for how fast adaptation can physically happen — currently a median of 2.5 steps, 0% censored, measured for real) and `random-valid` (the honest floor — currently 99% censored, i.e. it essentially never stumbles onto a pakad by chance). The specific comparison this question is really asking about — does withholding the raga name and the dial value change adaptation speed — is the `grpo-ORACLE` vs `grpo-DIAL` vs `grpo-HIDDEN` comparison itself (§4–§5 of that document), not a separate ablation. There is no fabricated step count to quote here; the real one, once measured, replaces this paragraph."
 
 ### The Sub-Theme Question
 
@@ -204,6 +202,28 @@ Being precise about what we are and aren't claiming is a credibility move. Overc
 
 ---
 
+## Related Work
+
+Added per `updatedplan.md` Phase 8.3 — the project had zero citations before this. This situates Jugalbandi's two research threads (the drift formalism, and the raga domain) against existing work, rather than presenting either as appearing from nowhere.
+
+**The drift formalism:**
+- Contextual MDPs — Hallak, Di Castro and Mannor (2015). The formalism for the ORACLE/DIAL arms: a policy conditioned on an observed context variable that determines the reward/transition function.
+- Hidden-Parameter MDPs — Doshi-Velez and Konidaris (2016). The formalism for the HIDDEN arm: the context variable is real but unobserved, and must be inferred.
+- Meta-RL and in-context adaptation — Duan et al. (2016), RL²; Wang et al. (2016).
+- In-context RL from trajectories — Laskin et al. (2022), Algorithm Distillation; Lee et al. (2023), Decision-Pretrained Transformer.
+- Non-stationary MDPs and change-point detection — Padakandla et al.; Da Silva et al.
+- Reward hacking — Skalse et al. (2022) — the framing this project uses for F13's raga-agnostic safe set and for the reward-ablation work in `updatedplan.md` Phase 5.
+- GRPO — Shao et al. (2024), DeepSeekMath.
+
+**The music domain:**
+- Bhatkhande's Kramik Pustak Malika (KPM) Vol. I — the primary source for every raga rule in `raaga_env/ragas.py` (see `docs/CLASSICAL_MUSIC_AUDIT.md` for the full sourcing and cross-referencing).
+- Computational raga recognition — Chordia and Rae.
+- Motif spotting in Hindustani music — Ross and Rao.
+
+**Venue realism** (`updatedplan.md` §8.4): this is workshop-paper scope, not a main-track submission — an ICML/NeurIPS workshop on agents or evaluation, ISMIR for the music-and-ML angle, or an ICLR Tiny Papers-style track. A two-raga case study is exactly the kind of contribution a workshop scope makes appropriate; scaling to more ragas (`updatedplan.md` Phase 7) is explicitly gated on Phase 4 producing a result first, not attempted preemptively to look more complete.
+
+---
+
 ## Hackathon Sub-Theme Alignment
 
 **Primary target: Snorkel AI -- Simulated Experts-in-the-Loop.** Direct hit. The human is the expert. The slider represents the expert's changing requirements. The agent must satisfy both simultaneously. This is the sub-theme's exact description.
@@ -222,9 +242,11 @@ Title: "Jugalbandi: Training LLMs for Schema Adherence Under Drift, via Indian C
 
 Opening frame: Schema drift is an unsolved frontier problem. Enterprise systems change, models hallucinate out of bounds, no labeled data exists for the new schema. We built an RL environment that addresses this structurally, using Indian classical music as the demo domain because violations are audible.
 
-Core claim: Trained an LLM via GRPO + Unsloth on our OpenEnv-compatible environment to maintain strict adherence to Raga Yaman rules, respond coherently to human input phrases, and adapt to a mid-episode raga switch in an average of 3.4 steps with no explicit change-of-state signal.
+Core claim (rewritten per `updatedplan.md` Phase 8.2, to state the actual research question instead of a specific measured outcome — because until `grpo-HIDDEN` is trained and evaluated, there is no measured outcome to state):
 
-Results section: Reward curve, comparison table, adaptation speed chart. Link to HF Space and fine-tuned model.
+> We present Jugalbandi, an RL environment for schema adherence under mid-episode constraint drift, instantiated on Hindustani raga grammar so that violations are audible to human listeners. We use it to separate two capabilities usually conflated in the drift literature: conditioned policy learning over an observed context variable, and regime inference from reward feedback alone. We report results for a 0.5B policy trained with GRPO across three observation arms, together with a listening study establishing that the environment's rule violations are perceptible.
+
+Results section: paired comparison across `random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`, `base-zeroshot`, `grpo-ORACLE`, `grpo-DIAL`, `grpo-HIDDEN` on the fixed 200-episode evaluation set, with bootstrap confidence intervals and a Wilcoxon signed-rank test across training seeds (`docs/EXPERIMENT_PLAN.md` §5, §11) — not a single reward curve and a single adaptation-speed number. If `grpo-HIDDEN` fails to clear `random-valid`, that is reported as the finding, not hidden behind a friendlier metric (§12). Link to HF Space and fine-tuned model once they exist.
 
 Closing: The capability transfers. Rule dicts are swappable. The architecture is DSL-agnostic. The music is the demo, the schema adherence is the product.
 

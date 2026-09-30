@@ -1,5 +1,4 @@
 # RaagaRL - Complete Build Guide
-> Meta PyTorch OpenEnv Hackathon | Grand Finale | Scaler Bangalore | April 25-26
 
 ---
 

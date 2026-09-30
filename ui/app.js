@@ -98,14 +98,26 @@ async function onUserPluck(noteIdx) {
 // ── AI turn ────────────────────────────────────────────────────────────
 
 async function runAIResponse() {
-  // AI plays 4 steps; server returns the notes via step responses.
-  // In training, the trained LLM picks actions. In the demo UI we send
-  // action=null to let the server use a simple greedy policy fallback
-  // (or the trained model if loaded). For now we send action 4 (Ga, safe vadi).
-  // TODO: replace with trained model inference endpoint when ready.
+  // AI plays 4 steps. Each step asks the server's /infer endpoint (the
+  // trained LoRA policy) for the next action; if no model is configured yet
+  // (503 — see docs/report-midway.md §9.1) or inference otherwise fails, we
+  // fall back to a safe placeholder note (Ga, the vadi of Yaman) so the demo
+  // still runs end to end.
+  let inferenceUnavailable = false;
 
   for (let i = 0; i < 4; i++) {
-    const res = await EnvClient.step(4);  // placeholder: always play Ga (vadi of Yaman)
+    let action = 4;
+    try {
+      const inferRes = await EnvClient.infer();
+      action = inferRes.action;
+    } catch (err) {
+      if (!inferenceUnavailable) {
+        inferenceUnavailable = true;
+        log(`⚠ Model inference unavailable (${err.message}) — using fallback note.`);
+      }
+    }
+
+    const res = await EnvClient.step(action);
     state.totalReward += res.reward;
     state.lastBreakdown = res.reward_breakdown;
     state.stepCount++;

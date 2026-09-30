@@ -1,477 +1,262 @@
 # Train.md — How to Actually Train Jugalbandi
 
-> Written for Jay. Assumes you understand Python and can read code, but this is your first time doing LLM fine-tuning with GRPO + Unsloth. This walks every decision from "why this model" to "how to push the checkpoint to HF."
+> Written for Jay. Assumes you understand Python and can read code, but this is your
+> first time doing LLM fine-tuning with GRPO + Unsloth. This walks every decision
+> from "why this model" to "how to push the checkpoint to HF."
+
+**This file was rewritten** (`updatedplan.md` Phase 8.1) — the previous version
+described a training design that no longer exists: a 0-47 action space, TRL
+0.8.6, and a training loop that scored actions over HTTP against a live
+server. All three are gone. `training/train_grpo.py` is now the source of
+truth; this document walks through what it actually does. If the two ever
+disagree, trust the code and consider this file stale until it's fixed.
 
 ---
 
 ## The Big Picture First
 
-You are not training a model from scratch. You are taking a small model that already knows English, already knows how to generate tokens, already has some vague sense of what numbers mean — and you are pushing its behavior in one specific direction: **when given a musical context, output an integer 0–47 that follows raga grammar rules.**
+You are not training a model from scratch. You are taking a small model that
+already knows English, already knows how to generate tokens — and pushing its
+behavior in one specific direction: **when given a musical context, output an
+integer 0–95 that follows raga grammar rules, and — this is the interesting
+part — notice when the rules changed mid-performance from feedback alone.**
 
-The way you push that behavior is called **GRPO** — Group Relative Policy Optimization. Instead of telling the model "here is the correct answer" (supervised learning), you say "here are 4 things you tried, here is how well each one scored, now learn to do more of the good stuff." The reward signal comes entirely from the OpenEnv environment server — specifically, from what `reward.py` returns after each note action.
+The way you push that behavior is **GRPO** — Group Relative Policy
+Optimization. Instead of "here is the correct answer" (supervised learning),
+you say "here are 4 things you tried, here is how well each one scored, now do
+more of the good stuff." The reward comes entirely from the environment
+(`raaga_env/reward.py`), replayed in-process — no server involved in training.
+
+**Read `docs/EXPERIMENT_PLAN.md` first if you haven't** — it explains the
+*why* (the ORACLE/DIAL/HIDDEN arms, the feedback channel, what's actually
+being tested) at more length than this document will. This document is the
+*how*.
 
 ---
 
 ## Part 1: Why This Model — Qwen2.5-0.5B-Instruct
 
-There are hundreds of open models. Here is why this one:
+**Size:** 0.5 billion parameters — small enough that a free Colab T4 (15GB
+VRAM) handles it in 4-bit quantization comfortably.
 
-**Size:** 0.5 billion parameters. That is tiny by modern standards. GPT-4 is ~1.7 trillion. The reason we use tiny is hardware — specifically, a free Google Colab T4 GPU has 15GB of VRAM. A 0.5B model in 4-bit quantization (explained below) uses ~1.2GB for weights alone, leaving room for activations, gradients, and batch data.
+**The Instruct variant:** already fine-tuned to follow a chat format
+(`<|system|>`, `<|user|>`, `<|assistant|>`), which is exactly the format
+`raaga_env/prompting.py` renders.
 
-**The Instruct variant:** The `-Instruct` suffix means this model was already fine-tuned by Qwen's team to follow instructions in a chat format (`<|system|>`, `<|user|>`, `<|assistant|>` tags). This matters because our prompt uses exactly that format. A base model would need additional prompt engineering to follow the "output ONLY the integer" instruction reliably.
-
-**Unsloth support:** Unsloth (explained below) has optimized kernels specifically for Qwen2.5 architecture. If you pick a random model that Unsloth hasn't explicitly optimized, you lose the speed benefits.
-
-**Why not Llama-3.2-1B or Mistral-0.5B?**
-- Llama-3.2-1B is 2x the size, needs more VRAM, slower training
-- Mistral-0.5B doesn't exist
-- Phi-3.5-mini is 3.8B — too big for T4 with this batch size
-- Qwen2.5-0.5B hits the sweet spot for this hardware and task
+**Unsloth support:** optimized kernels specifically for Qwen2.5.
 
 ---
 
-## Part 2: Why Unsloth
+## Part 2: Why Unsloth (QLoRA)
 
-Plain PyTorch + HuggingFace Transformers training on a T4 is slow and often OOMs (out-of-memory errors). Unsloth solves two things:
+Training on a T4 without help is slow and OOMs easily. Unsloth handles two things:
 
-**1. QLoRA (4-bit quantization + LoRA adapters)**
+**QLoRA** — the model's weights are stored in 4-bit, but you can't fine-tune
+in 4-bit directly, so small trainable "adapter" matrices (LoRA) sit alongside
+the frozen weights. Only the adapters (`r=16`, ~4M params) get gradient
+updates — roughly 1% of the full model's parameter count.
 
-The model's weights are stored in 4-bit integers instead of 32-bit floats. This reduces weight memory by ~8x. The model cannot be fine-tuned in 4-bit directly (gradients need higher precision), so Unsloth inserts small trainable "adapter" matrices (LoRA — Low-Rank Adaptation) alongside the frozen 4-bit weights. Only the adapters get gradient updates — they are ~1-5% of total parameters. You are training ~5-25M parameters instead of 500M.
+**Triton kernels** — Unsloth rewrites attention and RoPE using Triton for a
+2-3x speedup over vanilla HuggingFace.
 
-```
-Frozen 4-bit weights (Qwen2.5-0.5B)
-    +
-Trainable LoRA adapters (r=16, ~4M params)
-    =
-Fine-tuned model that fits on T4
-```
-
-**2. Triton kernel optimizations**
-
-Unsloth rewrites certain compute-heavy ops (attention, RoPE embedding) using Triton (a GPU programming language). This gives 2-3x faster training vs vanilla HuggingFace with identical results. On a T4, this is the difference between "500 steps in 45 minutes" and "500 steps in 2.5 hours."
-
-**LoRA config explained (from train_grpo.py):**
 ```python
-r=16                    # rank — size of the adapter matrices. Higher = more expressive, more params. 16 is standard.
-target_modules=[...]    # which attention projections get adapters. q,k,v,o = all attention heads.
-lora_alpha=16           # scaling factor. alpha/r = 1.0 means no extra scaling. Standard default.
-lora_dropout=0          # Unsloth recommends 0 for speed; dropout here rarely helps anyway.
-bias="none"             # don't train bias terms; they add params without proportional benefit
-use_gradient_checkpointing="unsloth"  # recompute activations instead of storing them → 30% less VRAM
+r=16                    # adapter rank — 16 is a standard default
+target_modules=[...]    # q,k,v,o attention projections get adapters
+lora_alpha=16           # alpha/r = 1.0, no extra scaling
+lora_dropout=0          # Unsloth recommends 0 for speed
+bias="none"
+use_gradient_checkpointing="unsloth"  # recompute activations instead of storing them
 ```
 
 ---
 
-## Part 3: Why GRPO (Not PPO)
+## Part 3: Why GRPO, and Why Per-Step Instead of Per-Episode
 
-Both are RL algorithms for fine-tuning language models. The difference matters for your reward structure.
+**GRPO vs PPO:** PPO needs a value network roughly as large as the policy,
+and struggles when reward is sparse and delayed (pakad completions are rare
+early in training). GRPO samples G completions per prompt (`G=4` here),
+scores all of them, and pushes the model toward whichever scored above the
+group average — no value network needed.
 
-**PPO (Proximal Policy Optimization):**
-Requires two models at all times — a policy model (the one you're training) and a value model (predicts expected future reward from current state). The value model needs to be almost as large as the policy. On T4, that means you can only fit a ~0.25B model effectively. Also, value networks struggle when rewards are sparse and delayed — which ours are. Pakad completions are rare early in training. The value network would have bad estimates for many steps before seeing any reward signal.
-
-**GRPO (Group Relative Policy Optimization):**
-No value network. Instead, for each prompt, you sample G completions (we use G=4). You compute rewards for all G. You normalize them relative to each other within the group. The model is pushed toward completions that scored above the group average. This is structurally cleaner for sparse rewards because the comparison is always relative — "this action was better than these 3 alternatives" — rather than "this action should produce X reward in 3 more steps."
-
-In plain terms: GRPO is simpler, fits on smaller hardware, and handles our reward structure better.
+**Why one action per GRPO sample, not a whole episode.** An earlier version
+of this pipeline had GRPO generate a full 64-action episode in one blind
+completion. That's a real design GRPO supports, but it has a fatal problem
+for *this* project specifically: a model committing to all 64 actions before
+any of them are scored cannot react to feedback about steps it hasn't taken
+yet. Once `updatedplan.md` §9 decision 2 settled on **Claim B** — testing
+whether the model can infer a rule change *in-context*, from reward feedback
+alone, within a single episode — that design became unusable, because
+in-context reaction requires the model to actually see feedback before
+choosing its next action. So training went back to one action per GRPO
+sample, the way GRPO is normally used, with the twist described below.
 
 ---
 
 ## Part 4: The Training Flow, Step by Step
 
-Here is what actually happens when training runs, in order:
+Here's what `training/train_grpo.py` actually does, top to bottom:
 
 ```
-1. model loaded from HF Hub (Qwen2.5-0.5B-Instruct, 4-bit)
-2. LoRA adapters attached to attention layers
-3. build_dataset() called → seeds 2000 prompts by running random actions on the env server
-4. GRPOTrainer initialized with reward_funcs=env_reward
-5. For each training step:
-   a. Take a batch of prompts from the dataset
-   b. For each prompt, sample 4 completions (num_generations=4)
-   c. Pass all completions to env_reward() → each one posts /step to the env server
-   d. Normalize rewards within each group of 4
-   e. Compute GRPO loss (push policy toward above-average completions)
-   f. Backward pass → update LoRA adapter weights only
-   g. Log to wandb every 10 steps
-   h. Save checkpoint every 50 steps
-6. Final adapter saved locally
-7. (Manual step) Push to HF Hub
+1. Parse --arm (oracle/dial/hidden), --seed, --steps, --batch, --num-generations.
+   --batch must be divisible by --num-generations (TRL's GRPOTrainer constraint).
+
+2. Load Qwen2.5-0.5B-Instruct in 4-bit via Unsloth, attach LoRA adapters.
+
+3. build_dataset(n, arm) — build n training rows, EACH ONE A SNAPSHOT, not a
+   full episode:
+     a. Sample a drift schedule (sample_drift_schedule()): a switch step
+        uniform in [16, 48], flipped to the opposite raga — or, 20% of the
+        time, no switch at all (a control condition, so the model can't
+        just learn "a switch always happens near the middle").
+     b. Walk a FRESH episode forward, in-process, under a random-valid
+        reference policy (uniformly samples among notes legal in whichever
+        raga is *currently* active — see eval/policies.py).
+     c. Stop at a uniformly chosen step. Render the prompt at that point —
+        including StepFeedback from the immediately preceding step (or none,
+        if this is step 0) — and save the env's exact state
+        (JugalbandiEnv.get_state(), as a JSON string).
+   Each row is: {prompt, state_json, mc_seed}.
+
+4. make_step_reward_fn(arm) — the GRPO reward function. For each sampled
+   completion (one action):
+     a. Parse it (raaga_env.prompting.parse_action — never clamps; an
+        out-of-range or unparseable output is a fixed penalty, not silently
+        wrapped into a legal action).
+     b. Restore a fresh JugalbandiEnv to the row's exact saved state
+        (set_state()).
+     c. Apply the sampled action, record its immediate reward.
+     d. If the episode isn't over, continue for 8 more steps under the same
+        random-valid reference policy (a Monte-Carlo continuation), via
+        eval.rollout.rollout_from_state — the SAME function every baseline
+        and evaluation result goes through, so training reward and eval
+        reward can never silently diverge.
+     e. Return immediate + continuation reward as this completion's score.
+
+5. GRPOTrainer.train() — num_generations=4 completions per prompt,
+   max_completion_length=8 (an action is 1-2 tokens), logs to wandb.
+
+6. Save the LoRA adapter locally; upload to HF Hub with huggingface-cli.
 ```
+
+**Why a Monte-Carlo continuation instead of just the immediate reward:**
+scoring only the one step is the "purest" bandit-style GRPO, but it's very
+myopic — an action's value often depends on what happens a few steps later
+(did playing that note set up a pakad completion?). Continuing under a
+reference policy for a short, fixed horizon gives partial credit assignment
+without needing the model itself in the scoring loop, which would be far
+more expensive per training step.
+
+**Why the reference policy is `random-valid`, not something fancier:** it's
+the same policy used as an evaluation baseline (`docs/EXPERIMENT_PLAN.md`
+§5), so the number that comes out of training reward and the number that
+comes out of evaluating `random-valid` are produced by literally the same
+code. Using a different, bespoke "training-only" policy would reintroduce
+exactly the kind of silent-drift risk `eval/rollout.py`'s whole design
+exists to prevent.
 
 ---
 
-## Part 5: Known Issues in the Current train_grpo.py
+## Part 5: Which Arm to Train
 
-Be honest about these before running. Three real problems:
-
-### Problem 1: Environment State Drift During Batch Reward
-
-`GRPOTrainer` generates all 4 completions for a prompt before calling `env_reward`. Inside `env_reward`, each call posts `/step` to the env server. This steps the environment 4 times sequentially. That means completion #1 is evaluated at env state T, completion #2 at state T+1, completion #3 at T+2, completion #4 at T+3. The rewards are not comparable because they're from different states.
-
-**Fix (minimal):** In `env_reward`, call `/reset` before evaluating each completion. This resets the env to a fresh episode for each evaluation. You lose episode continuity but the reward comparison within the group becomes valid. Add this:
-
-```python
-def env_reward(prompts: list[str], completions: list[str], **kwargs) -> list[float]:
-    rewards = []
-    for prompt, completion in zip(prompts, completions):
-        client.post("/reset", json={"dial": 0.0})   # add this line
-        try:
-            action = int(completion.strip().split()[0]) % 48
-        ...
+```bash
+python training/train_grpo.py --arm hidden --seed 1 --steps 300 --run grpo-hidden-seed1
 ```
 
-### Problem 2: obs_to_prompt Uses Dummy Obs
+- `--arm oracle` — sees the raga name, the dial, and the grace flag. Upper bound.
+- `--arm dial` — sees only the raw 0.0–1.0 dial number. "What the project
+  currently claims to do."
+- `--arm hidden` — sees none of that, only `StepFeedback`. **The actual
+  research question.**
 
-In `build_dataset()`, the actual observation from the env (`/state`) is not decoded into the prompt. A dummy `[0.0] * 22` array is used instead:
-
-```python
-obs_dummy = [0.0] * 22  # placeholder; real obs comes from /state — THIS IS THE BUG
-prompt = make_prompt(obs_dummy, state["raga"], state["tala_position"])
-```
-
-The `/state` endpoint returns the state dict, but not the `obs` array directly. You need to call `/reset` to get a fresh obs, then use those values. Fix:
-
-```python
-reset_resp = client.post("/reset", json={"dial": 0.0}).json()
-obs = reset_resp.get("obs", [0.0] * 22)  # server needs to return obs in reset response
-prompt = make_prompt(obs, state["raga"], state["tala_position"])
-```
-
-Check `server.py` to confirm the reset endpoint returns `obs`. If it doesn't, add it.
-
-### Problem 3: Notebook Format Required for Submission
-
-The hackathon requires a `.ipynb` Colab notebook, not a `.py` script. Judges will click "Open in Colab" and run cells. The `.py` script approach is fine for local dev but is not the submission artifact.
-
-You need to convert `train_grpo.py` into a notebook with clearly labeled cells. See Part 6 below.
+Per `docs/EXPERIMENT_PLAN.md` §10, the full run is 3 arms × 5 seeds = 15
+training runs, each evaluated on the same fixed 200-episode set every
+baseline was already evaluated on.
 
 ---
 
-## Part 6: The Actual Colab Notebook Setup
+## Part 6: The Notebook
 
-This is the cell-by-cell structure the notebook should have.
+`training/train_grpo.ipynb` is a **thin driver** over `train_grpo.py` — it
+imports `build_dataset`, `make_step_reward_fn`, `sample_drift_schedule`,
+`schedule_from_row`, `EPISODE_LENGTH` rather than redefining any of them, so
+it cannot drift out of sync with the script the way the pre-rewrite notebook
+did (three independent, hand-duplicated prompt/reward implementations, one of
+which leaked the raga name to every arm regardless of the leakage tests
+passing elsewhere — see `updatedplan.md` finding F2/F7 for the full story of
+why that's the specific failure mode this thin-driver structure exists to
+prevent).
 
-### Cell 1 — Install Dependencies
-```python
-# Install all required packages. Takes ~3 minutes on Colab.
-!pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
-!pip install trl==0.8.6 httpx wandb gymnasium numpy
-```
+Cell structure, in order: install + clone the repo (needed — the notebook
+imports `raaga_env`/`eval`/`training` from the repo, not just from pip
+packages), mount Drive + secrets, load the model, import the training
+pipeline and pick `ARM`, build `reward_fn`, build the dataset, configure and
+run `GRPOTrainer`, save + push to Hub, and a genuine multi-turn inference
+check (see Part 7).
 
-Why `trl==0.8.6`: pin the version. GRPO API changed between versions. Pin prevents breakage when Colab updates packages.
-
-### Cell 2 — Mount Drive + Set Secrets (Optional but Recommended)
-```python
-from google.colab import drive, userdata
-drive.mount('/content/drive')
-
-import os
-os.environ["WANDB_API_KEY"] = userdata.get("WANDB_API_KEY")   # set in Colab Secrets
-os.environ["HF_TOKEN"] = userdata.get("HF_TOKEN")             # for pushing model at end
-```
-
-### Cell 3 — Start the OpenEnv Server
-
-The environment server needs to be running before training starts. Two options:
-
-**Option A (simplest for hackathon):** Deploy your `openenv_server/server.py` to a HF Space before the notebook runs, get the public URL, hardcode it.
-
-```python
-SERVER_URL = "https://your-username-jugalbandi-env.hf.space"  # replace with your HF Space URL
-```
-
-**Option B (self-contained in Colab):** Run the server in a background thread inside Colab.
-```python
-import threading
-import subprocess
-
-server_proc = subprocess.Popen(
-    ["python", "openenv_server/server.py"],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL
-)
-import time; time.sleep(5)  # wait for server to start
-SERVER_URL = "http://localhost:7860"
-```
-
-Option A is more reliable for a demo. Option B works for a self-contained notebook but requires the server code to be present in Colab (clone your repo first).
-
-### Cell 4 — Load Model
-```python
-from unsloth import FastLanguageModel
-
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="unsloth/Qwen2.5-0.5B-Instruct",
-    max_seq_length=512,
-    load_in_4bit=True,
-    token=os.environ["HF_TOKEN"],
-)
-model = FastLanguageModel.get_peft_model(
-    model,
-    r=16,
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
-    lora_alpha=16,
-    lora_dropout=0,
-    bias="none",
-    use_gradient_checkpointing="unsloth",
-    random_state=42,
-)
-print(model.print_trainable_parameters())  # should say ~4M trainable params
-```
-
-### Cell 5 — Verify Server is Reachable
-```python
-import httpx
-client = httpx.Client(base_url=SERVER_URL, timeout=10.0)
-resp = client.post("/reset", json={"dial": 0.0})
-print(resp.json())  # should show {"obs": [...22 floats...], "raga": "yaman", ...}
-```
-
-If this cell fails, the server is not running. Fix the server first. Training will not work without it.
-
-### Cell 6 — Prompt Template
-```python
-SYSTEM = (
-    "You are an expert Indian classical musician composing in a raga. "
-    "Given the current musical context, choose the next note action (0-47). "
-    "Action encodes: note_semitone (0-11) + duration_index (0-3) * 12. "
-    "Output ONLY the integer, nothing else."
-)
-
-NOTE_NAMES = [
-    "ṉSa","ṉRe♭","ṉRe","ṉGa♭","ṉGa","ṉMa","ṉMa#","ṉPa","ṉDha♭","ṉDha","ṉNi♭","ṉNi",
-    "Sa","Re♭","Re","Ga♭","Ga","Ma","Ma#","Pa","Dha♭","Dha","Ni♭","Ni",
-]
-DURATION_NAMES = {0: "sixteenth", 1: "eighth", 2: "quarter", 3: "half"}
-
-def make_prompt(obs: list[float], raga: str, tala_pos: int) -> str:
-    # Decode last 4 notes from obs[0:8]
-    last_notes = []
-    for i in range(4):
-        note_idx = min(int(obs[i*2] * 11), 23)
-        dur_idx  = min(int(obs[i*2+1] * 3), 3)
-        last_notes.append(f"{NOTE_NAMES[note_idx]}({DURATION_NAMES[dur_idx]})")
-
-    dial      = round(obs[15], 2)
-    drought   = round(obs[16], 2)
-    tension   = round(obs[14], 2)
-    in_grace  = obs[21] > 0.5
-
-    return (
-        f"<|system|>\n{SYSTEM}\n"
-        f"<|user|>\n"
-        f"Active raga: {raga} (dial={dial}{'  ⚠ GRACE PERIOD — rules just changed' if in_grace else ''})\n"
-        f"Tala position: beat {tala_pos}/16\n"
-        f"Last 4 notes: {', '.join(last_notes)}\n"
-        f"Human call tension: {tension:.2f} (how unresolved their phrase was)\n"
-        f"Pakad drought: {drought:.2f} (0=just played a phrase, 1=very long since last phrase)\n"
-        f"Choose action (0-47):\n"
-        f"<|assistant|>\n"
-    )
-```
-
-This is significantly better than the current dummy prompt. It gives the model human-readable note names, tells it about grace periods, and decodes all observation dimensions.
-
-### Cell 7 — Reward Function
-```python
-import httpx
-
-client = httpx.Client(base_url=SERVER_URL, timeout=10.0)
-
-def env_reward(prompts: list[str], completions: list[str], **kwargs) -> list[float]:
-    rewards = []
-    for prompt, completion in zip(prompts, completions):
-        # Reset env before each evaluation so states are comparable
-        client.post("/reset", json={"dial": 0.0})
-        try:
-            action = int(completion.strip().split()[0]) % 48
-        except (ValueError, IndexError):
-            rewards.append(-1.0)
-            continue
-        try:
-            res = client.post("/step", json={"action": action})
-            data = res.json()
-            reward = data["reward"]
-        except Exception:
-            reward = -0.5
-        rewards.append(float(reward))
-    return rewards
-```
-
-### Cell 8 — Build Dataset
-```python
-import random
-
-def build_dataset(n: int = 1000) -> list[dict]:
-    dataset = []
-    resp = client.post("/reset", json={"dial": 0.0}).json()
-    obs = resp.get("obs", [0.0] * 22)
-
-    for i in range(n):
-        state = client.get("/state").json()
-        prompt = make_prompt(obs, state["raga"], state["tala_position"])
-        dataset.append({"prompt": prompt})
-
-        action = random.randint(0, 47)
-        step_resp = client.post("/step", json={"action": action}).json()
-        obs = step_resp.get("obs", [0.0] * 22)
-
-        if step_resp.get("terminated"):
-            resp = client.post("/reset", json={"dial": random.uniform(0, 1)}).json()
-            obs = resp.get("obs", [0.0] * 22)
-
-        if (i+1) % 100 == 0:
-            print(f"  {i+1}/{n} prompts collected")
-
-    return dataset
-
-print("Building training dataset...")
-train_dataset = build_dataset(1000)
-print(f"Dataset size: {len(train_dataset)} prompts")
-print(f"Sample prompt:\n{train_dataset[0]['prompt'][:400]}")
-```
-
-### Cell 9 — Training Config + Run
-```python
-import wandb
-from trl import GRPOConfig, GRPOTrainer
-
-RUN_NAME = "jugalbandi-grpo-v1"
-STEPS = 300  # on T4: ~45-60 min. Increase if you have A100 credits.
-
-wandb.init(project="jugalbandi", name=RUN_NAME)
-
-config = GRPOConfig(
-    output_dir=f"/content/drive/MyDrive/jugalbandi/{RUN_NAME}",
-    num_train_epochs=1,
-    max_steps=STEPS,
-    per_device_train_batch_size=2,     # lower than default — env calls are slow
-    gradient_accumulation_steps=8,    # effective batch = 16
-    learning_rate=5e-5,
-    logging_steps=10,
-    save_steps=50,
-    report_to="wandb",
-    num_generations=4,
-    max_completion_length=4,           # action index is 1-2 tokens; 4 is generous
-    temperature=0.9,                   # some exploration
-    seed=42,
-)
-
-trainer = GRPOTrainer(
-    model=model,
-    args=config,
-    reward_funcs=env_reward,
-    train_dataset=train_dataset,
-    tokenizer=tokenizer,
-)
-
-print(f"Starting training: {STEPS} steps")
-trainer.train()
-print("Training complete.")
-```
-
-**What to watch on wandb:**
-- `train/reward_mean` — should climb from negative to positive over 200+ steps
-- `train/reward_std` — if this collapses to 0, the model has converged (possibly degenerate)
-- If reward stays flat after 100 steps, check if the server is responding correctly
-
-### Cell 10 — Save and Push to Hub
-```python
-from huggingface_hub import HfApi
-
-SAVE_DIR = f"/content/drive/MyDrive/jugalbandi/{RUN_NAME}/final"
-
-model.save_pretrained(SAVE_DIR)
-tokenizer.save_pretrained(SAVE_DIR)
-print(f"Saved to {SAVE_DIR}")
-
-# Push to HF Hub
-api = HfApi()
-api.upload_folder(
-    folder_path=SAVE_DIR,
-    repo_id="your-username/jugalbandi-qwen-grpo",  # replace with your HF username
-    repo_type="model",
-    token=os.environ["HF_TOKEN"],
-)
-print("Pushed to HuggingFace Hub.")
-```
+Run cells top to bottom. There's no separate "verify server" smoke-test cell
+any more — training doesn't touch the HTTP server at all (`updatedplan.md`
+Phase 3.1).
 
 ---
 
-## Part 7: Reading the WandB Dashboard
+## Part 7: The Inference Check (After Training)
 
-After Cell 9 starts, go to wandb.ai → your project → jugalbandi-grpo-v1.
-
-**Reward curve:** Should look like a noisy climb from ~-1.0 at step 0 toward +2.0 to +5.0 by step 300. It won't be smooth — GRPO reward curves are noisy. Look at the 50-step moving average.
-
-**What good looks like at step 300:**
-- Average episode reward: +2.0 to +4.0
-- Reward still trending up (not plateaued)
-
-**What bad looks like:**
-- Reward stuck at -1.0 forever → server not responding, action parse failing, all actions hitting forbidden notes
-- Reward at +0.2 flatline → degenerate policy (model always outputs same number)
-
-**Quick debug if reward stays at -1.0:**
-In a separate cell during training, manually call env_reward with a known good action:
-```python
-test = env_reward(["dummy prompt"], ["7"])  # Sa = action 7
-print(test)  # should be ~0.2 (valid_note base reward)
-```
-
----
-
-## Part 8: The Inference Check (After Training)
-
-After training, verify the model actually learned something before claiming results:
+The model was trained on **one action per call, with live feedback** — so
+the honest sanity check is a genuine multi-turn loop, not a single
+`/infer`-style call. The notebook's last cell does exactly this:
 
 ```python
-from unsloth import FastLanguageModel
-
-# Load fine-tuned model
-model, tokenizer = FastLanguageModel.from_pretrained(SAVE_DIR, load_in_4bit=True)
-FastLanguageModel.for_inference(model)
-
-# Test on a fresh env state
-client.post("/reset", json={"dial": 0.0})
-state = client.get("/state").json()
-obs = [0.0] * 22  # fresh episode, all zeros is fine for a quick test
-prompt = make_prompt(obs, "yaman", 0)
-
-inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-output = model.generate(**inputs, max_new_tokens=4, temperature=0.1)
-decoded = tokenizer.decode(output[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-print(f"Model output: {decoded}")
-action = int(decoded.strip().split()[0]) % 48
-note = action % 12
-print(f"Action {action} → note semitone {note}")
-# For Yaman: valid notes are {0,2,4,6,7,9,11}. Invalid: {1,3,5,8,10}
-print(f"Valid in Yaman: {note in {0,2,4,6,7,9,11}}")
+# One env, reset once. For each of 64 steps:
+#   1. render_prompt(obs, arm=ARM, feedback=<previous step's StepFeedback>, ...)
+#   2. generate ONE action from the model
+#   3. parse_action() it — stop early and report if it's unparseable
+#   4. env.step(action), record the new StepFeedback for the next prompt
 ```
 
-If the model consistently outputs valid Yaman notes, training worked. If it outputs random numbers, something went wrong.
+This is the same interaction pattern `openenv_server/server.py`'s `/infer` +
+`/step` loop uses in production — if the notebook's check works, the
+deployed server loop will behave the same way. Report `episode return`,
+`forbidden-note steps`, and how many of the 64 steps actually completed
+(a model that goes off-format stops the loop early and that's reported
+honestly, not silently papered over).
+
+**Do not evaluate the model informally and call it done.** The real
+evaluation protocol — the fixed 200-episode set, the precise metrics, the
+statistical comparison against the baselines — is `docs/EXPERIMENT_PLAN.md`,
+not this cell. This cell answers "did something obviously break," not "is
+the result real."
 
 ---
 
-## Part 9: Approximate Timings on Different Hardware
+## Part 8: Reading the WandB Dashboard
 
-| Hardware | Steps | Time | Notes |
-|---|---|---|---|
-| Colab T4 (free) | 300 | ~60 min | May timeout after 90 min; save frequently |
-| Colab A100 (paid) | 500 | ~30 min | Recommended for the actual hackathon run |
-| Colab L4 (paid) | 500 | ~45 min | Cheaper than A100, still fast |
-| Local RTX 3090 | 500 | ~25 min | If you have it |
-
-Save checkpoints to Google Drive (not `/content`), which is wiped when Colab disconnects.
+- `train/reward_mean` should climb over the course of training. Because this
+  is a Monte-Carlo return (immediate + 8-step continuation under a random
+  reference policy), expect it to be noisier than a pure single-step bandit
+  signal — that's expected, not a sign something's broken.
+- `train/reward_std` collapsing to 0 means the model converged, possibly to
+  a degenerate policy — check `safe_set_occupancy` (`docs/EXPERIMENT_PLAN.md`
+  §7.8) on the trained model once you can evaluate it; a value near 1.0 is
+  the specific named failure mode (F13) that metric exists to catch.
+- **`grpo-HIDDEN` may simply fail to separate from `random-valid`.** This is
+  explicitly named in `updatedplan.md`'s risk register as a real possible
+  outcome, not a bug — see `docs/EXPERIMENT_PLAN.md` §12 for how to report
+  it honestly if it happens.
 
 ---
 
-## What to Actually Do Right Now
+## Part 9: Compute and Timing
 
-Priority order:
+| Hardware | Notes |
+|---|---|
+| Colab T4 (free) | May time out after ~90 min; save checkpoints to Drive, not `/content` |
+| Colab A100 / L4 (paid) | Faster, recommended for the full 15-run sweep |
+| Local GPU | Fine if you have one — same `requirements-train.txt` |
 
-1. Verify the OpenEnv server `/reset` response includes the `obs` array — if it doesn't, add it to `server.py`
-2. Convert `train_grpo.py` into a `.ipynb` using the cell structure above
-3. Run Cells 1-5 only to confirm server connectivity before doing a full training run
-4. Do a short 50-step test run to confirm wandb is logging and rewards are non-degenerate
-5. Do the full 300-500 step run with A100 credits the day before submission
+Per `updatedplan.md` §6: roughly 25–45 GPU-hours for the full 15 training
+runs (3 arms × 5 seeds), plus 3–6 more for evaluating everything. That does
+not fit in one free Colab session — plan for multiple sessions, or a paid
+tier. The exact seed count is still an open decision
+(`docs/EXPERIMENT_PLAN.md` §9) — fewer seeds if compute is constrained, but
+that's a real tradeoff to make explicitly, not discover by running out of
+GPU-hours partway through.

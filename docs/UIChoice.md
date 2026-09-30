@@ -50,18 +50,20 @@ This is what generates the before/after comparison table judges expect. It must 
 
 The script runs 100 episodes twice — once with a random policy (baseline) and once with the trained model. It prints and saves a comparison table.
 
-**Minimum viable output:**
+**Minimum viable output** (illustrative layout only — every value below is a
+placeholder, not a measurement; `eval/evaluate.py` and `docs/EXPERIMENT_PLAN.md`
+§7–§8 are the actual, current implementation and real baseline numbers):
 ```
 === Jugalbandi Evaluation — 100 Episodes ===
 
 Metric                    Random Policy    Trained (GRPO)   Delta
 ─────────────────────────────────────────────────────────────────
-Avg Episode Reward        -10.2            +4.8             +15.0
-Forbidden Note Rate       24%              3%               -21pp
-Pakad Completion Rate     0.1/ep           2.3/ep           +2.2/ep
-Valid Note Rate           68%              97%              +29pp
-Sam Landing (vadi)        2%               18%              +16pp
-Adapt Speed (steps)       N/A              3.4 ± 1.2        —
+Avg Episode Reward        <measured>       <measured>       <measured>
+Forbidden Note Rate       <measured>       <measured>       <measured>
+Pakad Completion Rate     <measured>       <measured>       <measured>
+Valid Note Rate           <measured>       <measured>       <measured>
+Sam Landing (vadi)        <measured>       <measured>       <measured>
+Adapt Speed (steps)       N/A              <measured>       —
 ```
 
 This table is the screenshot that goes in the blog, the README, and the slides. Without it, you are claiming improvement without evidence. Judges will not take your word for it.
@@ -167,10 +169,10 @@ Raga = DSL. Show the valid/forbidden note diagram for Yaman and Bhairav side by 
 
 **0:50-1:30 — The Demo**
 Screen recording. No voiceover needed — just captions.
-1. Click "Untrained" → piano roll fills with red cells → caption: "Random policy: 24% forbidden note rate"
-2. Click "Trained" → piano roll fills with green/gold → caption: "GRPO-trained: 3% forbidden note rate"
+1. Click "Untrained" → piano roll fills with red cells → caption with the real, live `valid_raga_adherence` reading (`docs/EXPERIMENT_PLAN.md` §7.1) for the random baseline, not a memorized number
+2. Click "Trained" → piano roll fills with green/gold → caption with the trained model's real, live reading of the same metric
 3. Drag the raga dial → caption: "Raga changed mid-episode. Agent not told explicitly."
-4. 3-4 steps later → blue flash → caption: "Bhairav pakad completed in 3.4 steps on average"
+4. If/when a pakad completes → blue flash → caption with the real, live step count for *this specific run*, not an average quoted from memory — averages belong in the results table (§1:30-2:00), not attached to one demo clip as if it were that clip's own number
 
 **1:30-2:00 — The Numbers**
 Show the evaluation table as a static image. Read the key numbers in voiceover or caption them.
@@ -200,7 +202,7 @@ The blog lives on HF or Medium. Judges read the first 3 paragraphs and the resul
 State the enterprise problem in one sentence. "When production schemas change, LLMs hallucinate out-of-bounds — they keep generating what was valid yesterday, now rejected by the downstream system." Then: "We built a training environment that reproduces this failure mode with measurable success metrics, using Indian classical music as the domain because raga rule violations are audible to anyone in the room."
 
 **Paragraph 2 (the claim):**
-Lead with the result, not the method. "A Qwen2.5-0.5B model trained via GRPO on our environment reduces forbidden-note rate from 24% to 3%, completes raga-characteristic phrases (pakads) 2.3 times per episode vs 0.1 for the random baseline, and adapts to a mid-episode rule change in an average of 3.4 steps with 72% success rate — without ever receiving an explicit change-of-state signal."
+Lead with the result, not the method — once there is a result. Template: "A Qwen2.5-0.5B model trained via GRPO on our environment reduces forbidden-note rate from `<random-valid's real adherence>` to `<grpo-HIDDEN's real adherence>`, completes `<real pakad_rate>` raga-characteristic phrases (pakads) per episode vs `<random-valid's real pakad_rate>` for the honest-floor baseline, and adapts to a mid-episode rule change with a median of `<real drift_adaptation_speed>` steps (censoring rate `<real censoring_rate>`) — without ever receiving an explicit change-of-state signal." Every bracketed value comes from `docs/EXPERIMENT_PLAN.md` §8 once `grpo-HIDDEN` has actually been trained and evaluated; as of this writing none of those runs exist, so this paragraph cannot be written yet. See `updatedplan.md` finding F12 for why publishing this paragraph with invented numbers instead of leaving it as a template is the specific mistake this project already made once.
 
 **Paragraph 3 (why this is hard):**
 "The agent sees only a raw float for the active raga. It must learn, through reward correlation, that crossing 0.5 inverts the reward landscape for several notes. This is the implicit learning constraint that mirrors real enterprise conditions."
@@ -234,12 +236,15 @@ The README is what GitHub and HF show by default. It must stand alone.
 
 ## Results
 
-| Metric | Random | Trained | Δ |
+<!-- Table layout only — fill every cell from eval/results/*.json (or the
+     trained arms' results once they exist) via docs/EXPERIMENT_PLAN.md §7-8.
+     Do not fill this in from memory or by estimate. -->
+| Metric | random-valid | grpo-HIDDEN | Δ |
 |--------|--------|---------|---|
-| Avg Episode Reward | -10.2 | +4.8 | +15.0 |
-| Forbidden Note Rate | 24% | 3% | -21pp |
-| Pakad Completion | 0.1/ep | 2.3/ep | +22x |
-| Adapt Speed | — | 3.4 steps | — |
+| Avg Episode Reward | | | |
+| Valid Raga Adherence | | | |
+| Pakad Rate | | | |
+| Adapt Speed (median, censoring) | | | |
 
 [HF Space →](https://your-space-url) | [Trained Model →](https://hf.co/your-model) | [Demo Video →](youtube-link)
 
@@ -331,4 +336,4 @@ Every number about the trained model is meaningless without the random baseline.
 **T-6h:**
 - [ ] Submit
 - [ ] Rehearse the 4-act demo from Jugalbandi.md until it's smooth
-- [ ] Memorize: 3.4 steps, 72% success rate, 24%→3% forbidden note rate
+- [ ] Memorize the real numbers from the final `docs/EXPERIMENT_PLAN.md` §8 table — never a number from an earlier draft of this document

@@ -73,7 +73,7 @@ The LLM does not generate audio. It generates an integer between 0 and 47. That 
 
 **2. The Output Quality (Better Grammar & Planning)**
 A 3B model has better attention mechanisms and deeper reasoning. 
-* **Faster Adaptation:** It might figure out the implicit schema drift (the raga dial) faster, dropping your adaptation speed from 3.4 steps down to 1 or 2 steps.
+* **Faster Adaptation:** It might figure out the implicit schema drift (the raga dial) faster, improving `drift_adaptation_speed` (see `docs/EXPERIMENT_PLAN.md` §7.2) relative to the 0.5B model's real, measured number — there wasn't one yet when this note was written, and "3.4 steps" here was always a placeholder, not something actually measured (`updatedplan.md` finding F12).
 * **Long-Horizon Planning:** It will likely get better at holding tension and planning complex pakad resolutions over 16-beat cycles because it tracks context better. 
 
 **3. The Hardware Tax (The Hackathon Dealbreaker)**
