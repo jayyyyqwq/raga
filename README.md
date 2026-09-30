@@ -40,9 +40,21 @@ docs/              full writeups — start with docs/summary.md
 
 ## Training on Colab
 
-Open [`training/train_grpo.ipynb`](training/train_grpo.ipynb) in Colab. It clones this repo (private
-— needs a `GH_TOKEN` Colab secret, see Cell 1 for how to create one) and needs `WANDB_API_KEY` and
-`HF_TOKEN` Colab secrets too. See the notebook's own cells for details; see
-`docs/EXPERIMENT_PLAN.md` for what the resulting model is evaluated against.
+No GitHub involved. Build a zip of the repo (excludes `venv/`, `.git/`, caches):
+
+```powershell
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+# see the PowerShell snippet used to build raga.zip during setup, or just
+# zip the repo folder yourself minus venv/.git/.mypy_cache/.pytest_cache
+```
+
+Then: open [`training/train_grpo.ipynb`](training/train_grpo.ipynb) directly in Colab
+(`File → Upload notebook → Browse`, pick the file off your machine), drag `raga.zip` into Colab's
+Files panel (folder icon, left sidebar) before running Cell 1, and run top to bottom. `WANDB_API_KEY`
+and `HF_TOKEN` Colab secrets are both optional — training runs fine without either; they only enable
+live wandb charts and pushing the final adapter to the HF Hub. The adapter always ends up in your
+Google Drive regardless. See `docs/EXPERIMENT_PLAN.md` for what the resulting model is evaluated
+against.
 
 This repo is private. Don't make it public or share the link.
