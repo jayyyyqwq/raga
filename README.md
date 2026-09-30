@@ -40,13 +40,11 @@ docs/              full writeups — start with docs/summary.md
 
 ## Training on Colab
 
-No GitHub involved. Build a zip of the repo (excludes `venv/`, `.git/`, caches):
+No GitHub involved. Rebuild `raga.zip` any time from a clean commit (this uses git's own tracked-file
+list, so it automatically excludes `venv/`, `.git/`, and everything else in `.gitignore`):
 
-```powershell
-Add-Type -AssemblyName System.IO.Compression
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-# see the PowerShell snippet used to build raga.zip during setup, or just
-# zip the repo folder yourself minus venv/.git/.mypy_cache/.pytest_cache
+```bash
+git archive HEAD -o raga.zip --prefix=raga/
 ```
 
 Then: open [`training/train_grpo.ipynb`](training/train_grpo.ipynb) directly in Colab
