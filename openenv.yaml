@@ -21,25 +21,45 @@ observation_space:
   low: 0.0
   high: 1.0
   description: >
-    22-dim continuous vector. Dims 0-7: last 4 notes played (note, duration).
-    Dims 8-15: human call phrase (last 4 notes). Dim 16: melodic direction.
-    Dim 17: tala position. Dim 18: tension metric. Dim 19: raga dial value.
-    Dim 20: pakad drought. Dim 21: steps since last schema switch.
+    22-dim continuous vector. Dims 0-7: last 4 notes played (note/23,
+    duration/3, interleaved). Dims 8-11: human call phrase (last 4 notes,
+    /11). Dim 12: melodic direction. Dim 13: tala position. Dim 14: tension
+    metric. Dim 15: raga dial value. Dim 16: pakad drought. Dim 17: steps
+    since last schema switch. Dim 18: vadi distance (circular). Dim 19:
+    samvadi distance (circular). Dim 20: vadi drought. Dim 21: in grace
+    period.
 
 action_space:
   type: Discrete
-  n: 48
-  description: "note (12 semitones) x duration (4 values) = 48 discrete actions"
+  n: 96
+  description: >
+    note (0-23, absolute pitch across two registers) x duration (4 values)
+    = 96 discrete actions. action = note + duration_index * 24.
 
 reward:
-  min: -2.0
-  max: 3.0
+  # Re-derived analytically (updatedplan.md Phase 1.4, retightened in Phase
+  # 5.1), not measured — no model has been trained. Bounds are a
+  # deliberately conservative envelope over every reward-layer combination
+  # reachable in a single step (max absolute-pitch leap of 23, every
+  # simultaneously-satisfiable bonus stacked), not a tight bound.
+  #
+  # F11 (drought penalties growing unboundedly, eventually dominating the
+  # flat forbidden-note penalty) is fixed as of Phase 5.1: both drought
+  # penalties are now floored (vadi: -1.0, pakad: -0.5 — see
+  # raaga_env/reward.py) so neither can ever be worse than the mildest
+  # hard-rule penalty. That floor is what lets `min` drop from Phase 1's
+  # -8.0 to -6.0 here: with drought bounded, the single-step worst case is
+  # dominated by the (still unbounded) large-melodic-leap penalty instead.
+  min: -6.0
+  max: 7.0
   description: >
-    Five layers: hard-rule (−2.0 on forbidden note, early return),
-    soft-rule (vadi +0.4, samvadi +0.3, smoothness, repetition penalty),
-    sequence-level (pakad +1.0, sam landing +0.8),
-    jugalbandi (call-resolve +0.5, direction contrast +0.3),
-    drift-specific (grace 80% penalty reduction, adaptation bonus +3.0).
+    Five layers: hard-rule (-2.0 on forbidden note, -1.5 out-of-raga, -1.0
+    aaroha violation; early return, so these never stack with soft-rule
+    terms), soft-rule (vadi +0.4, samvadi +0.3, smoothness/repetition
+    penalties, drought penalties floored at -1.0/-0.5 per step — see F11),
+    sequence-level (pakad up to +1.2, sam landing +0.8, strong-beat +0.2),
+    jugalbandi (call-resolve +0.5, direction contrast +0.3), drift-specific
+    (grace 80% penalty reduction, adaptation bonus +3.0).
 
 episode:
   max_steps: 64

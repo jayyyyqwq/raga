@@ -1,6 +1,6 @@
 import pytest
 from raaga_env.ragas import RAGAS, TALAS
-from raaga_env.reward import compute_reward
+from raaga_env.reward import PAKAD_DROUGHT_FLOOR, VADI_DROUGHT_FLOOR, compute_reward
 
 YAMAN = RAGAS["yaman"]
 TEENTAAL = TALAS["teentaal"]
@@ -64,3 +64,45 @@ def test_jugalbandi_direction_contrast():
         **{**BASE, "direction": 2, "call_phrase": [2, 4, 6, 9], "call_tension": 0.3}
     )
     assert "direction_contrast" in b
+
+
+# ── F11 fix (Phase 5.1): drought penalties are floored, never unbounded ────
+
+def test_vadi_drought_penalty_unfloored_below_the_cap():
+    # drought=20: raw = -0.05 * (20-8) = -0.6, well above the -1.0 floor
+    r, b = compute_reward(note=0, **{**BASE, "vadi_drought": 20})
+    assert b["vadi_drought_penalty"] == pytest.approx(-0.6)
+
+
+def test_vadi_drought_penalty_never_exceeds_its_floor():
+    # drought=1000: raw would be -0.05 * 992 = -49.6 without the floor
+    r, b = compute_reward(note=0, **{**BASE, "vadi_drought": 1000})
+    assert b["vadi_drought_penalty"] == VADI_DROUGHT_FLOOR
+
+
+def test_pakad_drought_penalty_unfloored_below_the_cap():
+    # drought=20: raw = -0.03 * (20-12) = -0.24, well above the -0.5 floor
+    r, b = compute_reward(note=0, **{**BASE, "pakad_drought": 20})
+    assert b["pakad_drought_penalty"] == pytest.approx(-0.24)
+
+
+def test_pakad_drought_penalty_never_exceeds_its_floor():
+    # drought=1000: raw would be -0.03 * 988 = -29.64 without the floor
+    r, b = compute_reward(note=0, **{**BASE, "pakad_drought": 1000})
+    assert b["pakad_drought_penalty"] == PAKAD_DROUGHT_FLOOR
+
+
+def test_drought_floors_never_exceed_the_mildest_hard_rule_penalty():
+    """The whole point of F11: neglecting good practice must never cost
+    more than an actual rule violation. aaroha_violation (-1.0) is the
+    mildest hard-rule penalty."""
+    assert VADI_DROUGHT_FLOOR >= -1.0
+    assert PAKAD_DROUGHT_FLOOR >= -1.0
+
+
+def test_both_drought_penalties_floored_simultaneously_still_bounded():
+    r, b = compute_reward(note=0, **{**BASE, "vadi_drought": 1000, "pakad_drought": 1000})
+    assert b["vadi_drought_penalty"] == VADI_DROUGHT_FLOOR
+    assert b["pakad_drought_penalty"] == PAKAD_DROUGHT_FLOOR
+    # valid_note (+0.2) + both floors: still far better than a hard-rule violation.
+    assert r == pytest.approx(0.2 + VADI_DROUGHT_FLOOR + PAKAD_DROUGHT_FLOOR)

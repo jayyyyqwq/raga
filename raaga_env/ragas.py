@@ -38,6 +38,7 @@ RAGAS: dict[str, dict] = {
         # Source: Bhatkhande KPM Vol. I; cross-checked Parrikar raga archive (parrikar.org).
         "pakads": [
             ([11, 14, 16],          0.5),   # ṉNi Re Ga — cross-register opening; most iconic entry
+            ([11, 9, 7],            1.0),   # ṉNi Dha Pa — mandra descent; head of avaroha, common cadential entry
             ([16, 18, 21, 23],      0.7),   # Ga Ma# Dha Ni — uttarang ascending sweep
             ([16, 18, 16, 14, 12],  1.2),   # Ga Ma# Ga Re Sa — signature turn + resolution (non-scalar ✓)
             ([23, 21, 19, 18, 16],  1.0),   # Ni Dha Pa Ma# Ga — avaroha body with Pa (non-scalar ✓)
@@ -114,6 +115,22 @@ NOTE_NAMES: list[str] = [
 def raga_from_dial(dial: float) -> str:
     """Map a 0.0–1.0 dial value to a raga name. Crossing 0.5 is the drift point."""
     return "yaman" if dial < 0.5 else "bhairav"
+
+
+def match_pakad(note_history: list[int], note: int, raga: dict) -> tuple[list[int], float] | None:
+    """
+    Single source of truth for pakad-phrase matching. `note_history` is the
+    history *before* `note`; `note` is the note just played. Returns the
+    matched (phrase, multiplier) or None. Both env.py and reward.py must
+    call this rather than re-deriving their own comparison window, so the
+    two code paths can't silently drift out of sync again.
+    """
+    window = (note_history + [note])[-6:]
+    for phrase, multiplier in raga["pakads"]:
+        n = len(phrase)
+        if len(window) >= n and window[-n:] == phrase:
+            return phrase, multiplier
+    return None
 
 
 def is_valid_note(note: int, raga: dict, direction: int) -> bool:

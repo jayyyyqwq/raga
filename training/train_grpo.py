@@ -3,144 +3,242 @@
 # WHY Qwen2.5-0.5B: smallest Unsloth-supported model that fits T4 (15GB) with QLoRA.
 #
 # Usage (Colab):
-#   !pip install unsloth trl wandb httpx
-#   !python train_grpo.py --server http://<your-hf-space>.hf.space --steps 500
+#   !pip install -r requirements-train.txt
+#   !python train_grpo.py --arm hidden --steps 500
+#
+# Training is in-process (updatedplan.md Phase 3.1) — no HTTP server, no
+# shared mutable env instance across samples (F9).
+#
+# Each GRPO sample is ONE decision point within an episode, not a whole
+# blind episode (Phase 3.2's "alternative design", adopted deliberately: the
+# episode-blind-completion design where the model commits to all 64 actions
+# up front cannot react to feedback about steps it hasn't taken yet, which
+# is incompatible with Claim B — in-context regime inference from reward
+# feedback alone, updatedplan.md §9 decision 2). The prompt shows
+# raaga_env.prompting.StepFeedback for the *previous* step (Phase 2.3);
+# scoring restores the env to the exact state the prompt was drawn from
+# (Phase 0.4's get_state/set_state), applies the sampled action, and
+# continues for a short horizon under a reference policy for a Monte-Carlo
+# return (eval.rollout.rollout_from_state) — giving the sampled action more
+# than one step's worth of credit assignment without needing the model
+# itself in the scoring loop.
+#
+# GPU-only imports (unsloth/trl/torch/wandb) are deferred into main() so
+# this module — and its dataset/reward-scoring logic — stays importable and
+# testable without a training stack installed, the same lazy-import pattern
+# openenv_server/server.py uses for its inference deps.
 
 import argparse
-import httpx
-import wandb
-import torch
-from unsloth import FastLanguageModel
-from trl import GRPOConfig, GRPOTrainer
+import json
+import random
 
-# ── Args ───────────────────────────────────────────────────────────────
-parser = argparse.ArgumentParser()
-parser.add_argument("--server",  default="http://localhost:7860")
-parser.add_argument("--model",   default="unsloth/Qwen2.5-0.5B-Instruct")
-parser.add_argument("--steps",   type=int, default=200)
-parser.add_argument("--batch",   type=int, default=4)
-parser.add_argument("--run",     default="jugalbandi-grpo-v1")
-args = parser.parse_args()
+from raaga_env.jugalbandi_env import JugalbandiEnv
+from raaga_env.prompting import Arm, StepFeedback, note_name, parse_action, render_prompt
+from eval.policies import random_valid_policy
+from eval.rollout import DriftSchedule, rollout_from_state
 
-# ── Model ──────────────────────────────────────────────────────────────
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name=args.model,
-    max_seq_length=512,
-    load_in_4bit=True,       # QLoRA — fits T4 with 15GB VRAM
-)
-model = FastLanguageModel.get_peft_model(
-    model,
-    r=16,
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
-    lora_alpha=16,
-    lora_dropout=0,
-    bias="none",
-    use_gradient_checkpointing="unsloth",
-)
+EPISODE_LENGTH = 64          # matches JugalbandiEnv's default / openenv.yaml episode.max_steps
+DRIFT_WINDOW = (16, 48)      # updatedplan.md Phase 3.3
+NO_SWITCH_CONTROL_PROB = 0.20
+MC_HORIZON = 8                # extra steps of reference-policy continuation after the sampled action
+# A parse failure gets a fixed penalty scaled to (1 + MC_HORIZON) "virtual
+# steps" — comparably harsh to the old single-step parse-failure penalty of
+# -1.0 (Phase 1.2), scaled to the size of the return it's being compared
+# against in the same GRPO group.
+STEP_PARSE_FAILURE_PENALTY = -1.0 * (MC_HORIZON + 1)
 
-# ── Prompt template ────────────────────────────────────────────────────
-# Intern note: each "turn" is one note pick. The LLM reads musical context,
-# outputs a number 0-47 (action index). GRPO optimises this against env reward.
 
-SYSTEM = (
-    "You are an expert Indian classical musician composing in a raga. "
-    "Given the current musical context, choose the next note action (0-47). "
-    "Action = note_semitone + duration_index * 12. "
-    "Output ONLY the integer, nothing else."
-)
+def sample_drift_schedule(rng: random.Random = random) -> tuple[float, DriftSchedule]:
+    """One drift event per training episode, sampled uniformly over
+    DRIFT_WINDOW, flipping the dial to the opposite raga. A
+    NO_SWITCH_CONTROL_PROB fraction of episodes get no switch at all — a
+    control condition so the policy can't just learn "a switch always
+    happens near the middle" (updatedplan.md Phase 3.3).
+    """
+    initial_dial = rng.choice([0.0, 1.0])
+    if rng.random() < NO_SWITCH_CONTROL_PROB:
+        return initial_dial, DriftSchedule()
+    switch_step = rng.randint(*DRIFT_WINDOW)
+    new_dial = 1.0 if initial_dial < 0.5 else 0.0
+    return initial_dial, DriftSchedule(switches=((switch_step, new_dial),))
 
-def make_prompt(obs: list[float], raga: str, tala_pos: int) -> str:
-    note_hist = obs[0:8]
-    return (
-        f"<|system|>\n{SYSTEM}\n"
-        f"<|user|>\n"
-        f"Active raga: {raga}\n"
-        f"Tala position: {tala_pos}/16\n"
-        f"Last 4 notes (note/11, dur/3): {[round(x, 2) for x in note_hist]}\n"
-        f"Raga dial: {round(obs[15], 2)}\n"
-        f"Pakad drought: {round(obs[16], 2)}\n"
-        f"Choose action (0-47):\n"
-        f"<|assistant|>\n"
+
+def build_dataset(n: int, arm: Arm, rng: random.Random = random) -> list[dict]:
+    """Each row is one decision point sampled from a reference episode: walk
+    a fresh episode forward under random_valid_policy (with a sampled drift
+    schedule), stop at a uniformly chosen step, and snapshot the prompt (with
+    StepFeedback from the immediately preceding step, or none at step 0) plus
+    the exact env state at that point. `state_json` carries JugalbandiEnv's
+    full get_state() (Phase 0.4) as a JSON string — a single plain-string
+    column, so nothing about it depends on how TRL's dataset conversion
+    handles nested/struct columns. `mc_seed` makes the Monte-Carlo
+    continuation used when scoring this row reproducible on repeat (used by
+    tests); during training it still varies row to row, avoiding a single
+    fixed continuation-policy draw across the whole dataset."""
+    rows = []
+    while len(rows) < n:
+        initial_dial, schedule = sample_drift_schedule(rng)
+        schedule_by_step = schedule.as_dict()
+        snapshot_step = rng.randint(0, EPISODE_LENGTH - 1)
+
+        env = JugalbandiEnv(initial_dial=initial_dial, episode_length=EPISODE_LENGTH)
+        obs, info = env.reset()
+        policy = random_valid_policy(rng)
+        feedback: StepFeedback | None = None
+
+        for step_idx in range(EPISODE_LENGTH):
+            if step_idx in schedule_by_step:
+                env.set_dial(schedule_by_step[step_idx])
+                obs = env._get_obs()
+
+            if step_idx == snapshot_step:
+                raga = env.drift.active_raga_name if arm is Arm.ORACLE else None
+                prompt = render_prompt(
+                    list(obs), arm=arm, tala_pos=env.tala_position,
+                    feedback=feedback, raga=raga,
+                )
+                rows.append({
+                    "prompt": prompt,
+                    "state_json": json.dumps(env.get_state()),
+                    "mc_seed": rng.randint(0, 2**31 - 1),
+                })
+                break
+
+            action = policy(obs, info)
+            note, duration = env._decode(action)
+            obs, reward, terminated, truncated, info = env.step(action)
+            feedback = StepFeedback(note_name=note_name(note, duration), reward=float(reward))
+            if terminated or truncated:
+                break  # episode ended before reaching snapshot_step; retry
+    return rows[:n]
+
+
+def make_step_reward_fn(arm: Arm):
+    """Returns a TRL reward_funcs-compatible callable bound to `arm`. GRPO
+    scores one sampled action per completion: restore the env to the row's
+    exact snapshot state, apply the action, then continue with
+    random_valid_policy for MC_HORIZON steps (eval.rollout.rollout_from_state
+    — Phase 0.3's single source of truth, same as every other result) to get
+    a Monte-Carlo return. Never a shared/mutated env instance across samples
+    (Phase 3.1 / F9), never a freshly reset, unrelated episode (F1)."""
+
+    def step_reward(
+        prompts: list[str],
+        completions: list[str],
+        state_json: list[str],
+        mc_seed: list[int],
+        **kwargs,
+    ) -> list[float]:
+        rewards = []
+        for completion, state_str, seed in zip(completions, state_json, mc_seed):
+            action = parse_action(completion)
+            if action is None:
+                rewards.append(STEP_PARSE_FAILURE_PENALTY)
+                continue
+
+            state = json.loads(state_str)
+            env = JugalbandiEnv(episode_length=EPISODE_LENGTH)
+            env.set_state(state)
+            _, immediate_reward, terminated, truncated, _ = env.step(action)
+
+            total = immediate_reward
+            if not (terminated or truncated):
+                continuation = rollout_from_state(
+                    random_valid_policy(random.Random(seed)),
+                    state=env.get_state(),
+                    episode_length=EPISODE_LENGTH,
+                    max_extra_steps=MC_HORIZON,
+                    arm=arm.value,
+                )
+                total += continuation.total_reward
+            rewards.append(total)
+        return rewards
+
+    return step_reward
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="unsloth/Qwen2.5-0.5B-Instruct")
+    parser.add_argument("--steps", type=int, default=200)
+    parser.add_argument("--batch", type=int, default=4)
+    parser.add_argument("--run", default="jugalbandi-grpo-v1")
+    parser.add_argument("--num-generations", type=int, default=4)
+    # Which observation arm to train against (updatedplan.md Phase 4.1: this
+    # script gets invoked once per arm — grpo-ORACLE, grpo-DIAL, grpo-HIDDEN).
+    parser.add_argument("--arm", choices=[a.value for a in Arm], default=Arm.HIDDEN.value)
+    parser.add_argument("--seed", type=int, default=42)
+    return parser
+
+
+def main() -> None:
+    parser = build_arg_parser()
+    args = parser.parse_args()
+    args.arm = Arm(args.arm)
+
+    # TRL's GRPOTrainer requires per_device_train_batch_size to be divisible
+    # by num_generations (it must fit whole groups of completions per device).
+    if args.batch % args.num_generations != 0:
+        parser.error(
+            f"--batch ({args.batch}) must be divisible by --num-generations ({args.num_generations})"
+        )
+
+    random.seed(args.seed)
+
+    import wandb
+    from unsloth import FastLanguageModel
+    from trl import GRPOConfig, GRPOTrainer
+
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=args.model,
+        max_seq_length=512,
+        load_in_4bit=True,       # QLoRA — fits T4 with 15GB VRAM
+    )
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=16,
+        target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
+        lora_alpha=16,
+        lora_dropout=0,
+        bias="none",
+        use_gradient_checkpointing="unsloth",
     )
 
-# ── Reward function (calls env server) ────────────────────────────────
-client = httpx.Client(base_url=args.server, timeout=10.0)
+    wandb.init(project="jugalbandi", name=args.run, config={**vars(args), "arm": args.arm.value})
 
-def env_reward(prompts: list[str], completions: list[str], **kwargs) -> list[float]:
-    """
-    GRPO calls this with a batch of (prompt, completion) pairs.
-    We parse the completion as an action int, step the env, return the reward.
-    """
-    rewards = []
-    for prompt, completion in zip(prompts, completions):
-        try:
-            action = int(completion.strip().split()[0]) % 48
-        except (ValueError, IndexError):
-            rewards.append(-1.0)  # parse failure → penalty
-            continue
-        try:
-            res = client.post("/step", json={"action": action})
-            reward = res.json()["reward"]
-            # Reset if episode ended
-            if res.json()["terminated"]:
-                client.post("/reset", json={"dial": 0.0})
-        except Exception:
-            reward = -0.5
-        rewards.append(float(reward))
-    return rewards
+    config = GRPOConfig(
+        output_dir=f"./checkpoints/{args.run}",
+        num_train_epochs=1,
+        max_steps=args.steps,
+        per_device_train_batch_size=args.batch,
+        gradient_accumulation_steps=4,
+        learning_rate=5e-5,
+        logging_steps=10,
+        save_steps=50,
+        report_to="wandb",
+        # GRPO-specific
+        num_generations=args.num_generations,
+        max_completion_length=8,  # one action index; 1-2 tokens
+    )
 
-# ── Training ───────────────────────────────────────────────────────────
+    print("Building dataset …")
+    dataset = build_dataset(args.steps * args.batch, args.arm)
 
-def build_dataset(n: int = 500) -> list[dict]:
-    """
-    Seed dataset: reset env, collect n prompts from random rollouts.
-    GRPO will then improve from these starting points.
-    """
-    client.post("/reset", json={"dial": 0.0})
-    dataset = []
-    for _ in range(n):
-        state = client.get("/state").json()
-        obs_dummy = [0.0] * 22  # placeholder; real obs comes from /state
-        prompt = make_prompt(obs_dummy, state["raga"], state["tala_position"])
-        dataset.append({"prompt": prompt})
-        # random step to vary starting states
-        import random
-        res = client.post("/step", json={"action": random.randint(0, 47)})
-        if res.json()["terminated"]:
-            client.post("/reset", json={"dial": 0.0})
-    return dataset
+    trainer = GRPOTrainer(
+        model=model,
+        args=config,
+        reward_funcs=make_step_reward_fn(args.arm),
+        train_dataset=dataset,
+        processing_class=tokenizer,  # `tokenizer=` is deprecated in TRL 0.12+
+    )
 
-wandb.init(project="jugalbandi", name=args.run, config=vars(args))
+    print(f"Training {args.steps} steps, arm={args.arm.value} …")
+    trainer.train()
 
-config = GRPOConfig(
-    output_dir=f"./checkpoints/{args.run}",
-    num_train_epochs=1,
-    max_steps=args.steps,
-    per_device_train_batch_size=args.batch,
-    gradient_accumulation_steps=4,
-    learning_rate=5e-5,
-    logging_steps=10,
-    save_steps=50,
-    report_to="wandb",
-    # GRPO-specific
-    num_generations=4,        # how many completions to sample per prompt
-    max_completion_length=8,  # action index fits in 1-2 tokens
-)
+    model.save_pretrained(f"./checkpoints/{args.run}/final")
+    tokenizer.save_pretrained(f"./checkpoints/{args.run}/final")
+    print("Done. Upload checkpoint to HF Hub with `huggingface-cli upload`.")
 
-print("Building dataset …")
-dataset = build_dataset(args.steps * args.batch)
 
-trainer = GRPOTrainer(
-    model=model,
-    args=config,
-    reward_funcs=env_reward,
-    train_dataset=dataset,
-    tokenizer=tokenizer,
-)
-
-print(f"Training {args.steps} steps on {args.server} …")
-trainer.train()
-
-model.save_pretrained(f"./checkpoints/{args.run}/final")
-tokenizer.save_pretrained(f"./checkpoints/{args.run}/final")
-print("Done. Upload checkpoint to HF Hub with `huggingface-cli upload`.")
+if __name__ == "__main__":
+    main()

@@ -5,7 +5,7 @@
 import numpy as np
 from gymnasium import spaces
 from .env import RaagaEnv
-from .drift import DriftManager
+from .drift import DriftManager, GRACE_PENALTY_FACTOR
 from .reward import compute_reward
 
 CALL_EVERY = 8   # human injects a 4-note call every N steps
@@ -21,17 +21,18 @@ class JugalbandiEnv(RaagaEnv):
     So base obs is 12 dims (last 4 notes only) + 8 jugalbandi dims = 22 total.
 
     Obs layout:
-      0-7  : last 4 played notes (note/11, duration/3 interleaved)
+      0-7  : last 4 played notes (note/23, duration/3 interleaved) — reused
+             verbatim from RaagaEnv._get_obs() so the two can't diverge again
       8-11 : human call phrase (4 note values / 11)
-      12   : melodic direction
-      13   : tala position
+      12   : melodic direction        (from RaagaEnv._get_obs())
+      13   : tala position            (from RaagaEnv._get_obs())
       14   : tension metric (how unresolved human left their phrase)
       15   : raga dial value (0-1, the implicit schema signal)
-      16   : pakad drought (normalised)
+      16   : pakad drought (normalised)   (from RaagaEnv._get_obs())
       17   : steps since last schema switch (normalised)
-      18   : vadi distance
-      19   : samvadi distance
-      20   : vadi drought
+      18   : vadi distance, circular     (from RaagaEnv._get_obs())
+      19   : samvadi distance, circular  (from RaagaEnv._get_obs())
+      20   : vadi drought                (from RaagaEnv._get_obs())
       21   : in grace period (0 or 1)
     """
 
@@ -43,6 +44,11 @@ class JugalbandiEnv(RaagaEnv):
         # Override raga to follow the dial
         self.raga_name = self.drift.active_raga_name
         self.raga = self.drift.active_raga
+
+        # Inherited from RaagaEnv, but declared again here so the 96-action
+        # contract is local and directly testable on this class rather than
+        # only implied by inheritance (updatedplan.md Phase 1.1).
+        self.action_space = spaces.Discrete(96)
 
         # Override obs space
         self.observation_space = spaces.Box(
@@ -73,7 +79,6 @@ class JugalbandiEnv(RaagaEnv):
         # Sync raga to drift dial before computing reward
         self.raga = self.drift.active_raga
 
-        grace = self.drift.apply_grace
         reward, breakdown = compute_reward(
             note=note,
             duration=duration,
@@ -85,24 +90,29 @@ class JugalbandiEnv(RaagaEnv):
             tala=self.tala,
             pakad_drought=self.pakad_drought,
             vadi_drought=self.vadi_drought,
-            grace_factor=0.2 if self.drift.in_grace_period else 1.0,
+            grace_factor=GRACE_PENALTY_FACTOR if self.drift.in_grace_period else 1.0,
             call_phrase=self.call_phrase,
             call_tension=self.call_tension,
         )
 
-        drift_bonus = self.drift.step(note, list(self.note_history) + [note])
+        # note_history is passed *before* this note is appended, matching
+        # ragas.match_pakad's contract (see DriftManager.step).
+        drift_bonus = self.drift.step(note, list(self.note_history))
         reward += drift_bonus
         if drift_bonus > 0:
             breakdown["adaptation_bonus"] = drift_bonus
+        # compute_reward() set breakdown["total"] before the drift bonus
+        # existed; keep it in sync with the reward actually returned (F10).
+        breakdown["total"] = reward
 
         self._update_state(note, duration)
         self.episode_reward += reward
 
         self.steps_until_call -= 1
+        call_requested = False
         if self.steps_until_call <= 0:
             self.steps_until_call = CALL_EVERY
-            # Signal to the server/UI that it's time for a human call phrase
-            breakdown["call_requested"] = True
+            call_requested = True
 
         terminated = self.step_count >= self.episode_length
         info = {
@@ -117,7 +127,10 @@ class JugalbandiEnv(RaagaEnv):
             "active_raga": self.drift.active_raga_name,
             "dial": self.drift.dial,
             "in_grace_period": self.drift.in_grace_period,
-            "call_requested": breakdown.get("call_requested", False),
+            # Not a reward component — belongs in info, not reward_breakdown
+            # (F10: it was previously stuffed into the breakdown dict, which
+            # broke any code summing breakdown values as float rewards).
+            "call_requested": call_requested,
         }
         return self._get_obs(), reward, terminated, False, info
 
@@ -141,32 +154,51 @@ class JugalbandiEnv(RaagaEnv):
         self.call_tension = abs(last - self.raga["vadi"]) / 11.0
 
     # ------------------------------------------------------------------
+    # State serialisation (extends RaagaEnv.get_state/set_state with drift
+    # and call-response state — updatedplan.md Phase 0.4)
+    # ------------------------------------------------------------------
+
+    def get_state(self) -> dict:
+        state = super().get_state()
+        state["drift"] = self.drift.get_state()
+        state["call_phrase"] = list(self.call_phrase)
+        state["call_tension"] = self.call_tension
+        state["steps_until_call"] = self.steps_until_call
+        return state
+
+    def set_state(self, state: dict) -> None:
+        super().set_state(state)
+        self.drift.set_state(state["drift"])
+        self.raga_name = self.drift.active_raga_name
+        self.raga = self.drift.active_raga
+        self.call_phrase = list(state["call_phrase"])
+        self.call_tension = state["call_tension"]
+        self.steps_until_call = state["steps_until_call"]
+
+    # ------------------------------------------------------------------
     # Obs override
     # ------------------------------------------------------------------
 
     def _get_obs(self) -> np.ndarray:
+        # base layout (14-dim): notes[0:8], direction[8], tala[9],
+        # vadi_dist[10], samvadi_dist[11], pakad_drought[12], vadi_drought[13]
+        base = super()._get_obs()
         obs = np.zeros(22, dtype=np.float32)
-        hist = list(self.note_history)
-        dur = list(self.dur_history)
 
-        # 0-7: last 4 played notes
-        for i, idx in enumerate(range(max(0, len(hist) - 4), len(hist))):
-            obs[i * 2] = hist[idx] / 11.0
-            obs[i * 2 + 1] = dur[idx] / 3.0 if idx < len(dur) else 0.0
+        obs[0:8] = base[0:8]  # last 4 played notes (note/23, duration/3)
 
         # 8-11: human call phrase (4 note values)
         for i, n in enumerate(self.call_phrase[:4]):
             obs[8 + i] = n / 11.0
 
-        obs[12] = self._direction() / 2.0
-        obs[13] = self.tala_position / (self.tala["beats"] - 1)
+        obs[12] = base[8]   # melodic direction
+        obs[13] = base[9]   # tala position
         obs[14] = self.call_tension
         obs[15] = self.drift.dial
-        obs[16] = min(self.pakad_drought / 20.0, 1.0)
+        obs[16] = base[12]  # pakad drought (normalised)
         obs[17] = min(self.drift.steps_since_switch / 20.0, 1.0)
-        last = hist[-1] if hist else 0
-        obs[18] = abs(last - self.raga["vadi"]) / 11.0
-        obs[19] = abs(last - self.raga["samvadi"]) / 11.0
-        obs[20] = min(self.vadi_drought / 16.0, 1.0)
+        obs[18] = base[10]  # vadi distance, circular
+        obs[19] = base[11]  # samvadi distance, circular
+        obs[20] = base[13]  # vadi drought
         obs[21] = 1.0 if self.drift.in_grace_period else 0.0
         return obs

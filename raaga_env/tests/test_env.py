@@ -54,6 +54,29 @@ def test_pakad_detection():
     _, _, _, _, info = env.step(7)
     assert info["pakad_completions"] >= 1
 
+
+# Phase 1.1 acceptance: cross-register pakads span mandra (0-11) and madhya
+# (12-23) pitches and are only reachable with the 96-action space — they were
+# the reason 96 was chosen over 48 (updatedplan.md §9.1, CLASSICAL_MUSIC_AUDIT.md).
+
+def test_cross_register_pakad_reachable_yaman():
+    env = RaagaEnv(raga="yaman")
+    env.reset()
+    pakad = [11, 14, 16]  # mandra Ni, madhya Re, madhya Ga
+    info = None
+    for note in pakad:
+        _, _, _, _, info = env.step(note)  # duration 0: action == note (< 24)
+    assert info["pakad_completions"] >= 1
+
+def test_cross_register_pakad_reachable_bhairav():
+    env = RaagaEnv(raga="bhairav")
+    env.reset()
+    pakad = [13, 12, 11, 12]  # madhya re, madhya Sa, mandra Ni, madhya Sa
+    info = None
+    for note in pakad:
+        _, _, _, _, info = env.step(note)
+    assert info["pakad_completions"] >= 1
+
 def test_bhairav_forbidden():
     env = RaagaEnv(raga="bhairav")
     env.reset()

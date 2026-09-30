@@ -1,0 +1,56 @@
+{
+  "policy": "scripted-oracle",
+  "n_episodes": 200,
+  "eval_master_seed": 20260910,
+  "fingerprint": {
+    "git_sha": "06656a511d11895e63a6ccd10043fed87b63778b",
+    "requirements_train_hash": "38756aed99ddc3916ed05b8ca544957e75fee2a32c9a4a84f85cc86285a2595a",
+    "ragas_hash": "e059ce249c491c79c5536adb02f76cdb85f1bb4cffd2c89b661510417d6f2da9",
+    "reward_hash": "7b57b85f88cef02e4fa358ec4919dc2f5e9f593efc1ad159db82e10f6dc18408",
+    "eval_episodes_hash": "1da7b03ccefb0ef680a211a4e0a8e44706fa11fc15a8ebe3952318748d77937c",
+    "metrics_hash": "722aa2615ce9b5c559857e82a507680b11588f6a4296236bd96a9d1f52f56bc2",
+    "policies_hash": "a66173cf86f5342dc71c799944e477c97cd2c74b07bbd1a375ce02464bb7f3d5"
+  },
+  "metrics": {
+    "n_episodes": 200,
+    "mean_reward": -22.2417,
+    "valid_raga_adherence": {
+      "pre_switch": 1.0,
+      "grace": 1.0,
+      "post_grace": 1.0,
+      "overall": 1.0
+    },
+    "drift_adaptation_speed": {
+      "median_steps": 2.5,
+      "censoring_rate": 0.0,
+      "n_switched_episodes": 200
+    },
+    "adaptation_success_rate_at_k": {
+      "5": 1.0,
+      "10": 1.0,
+      "20": 1.0
+    },
+    "post_switch_violation_decay": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+    },
+    "pakad_rate": 1.02,
+    "jugalbandi_coherence": 0.4974375,
+    "safe_set_occupancy": 0.5615625,
+    "action_validity_rate": 1.0
+  }
+}

@@ -1,0 +1,22 @@
+# Training stack — GPU only (Colab/Kaggle/cloud). Pinned so a training run is
+# reproducible instead of a version lottery (updatedplan.md Phase 0.1 / F6).
+#
+# `requirements.txt` deliberately leaves these commented out and unversioned;
+# this file is the single source of truth for the training environment.
+# Every result file must record these resolved versions (see eval/fingerprint.py).
+#
+# TRL GRPOTrainer constraint verified against trl==0.12.2: per_device_train_
+# batch_size * num_processes must be divisible by num_generations, and
+# `tokenizer=` on GRPOTrainer is deprecated in favour of `processing_class=`
+# from this version onward. Both training/train_grpo.py and
+# training/train_grpo.ipynb (Cell 9) were fixed to match.
+
+torch==2.5.1
+transformers==4.46.3
+trl==0.12.2
+peft==0.13.2
+accelerate==1.1.1
+datasets==3.1.0
+bitsandbytes==0.44.1
+unsloth==2024.11.9
+wandb==0.18.7

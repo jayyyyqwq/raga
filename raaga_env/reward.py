@@ -7,6 +7,19 @@
 # All swara-identity checks use  note % 12  to stay register-agnostic.
 # Phrase/sequence checks (pakads, aaroha) use absolute pitch — octave matters there.
 
+from .ragas import match_pakad
+
+# Drought penalties grow with steps-since-last-played and used to be
+# unbounded, which meant a long-enough drought outweighed the flat
+# forbidden-note penalty (-2.0) — the environment ended up punishing
+# "haven't played your vadi in a while" harder than an actual rule
+# violation (updatedplan.md finding F11, fixed here in Phase 5.1). Floored
+# so neither drought term can ever be worse than the mildest hard-rule
+# penalty (aaroha_violation, -1.0); pakad drought is floored softer still,
+# since neglecting a phrase is a lesser lapse than neglecting the vadi.
+VADI_DROUGHT_FLOOR = -1.0
+PAKAD_DROUGHT_FLOOR = -0.5
+
 
 def compute_reward(
     note: int,
@@ -63,7 +76,7 @@ def compute_reward(
         reward += 0.3
 
     if vadi_drought > 8:
-        p = -0.05 * (vadi_drought - 8)
+        p = max(-0.05 * (vadi_drought - 8), VADI_DROUGHT_FLOOR)
         breakdown["vadi_drought_penalty"] = p
         reward += p
 
@@ -87,17 +100,15 @@ def compute_reward(
     # ── LAYER 3: SEQUENCE-LEVEL (PAKAD + TALA) ──────────────────────────
     # pakads are (phrase: list[int], reward_multiplier: float) tuples.
     # Implicit curriculum: short prefixes yield 0.5, full canonical phrases yield 1.0-1.2.
-    recent = note_history[-5:] + [note]
-    for phrase, multiplier in raga["pakads"]:
-        n = len(phrase)
-        if len(recent) >= n and recent[-n:] == phrase:
-            r = 1.0 * multiplier
-            breakdown["pakad_completion"] = r
-            reward += r
-            break
+    match = match_pakad(note_history, note, raga)
+    if match is not None:
+        _phrase, multiplier = match
+        r = 1.0 * multiplier
+        breakdown["pakad_completion"] = r
+        reward += r
 
     if pakad_drought > 12:
-        p = -0.03 * (pakad_drought - 12)
+        p = max(-0.03 * (pakad_drought - 12), PAKAD_DROUGHT_FLOOR)
         breakdown["pakad_drought_penalty"] = p
         reward += p
 

@@ -5,7 +5,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 from collections import deque
-from .ragas import RAGAS, TALAS, DURATIONS, NOTE_NAMES
+from .ragas import RAGAS, TALAS, DURATIONS, NOTE_NAMES, match_pakad
 
 
 class RaagaEnv(gym.Env):
@@ -87,6 +87,38 @@ class RaagaEnv(gym.Env):
         }
         return self._get_obs(), reward, terminated, False, info
 
+    def get_state(self) -> dict:
+        """Full episode state, sufficient to resume an identical rollout via
+        set_state(). Needed for GRPO group scoring and deterministic
+        re-scoring of saved trajectories (updatedplan.md Phase 0.4)."""
+        return {
+            "raga_name": self.raga_name,
+            "note_history": list(self.note_history),
+            "dur_history": list(self.dur_history),
+            "step_count": self.step_count,
+            "tala_position": self.tala_position,
+            "pakad_drought": self.pakad_drought,
+            "vadi_drought": self.vadi_drought,
+            "episode_reward": self.episode_reward,
+            "forbidden_count": self.forbidden_count,
+            "pakad_completions": self.pakad_completions,
+            "vadi_count": self.vadi_count,
+        }
+
+    def set_state(self, state: dict) -> None:
+        self.raga_name = state["raga_name"]
+        self.raga = RAGAS[self.raga_name]
+        self.note_history = deque(state["note_history"], maxlen=self._history_len)
+        self.dur_history = deque(state["dur_history"], maxlen=self._history_len)
+        self.step_count = state["step_count"]
+        self.tala_position = state["tala_position"]
+        self.pakad_drought = state["pakad_drought"]
+        self.vadi_drought = state["vadi_drought"]
+        self.episode_reward = state["episode_reward"]
+        self.forbidden_count = state["forbidden_count"]
+        self.pakad_completions = state["pakad_completions"]
+        self.vadi_count = state["vadi_count"]
+
     def render(self):
         if self.render_mode != "human":
             return
@@ -150,6 +182,8 @@ class RaagaEnv(gym.Env):
         return obs
 
     def _update_state(self, note: int, duration: int):
+        match = match_pakad(list(self.note_history), note, self.raga)
+
         self.note_history.append(note)
         self.dur_history.append(duration)
         self.step_count += 1
@@ -163,16 +197,10 @@ class RaagaEnv(gym.Env):
         else:
             self.vadi_drought += 1
 
-        recent = list(self.note_history)
-        pakad_hit = False
-        for phrase, _reward in self.raga["pakads"]:
-            n = len(phrase)
-            if len(recent) >= n and recent[-n:] == phrase:
-                self.pakad_drought = 0
-                self.pakad_completions += 1
-                pakad_hit = True
-                break
-        if not pakad_hit:
+        if match is not None:
+            self.pakad_drought = 0
+            self.pakad_completions += 1
+        else:
             self.pakad_drought += 1
 
         if note % 12 in self.raga["forbidden_notes"]:
