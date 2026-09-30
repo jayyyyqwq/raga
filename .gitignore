@@ -8,6 +8,8 @@ build/
 venv/
 raagarl_env/
 *.egg
+.mypy_cache/
+.pytest_cache/
 
 # Env + secrets
 .env

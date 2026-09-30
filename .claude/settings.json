@@ -11,5 +11,10 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(venv/Scripts/python.exe -m pytest raaga_env/tests/ -v)"
+    ]
   }
 }
