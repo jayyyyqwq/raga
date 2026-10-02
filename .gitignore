@@ -23,6 +23,7 @@ raagarl_env/
 *.safetensors
 assets/reward_curves/*.png
 assets/reward_curves/*.jpg
+raga.zip
 
 # Jupyter
 .ipynb_checkpoints/
