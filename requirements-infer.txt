@@ -1,0 +1,7 @@
+# CPU inference deps for openenv_server's /infer endpoint — loading a trained
+# LoRA adapter and generating a few tokens at a time, not training. Unpinned
+# on purpose: unlike requirements-train.txt, this doesn't need to be
+# bit-for-bit reproducible, just able to load a HF/PEFT adapter and run.
+torch>=2.2.0
+transformers>=4.46.0
+peft>=0.13.0

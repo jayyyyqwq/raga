@@ -24,6 +24,7 @@ raagarl_env/
 assets/reward_curves/*.png
 assets/reward_curves/*.jpg
 raga.zip
+checkpoints/
 
 # Jupyter
 .ipynb_checkpoints/

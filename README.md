@@ -14,8 +14,9 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
   **built and tested** (120 tests, `pytest -q`).
 - Four scripted baselines (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`):
   **run for real** — see `eval/results/`.
-- Trained model (`grpo-HIDDEN`/`DIAL`/`ORACLE`): **pending a GPU run** — see
-  [`training/train_grpo.ipynb`](training/train_grpo.ipynb), meant to run on Colab.
+- Trained model: **one `grpo-HIDDEN` run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
+  [`docs/FIRST_TRAINING_RUN.md`](docs/FIRST_TRAINING_RUN.md) for what the numbers mean.
+  `DIAL`/`ORACLE` arms and a full baseline comparison: **not run yet**.
 
 ## Training on Colab — zero-setup version
 
@@ -60,6 +61,36 @@ git archive HEAD -o raga.zip --prefix=raga/
 ```
 
 See `docs/EXPERIMENT_PLAN.md` for what the resulting model is evaluated against.
+
+## Running the interactive demo (after training)
+
+Once you have a trained adapter, you can play against it in the browser — the sitar/tabla UI
+talking to a local server that runs the real model. No GPU needed for this part; it runs fine on
+CPU, just slower per move (a second or two) than it would on a GPU.
+
+1. In Google Drive, find `jugalbandi/<run-name>/final` (the folder Colab's Cell 7 saved to —
+   e.g. `jugalbandi/jugalbandi-grpo-hidden-v1/final`). Right-click it → **Download**. Drive zips it
+   for you.
+2. Unzip it so its files (`adapter_config.json`, `adapter_model.safetensors`, tokenizer files, …)
+   land directly inside a `checkpoints/final` folder in this repo — i.e.
+   `checkpoints/final/adapter_config.json` should exist. Create the `checkpoints` folder if it's
+   not there yet. (This folder is gitignored — your downloaded weights never get committed.)
+3. One-time setup, in a terminal in this folder:
+
+   ```bash
+   python -m venv venv
+   venv/Scripts/activate          # Windows; source venv/bin/activate on Linux/Mac
+   pip install -r requirements.txt -r requirements-infer.txt
+   ```
+
+4. Double-click **`run_demo.bat`**. It starts the server, starts a page server for `ui/`, and opens
+   your browser to the demo. The first time you click Start and the AI takes its turn, it has to
+   load the model into memory — that one-time pause (up to ~1-2 minutes on CPU) is normal, not frozen.
+5. Click **Start**, pluck 4 sitar strings for your "call" phrase, and watch the trained model
+   respond. The raga dial slider controls the drift mechanic live.
+
+If something's missing (no adapter downloaded yet, no venv set up), `run_demo.bat` tells you
+exactly what to fix instead of just failing silently.
 
 ## Dev quickstart (code changes, not training)
 
