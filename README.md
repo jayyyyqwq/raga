@@ -11,31 +11,34 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
 ## Status
 
 - Environment, reward function, drift mechanic, prompting layer, HTTP server, and evaluation harness:
-  **built and tested** (120 tests, `pytest -q`).
+  **built and tested** (134 tests, `pytest -q`).
 - Four scripted baselines (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`):
   **run for real** — see `eval/results/`.
 - Trained model: **one `grpo-HIDDEN` run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
-  [`docs/FIRST_TRAINING_RUN.md`](docs/FIRST_TRAINING_RUN.md) for what the numbers mean.
-  `DIAL`/`ORACLE` arms and a full baseline comparison: **not run yet**.
+  [`docs/FIRST_TRAINING_RUN.md`](docs/FIRST_TRAINING_RUN.md) for what the numbers mean. That run
+  predates a call-response bug fix ([`docs/RETRAIN_PLAN.md`](docs/RETRAIN_PLAN.md)) — it's a solo
+  improviser with drift adaptation, not a call-and-response result. A retrain with the fix hasn't
+  been run yet. `DIAL`/`ORACLE` arms and a full baseline comparison: **not run yet**.
 
-## Training on Colab — zero-setup version
+## Training on Colab — 3 steps
 
-This repo is public on GitHub, so Colab can pull it directly. No download, no zip, no upload, no
-Hugging Face account required. Four steps:
+This repo is public on GitHub, so Colab opens and clones it directly — no download, no zip
+upload, no Hugging Face account, no sign-in beyond your own Google account.
 
-1. Go to [colab.research.google.com](https://colab.research.google.com) → `File → Open notebook`
-   → the **GitHub** tab → paste `https://github.com/jayyyyqwq/raga` → open `training/train_grpo.ipynb`.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/jayyyyqwq/raga/blob/main/training/train_grpo.ipynb)
+
+1. **Click the badge above.** It opens `training/train_grpo.ipynb` directly in Colab.
 2. `Runtime → Change runtime type → T4 GPU` (free tier) → `Save`.
 3. `Runtime → Run all`.
-4. Wait roughly 45–60 minutes. The trained model saves itself to your Google Drive automatically —
-   no further action needed.
 
-That's it. Everything below is optional extra context, not required steps.
+That's it — 3 clicks, then wait. Takes roughly 45–60 minutes; the trained model saves itself to
+your Google Drive automatically, no further action needed. Everything below is optional extra
+context, not required steps.
 
-If GitHub's own Colab link is ever flaky, there's a fallback: double-click
-**`make_training_zip.bat`** in this folder to build a `raga.zip`, then drag it into Colab's Files
-panel (folder icon, left sidebar) before running the first code cell — the notebook auto-detects
-the zip and uses that instead of cloning.
+If the badge or GitHub's clone is ever flaky (offline mirror, you're testing local uncommitted
+changes), there's a fallback: double-click **`make_training_zip.bat`** in this folder to build a
+`raga.zip`, then drag it into Colab's Files panel (folder icon, left sidebar) before running the
+first code cell — the notebook auto-detects the zip and uses that instead of cloning.
 
 ### What about Hugging Face?
 
@@ -92,13 +95,18 @@ CPU, just slower per move (a second or two) than it would on a GPU.
 If something's missing (no adapter downloaded yet, no venv set up), `run_demo.bat` tells you
 exactly what to fix instead of just failing silently.
 
+> **UI redesign planned.** The current UI is being replaced by a turn-based jugalbandi stage
+> (recorded intro → AI answers → you reply → AI answers, with sampled sitar/bansuri/tanpura).
+> Plan: [`docs/imrpovedui.md`](docs/imrpovedui.md). Audio sources and licences:
+> [`docs/AUDIO_SOURCES.md`](docs/AUDIO_SOURCES.md).
+
 ## Dev quickstart (code changes, not training)
 
 ```bash
 python -m venv venv
 venv/Scripts/activate          # Windows; source venv/bin/activate on Linux/Mac
 pip install -r requirements.txt
-pytest -q                      # 120 tests, no GPU needed
+pytest -q                      # 134 tests, no GPU needed
 python -m eval.evaluate --all  # re-run the four scripted baselines
 ```
 
