@@ -55,8 +55,17 @@ class JugalbandiEnv(RaagaEnv):
             low=0.0, high=1.0, shape=(22,), dtype=np.float32
         )
 
-        self.call_phrase: list[int] = [0, 0, 0, 0]
+        # Empty, not [0,0,0,0]: a call of all-Sa is a real, legal call and
+        # must be distinguishable from "no call has been submitted yet".
+        # [0,0,0,0] used to be the default, which is truthy in Python, so
+        # reward.py's `if call_phrase:` guard on the whole jugalbandi layer
+        # fired on every single step of every training episode — training
+        # never calls set_call() (see train_grpo.py), so the model was being
+        # scored the entire time against a phantom call it never received
+        # (ML retrain finding, 2026-10; see docs/RETRAIN_PLAN.md).
+        self.call_phrase: list[int] = []
         self.call_tension: float = 0.0
+        self.call_echoed: bool = False
         self.steps_until_call = CALL_EVERY
 
     # ------------------------------------------------------------------
@@ -68,8 +77,9 @@ class JugalbandiEnv(RaagaEnv):
         self.drift = DriftManager(self.drift.dial)
         self.raga_name = self.drift.active_raga_name
         self.raga = self.drift.active_raga
-        self.call_phrase = [0, 0, 0, 0]
+        self.call_phrase = []
         self.call_tension = 0.0
+        self.call_echoed = False
         self.steps_until_call = CALL_EVERY
         return self._get_obs(), info
 
@@ -93,7 +103,10 @@ class JugalbandiEnv(RaagaEnv):
             grace_factor=GRACE_PENALTY_FACTOR if self.drift.in_grace_period else 1.0,
             call_phrase=self.call_phrase,
             call_tension=self.call_tension,
+            call_echoed=self.call_echoed,
         )
+        if "call_echo" in breakdown:
+            self.call_echoed = True
 
         # note_history is passed *before* this note is appended, matching
         # ragas.match_pakad's contract (see DriftManager.step).
@@ -147,11 +160,14 @@ class JugalbandiEnv(RaagaEnv):
         return switched
 
     def set_call(self, notes: list[int]) -> None:
-        """Human submits a 4-note call phrase."""
+        """Human submits a 4-note call phrase (swara values 0-11, matching
+        obs[8:12]'s n/11.0 encoding — no register, calls carry no octave)."""
         self.call_phrase = notes[:4]
         # Tension: how far from vadi the last call note lands
         last = notes[-1] if notes else 0
         self.call_tension = abs(last - self.raga["vadi"]) / 11.0
+        # A new call is a fresh chance to answer it.
+        self.call_echoed = False
 
     # ------------------------------------------------------------------
     # State serialisation (extends RaagaEnv.get_state/set_state with drift
@@ -163,6 +179,7 @@ class JugalbandiEnv(RaagaEnv):
         state["drift"] = self.drift.get_state()
         state["call_phrase"] = list(self.call_phrase)
         state["call_tension"] = self.call_tension
+        state["call_echoed"] = self.call_echoed
         state["steps_until_call"] = self.steps_until_call
         return state
 
@@ -173,6 +190,9 @@ class JugalbandiEnv(RaagaEnv):
         self.raga = self.drift.active_raga
         self.call_phrase = list(state["call_phrase"])
         self.call_tension = state["call_tension"]
+        # .get(): tolerates state_json saved before call_echoed existed
+        # (Phase 0.4 snapshots predating the ML retrain fix).
+        self.call_echoed = state.get("call_echoed", False)
         self.steps_until_call = state["steps_until_call"]
 
     # ------------------------------------------------------------------

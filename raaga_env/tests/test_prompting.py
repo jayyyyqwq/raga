@@ -54,8 +54,47 @@ def test_shared_fields_present_in_every_arm():
         prompt = render_prompt(obs, arm=arm, tala_pos=env.tala_position, raga=raga)
         assert "Tala position" in prompt
         assert "Last 4 notes" in prompt
+        assert "Partner's call phrase" in prompt
         assert "Pakad drought" in prompt
         assert "Vadi drought" in prompt
+
+
+# ── ML retrain fix (2026-10, docs/RETRAIN_PLAN.md): the call phrase itself
+# must reach the prompt text, in every arm — this used to never render at
+# all, regardless of arm, which is why the model was deaf to any call ──────
+
+def test_call_phrase_renders_as_none_yet_before_any_call():
+    obs, env = _mid_drift_obs()
+    for arm in Arm:
+        raga = "bhairav" if arm is Arm.ORACLE else None
+        prompt = render_prompt(obs, arm=arm, tala_pos=env.tala_position, raga=raga)
+        assert "Partner's call phrase: none yet" in prompt
+
+
+def test_call_phrase_notes_render_once_a_call_is_submitted():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.set_call([0, 4, 7, 11])  # Sa Ga Pa Ni
+    obs = env._get_obs().tolist()
+    for arm in Arm:
+        raga = "yaman" if arm is Arm.ORACLE else None
+        prompt = render_prompt(obs, arm=arm, tala_pos=env.tala_position, raga=raga)
+        assert "Partner's call phrase: Sa, Ga, Pa, Ni" in prompt
+        assert "none yet" not in prompt
+
+
+def test_call_phrase_present_does_not_reintroduce_a_raga_leak():
+    """Mirrors test_feedback_present_does_not_reintroduce_a_raga_leak — a
+    live call phrase is new text in the prompt and must not accidentally
+    carry a raga name or dial/grace/switch word into DIAL/HIDDEN."""
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.set_call([0, 4, 7, 11])
+    obs = env._get_obs().tolist()
+    for arm, forbidden_words in FORBIDDEN_BY_ARM.items():
+        prompt = render_prompt(obs, arm=arm, tala_pos=env.tala_position).lower()
+        for word in forbidden_words:
+            assert word not in prompt, f"{arm} + call leaked {word!r}:\n{prompt}"
 
 
 def test_feedback_rendered_when_present_regardless_of_arm():

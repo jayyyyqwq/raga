@@ -35,12 +35,21 @@ def compute_reward(
     grace_factor: float = 1.0,       # 0.2 during drift grace period
     call_phrase: list[int] | None = None,
     call_tension: float = 0.0,
+    call_echoed: bool = False,
 ) -> tuple[float, dict]:
     """
     Returns (total_reward, breakdown_dict).
 
     grace_factor: multiply hard penalties by this during grace period.
-    call_phrase:  human's last 4-note call; enables jugalbandi rewards.
+    call_phrase:  human's last 4-note call (swara 0-11); enables jugalbandi
+                  rewards. Empty/None means no call has been submitted yet —
+                  the whole LAYER 4 block is gated on this being truthy, so
+                  an un-called episode must never pass [0,0,0,0] (that's a
+                  real, legal call) as a stand-in for "no call" (ML retrain
+                  finding; see jugalbandi_env.py's call_phrase comment).
+    call_echoed:  whether this call has already earned its "echo" bonus
+                  (caller tracks this — JugalbandiEnv.call_echoed — so the
+                  bonus fires at most once per call, not once per step).
     """
     breakdown: dict[str, float] = {}
     swara = note % 12
@@ -134,6 +143,16 @@ def compute_reward(
             if direction != 0 and direction != call_dir:
                 breakdown["direction_contrast"] = 0.3
                 reward += 0.3
+
+        # Echo: landing on the swara the human's call just ended on is the
+        # simplest, most legible form of "the AI answered you" — it's also
+        # what the UI's echo-arc visualisation (docs/imrpovedui.md §4.6)
+        # draws an arc for. Gated to once per call (call_echoed) so it can't
+        # be farmed by repeating that one swara — the existing repetition
+        # penalty (-0.3 after 3 consecutive same-swara notes) backs this up.
+        if not call_echoed and swara == call_phrase[-1]:
+            breakdown["call_echo"] = 0.4
+            reward += 0.4
 
     breakdown["total"] = reward
     return reward, breakdown

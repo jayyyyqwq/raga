@@ -66,6 +66,46 @@ def test_jugalbandi_direction_contrast():
     assert "direction_contrast" in b
 
 
+# ── ML retrain fix (2026-10, docs/RETRAIN_PLAN.md): LAYER 4 must be fully
+# inert without a real call, and the new call_echo bonus must be bounded ───
+
+def test_jugalbandi_layer_inactive_without_a_call():
+    """call_phrase=[] ('no call yet') must not trigger ANY layer-4 term,
+    even one that would otherwise match — this is the exact bug that let
+    [0,0,0,0] (a truthy phantom default) corrupt every training episode."""
+    r, b = compute_reward(
+        note=4,  # vadi — would trigger tension_resolve/call_echo if a call were live
+        **{**BASE, "call_phrase": [], "call_tension": 0.9},
+    )
+    assert "tension_resolve" not in b
+    assert "direction_contrast" not in b
+    assert "call_echo" not in b
+
+
+def test_call_echo_fires_when_note_matches_the_calls_last_swara():
+    r, b = compute_reward(
+        note=11,  # Ni
+        **{**BASE, "call_phrase": [0, 2, 4, 11], "call_echoed": False},
+    )
+    assert b["call_echo"] == 0.4
+
+
+def test_call_echo_does_not_fire_on_a_mismatched_swara():
+    r, b = compute_reward(
+        note=4,  # Ga != call's last note (Ni)
+        **{**BASE, "call_phrase": [0, 2, 4, 11], "call_echoed": False},
+    )
+    assert "call_echo" not in b
+
+
+def test_call_echo_fires_at_most_once_per_call():
+    r, b = compute_reward(
+        note=11,
+        **{**BASE, "call_phrase": [0, 2, 4, 11], "call_echoed": True},
+    )
+    assert "call_echo" not in b
+
+
 # ── F11 fix (Phase 5.1): drought penalties are floored, never unbounded ────
 
 def test_vadi_drought_penalty_unfloored_below_the_cap():

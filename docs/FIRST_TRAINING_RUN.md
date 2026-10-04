@@ -3,6 +3,13 @@
 Plain-language companion to the first completed GRPO run. For the full research design behind
 *why* any of this is set up this way, see `docs/EXPERIMENT_PLAN.md` and `docs/summary.md`.
 
+> **2026-10 update:** this run's adapter (`jugalbandi-grpo-hidden-v1`) was trained before a bug fix
+> described in [`RETRAIN_PLAN.md`](RETRAIN_PLAN.md) — the call phrase never reached the model's
+> prompt, in any arm, and training never submitted a call at all. Everything below is still an
+> accurate account of that run. It is **not** a call-and-response result: this model is a solo
+> raga improviser with drift adaptation, nothing more. The retrain that fixes this hasn't been run
+> yet.
+
 ## What was trained
 
 - **Arm:** `HIDDEN` — the model gets no raga name, no dial value, and no explicit signal that a

@@ -20,6 +20,7 @@ from eval.policies import random_valid_policy
 from eval.rollout import rollout_from_state
 from raaga_env.jugalbandi_env import JugalbandiEnv
 from raaga_env.prompting import Arm
+from raaga_env.ragas import RAGAS
 from training.train_grpo import (
     DRIFT_WINDOW,
     EPISODE_LENGTH,
@@ -28,6 +29,7 @@ from training.train_grpo import (
     STEP_PARSE_FAILURE_PENALTY,
     build_dataset,
     make_step_reward_fn,
+    sample_call_phrase,
     sample_drift_schedule,
 )
 
@@ -93,6 +95,51 @@ def test_build_dataset_oracle_arm_names_the_opening_raga():
     rows = build_dataset(10, Arm.ORACLE, rng)
     for row in rows:
         assert ("yaman" in row["prompt"].lower()) or ("bhairav" in row["prompt"].lower())
+
+
+# ── ML retrain fix (2026-10, docs/RETRAIN_PLAN.md): build_dataset() must
+# actually exercise the call-response path, not just the drift path ────────
+
+def test_sample_call_phrase_is_raga_valid():
+    rng = random.Random(0)
+    yaman = RAGAS["yaman"]
+    for _ in range(50):
+        phrase = sample_call_phrase(yaman, rng)
+        assert len(phrase) == 4
+        assert all(swara in yaman["valid_notes"] for swara in phrase)
+
+
+def test_build_dataset_some_snapshots_carry_a_live_call():
+    """CALL_EVERY=8, so any snapshot taken at step_count >= 8 should have
+    had at least one call submitted by then (first call_requested fires at
+    step 8 — see JugalbandiEnv.CALL_EVERY)."""
+    rng = random.Random(4)
+    rows = build_dataset(300, Arm.HIDDEN, rng)
+    late_rows = [r for r in rows if json.loads(r["state_json"])["step_count"] >= 8]
+    assert late_rows, "need at least one snapshot taken after the first call_requested"
+    with_call = [r for r in late_rows if json.loads(r["state_json"])["call_phrase"]]
+    assert with_call, "no snapshot after step 8 carried a live call — injection isn't firing"
+
+    for row in with_call:
+        assert "Partner's call phrase: none yet" not in row["prompt"]
+        assert "Partner's call phrase:" in row["prompt"]
+
+
+def test_build_dataset_hidden_arm_call_injection_does_not_leak_raga_name():
+    """Extends the leak-safety guarantee (test_build_dataset_produces_
+    expected_columns) to rows where a call phrase is actually present in
+    the prompt — the new text path this fix adds."""
+    rng = random.Random(5)
+    rows = build_dataset(300, Arm.HIDDEN, rng)
+    with_call = [
+        r for r in rows
+        if "Partner's call phrase: none yet" not in r["prompt"]
+    ]
+    assert with_call
+    for row in with_call:
+        prompt_lower = row["prompt"].lower()
+        for word in ("yaman", "bhairav", "grace", "dial", "switch"):
+            assert word not in prompt_lower, f"leaked {word!r}:\n{row['prompt']}"
 
 
 # ── 2.3/3.2 acceptance: step_reward() must agree with a direct hand-replay ──

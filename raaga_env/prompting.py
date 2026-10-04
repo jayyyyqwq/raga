@@ -73,6 +73,24 @@ def _note_name_from_obs(obs: list[float], slot: int) -> str:
     return note_name(note_idx, dur_idx)
 
 
+# Call-phrase notes carry no register (JugalbandiEnv.set_call's contract is
+# swara 0-11, not absolute pitch — see its docstring), so they're rendered
+# with bare swara names, never the ṉ-prefixed mandra forms NOTE_NAMES also
+# holds for absolute pitches 0-11.
+SWARA_NAMES = NOTE_NAMES[12:]
+
+
+def _call_phrase_from_obs(obs: list[float]) -> list[int]:
+    """Recovers the 4 call-phrase swaras JugalbandiEnv._get_obs() packed
+    into obs[8:12] as n/11.0. All four decoding to 0 (Sa) is ambiguous with
+    "no call yet" — both encode identically, since that's also
+    JugalbandiEnv's "no call" sentinel (ML retrain finding, 2026-10; see
+    docs/RETRAIN_PLAN.md). Accepted: a real call of four Sa's is a
+    vanishingly unlikely edge case next to the alternative of growing the
+    22-dim observation space for an explicit "call active" flag."""
+    return [round(obs[8 + i] * 11) for i in range(4)]
+
+
 def _context_lines(
     obs: list[float],
     *,
@@ -108,6 +126,22 @@ def _context_lines(
     last_notes = [_note_name_from_obs(obs, i) for i in range(4)]
     lines.append(f"Tala position: beat {tala_pos}/16")
     lines.append(f"Last 4 notes: {', '.join(last_notes)}")
+
+    # Call phrase: musical input, not a rule signal, so it renders in every
+    # arm including HIDDEN (ML retrain fix — it used to not render at all,
+    # in any arm; see docs/RETRAIN_PLAN.md). Caveat documented there: because
+    # the call is generated raga-valid (training) or genuinely raga-valid
+    # (a real human partner), its note choice is itself a soft, implicit
+    # signal about the active raga — unlike ORACLE's explicit raga name, it
+    # has to be inferred from which swaras appear, so HIDDEN's "nothing is
+    # named in words" guarantee still holds, but its practical difficulty is
+    # not quite as absolute as before this field existed.
+    call_notes = _call_phrase_from_obs(obs)
+    if any(call_notes):
+        call_names = ", ".join(SWARA_NAMES[n] for n in call_notes)
+        lines.append(f"Partner's call phrase: {call_names}")
+    else:
+        lines.append("Partner's call phrase: none yet")
     lines.append(f"Human call tension: {tension:.2f} (how unresolved their phrase was)")
     lines.append(f"Pakad drought: {pakad_drought:.2f} (0=just played a phrase, 1=very long since last phrase)")
     lines.append(f"Vadi drought: {vadi_drought:.2f} (0=vadi just played, 1=long since)")

@@ -114,3 +114,47 @@ def test_set_call_updates_tension():
     env.reset()
     env.set_call([2, 6, 9, 11])   # ends on Ni (far from Ga, vadi of Yaman)
     assert env.call_tension > 0.0
+
+
+# ── ML retrain fix (2026-10, docs/RETRAIN_PLAN.md): call_phrase defaults to
+# "no call yet", distinguishably from a real (even all-Sa) call ────────────
+
+def test_fresh_env_has_no_call_phrase():
+    env = JugalbandiEnv()
+    env.reset()
+    assert env.call_phrase == []
+    assert env.call_tension == 0.0
+    assert env.call_echoed is False
+
+
+def test_set_call_resets_call_echoed():
+    env = JugalbandiEnv()
+    env.reset()
+    env.call_echoed = True
+    env.set_call([0, 2, 4, 7])
+    assert env.call_echoed is False
+
+
+def test_state_round_trip_preserves_call_echoed():
+    env = JugalbandiEnv()
+    env.reset()
+    env.set_call([0, 2, 4, 7])
+    env.call_echoed = True
+    state = env.get_state()
+
+    restored = JugalbandiEnv()
+    restored.set_state(state)
+    assert restored.call_echoed is True
+    assert restored.call_phrase == [0, 2, 4, 7]
+
+
+def test_set_state_tolerates_snapshots_without_call_echoed():
+    """state_json produced before this fix existed won't have the key."""
+    env = JugalbandiEnv()
+    env.reset()
+    state = env.get_state()
+    del state["call_echoed"]
+
+    restored = JugalbandiEnv()
+    restored.set_state(state)  # must not raise KeyError
+    assert restored.call_echoed is False
