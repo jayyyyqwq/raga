@@ -9,6 +9,15 @@
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@7.4.3/+esm";
 import * as Tone from "https://cdn.jsdelivr.net/npm/tone@15.1.22/+esm";
 
+// PIXI.Text rasterizes to a bitmap texture at PIXI.settings.RESOLUTION
+// (defaults to 1), entirely independent of the Application's own renderer
+// resolution set below — on any HiDPI screen that texture then gets
+// stretched across more physical pixels than it has data for, and every
+// label on the stage (swara names, escalation pills, the whole UI's text)
+// renders blurry. Must be set before any Text is constructed — River's
+// labels are built as soon as init() creates it, so this runs first.
+PIXI.settings.RESOLUTION = window.devicePixelRatio || 1;
+
 import { EnvClient } from "./env_client.js";
 import { Voice } from "./audio/voices.js";
 import { Drone } from "./audio/drone.js";

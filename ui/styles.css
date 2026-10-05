@@ -76,7 +76,19 @@ h1 {
   border: 1px solid var(--border);
   overflow: hidden;
 }
-.stage-host canvas { display: block; max-width: 100%; height: auto; }
+/* width/height set to exact CSS pixels (not height:auto) so the canvas's
+   displayed size always matches what PIXI.Application was actually told to
+   render at (app.js's STAGE_WIDTH/STAGE_HEIGHT) — letting height recompute
+   from a shrunk width could drift from Pixi's own resolution scaling and
+   reintroduce blur. aspect-ratio keeps it proportional if max-width ever
+   does shrink it on a narrow window. */
+.stage-host canvas {
+  display: block;
+  width: 880px;
+  height: 620px;
+  max-width: 100%;
+  aspect-ratio: 880 / 620;
+}
 
 .escalation-row {
   display: flex;
