@@ -49,4 +49,11 @@ def compute_fingerprint() -> dict:
         "eval_episodes_hash": _hash_file(REPO_ROOT / "eval" / "episodes.py"),
         "metrics_hash": _hash_file(REPO_ROOT / "eval" / "metrics.py"),
         "policies_hash": _hash_file(REPO_ROOT / "eval" / "policies.py"),
+        # Added 2026-10 when rollout.py gained call-phrase injection
+        # (eval.rollout.rollout()'s call_phrase_fn) — a behaviour change to
+        # the harness itself that none of the fields above would have
+        # caught, since rollout.py/evaluate.py weren't hashed. A silent gap
+        # in exactly the mechanism this function exists to provide.
+        "rollout_hash": _hash_file(REPO_ROOT / "eval" / "rollout.py"),
+        "evaluate_hash": _hash_file(REPO_ROOT / "eval" / "evaluate.py"),
     }

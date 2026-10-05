@@ -4,6 +4,7 @@ import random
 from eval.metrics import (
     GRACE_PERIOD_STEPS,
     adaptation_success_rate_at_k,
+    call_echo_rate,
     compute_all_metrics,
     drift_adaptation_speed,
     jugalbandi_coherence,
@@ -13,7 +14,18 @@ from eval.metrics import (
     valid_raga_adherence,
 )
 from eval.policies import random_valid_policy, safe_set_cycle_policy, scripted_oracle_policy
-from eval.rollout import DriftSchedule, rollout
+from eval.rollout import DriftSchedule, StepRecord, Trajectory, rollout
+
+
+def _step(reward_breakdown: dict, *, call_requested: bool = False) -> StepRecord:
+    """A hand-built StepRecord for testing a metric formula in isolation,
+    without needing the full env/reward pipeline to cooperate (direction-
+    sensitivity, raga validity, etc. make it hard to reliably force a
+    specific reward_breakdown key through a real rollout)."""
+    return StepRecord(
+        step=0, observation=(0.0,) * 22, action=0, reward=0.0,
+        reward_breakdown=reward_breakdown, info={"call_requested": call_requested},
+    )
 
 
 def _switched_trajectory(switch_step: int = 20, policy=None, seed: int = 0):
@@ -130,6 +142,36 @@ def test_jugalbandi_coherence_is_nan_with_no_call_events():
     traj = rollout(lambda o, i: 12, seed=0, initial_dial=0.0, episode_length=3)
     result = jugalbandi_coherence([traj])
     assert result != result  # NaN != NaN
+
+
+def test_jugalbandi_coherence_includes_call_echo():
+    """call_echo (added by the 2026-10 ML retrain fix, docs/RETRAIN_PLAN.md)
+    must count toward jugalbandi_coherence same as the two original terms —
+    this is the regression test for that fix under-reporting it."""
+    traj = Trajectory(
+        seed=0, arm=None, total_reward=0.0,
+        steps=(_step({}, call_requested=True), _step({"call_echo": 0.4})),
+    )
+    assert jugalbandi_coherence([traj]) == 0.4
+
+
+def test_call_echo_rate_is_nan_with_no_call_events():
+    traj = Trajectory(seed=0, arm=None, total_reward=0.0, steps=(_step({}),))
+    result = call_echo_rate([traj])
+    assert result != result  # NaN != NaN
+
+
+def test_call_echo_rate_counts_fraction_of_calls_actually_echoed():
+    traj = Trajectory(
+        seed=0, arm=None, total_reward=0.0,
+        steps=(
+            _step({}, call_requested=True),
+            _step({"call_echo": 0.4}),   # 1st call: echoed
+            _step({}, call_requested=True),
+            _step({}),                    # 2nd call: not echoed
+        ),
+    )
+    assert call_echo_rate([traj]) == 0.5
 
 
 def test_safe_set_occupancy_is_one_for_safe_set_cycle_policy():

@@ -175,10 +175,13 @@ def pakad_rate(trajectories: list[Trajectory]) -> float:
 def jugalbandi_coherence(trajectories: list[Trajectory]) -> float:
     """Average jugalbandi (call-response) reward per call-response pair.
     The jugalbandi reward layer (reward.py) is tension_resolve +
-    direction_contrast; a "call-response pair" is one human call phrase
-    (info["call_requested"] fires every CALL_EVERY steps) and the agent's
-    response to it."""
-    jugalbandi_keys = ("tension_resolve", "direction_contrast")
+    direction_contrast + call_echo (the last added by the 2026-10 ML
+    retrain fix, docs/RETRAIN_PLAN.md — call_echo didn't exist when this
+    function was first written, and this tuple silently not including it
+    would have under-reported exactly the mechanic that fix was for). A
+    "call-response pair" is one human call phrase (info["call_requested"]
+    fires every CALL_EVERY steps) and the agent's response to it."""
+    jugalbandi_keys = ("tension_resolve", "direction_contrast", "call_echo")
     total_jugalbandi_reward = sum(
         s.reward_breakdown.get(key, 0.0)
         for t in trajectories
@@ -189,6 +192,23 @@ def jugalbandi_coherence(trajectories: list[Trajectory]) -> float:
         1 for t in trajectories for s in t.steps if s.info.get("call_requested")
     )
     return total_jugalbandi_reward / total_call_events if total_call_events else float("nan")
+
+
+def call_echo_rate(trajectories: list[Trajectory]) -> float:
+    """Fraction of call-response pairs where the agent landed on the
+    partner's last call note at least once (reward.py's call_echo bonus,
+    capped to fire at most once per call — JugalbandiEnv.call_echoed) — a
+    plainer, more directly interpretable number than jugalbandi_coherence's
+    reward average: "how often did it actually echo you", 0 to 1."""
+    total_call_events = sum(
+        1 for t in trajectories for s in t.steps if s.info.get("call_requested")
+    )
+    if not total_call_events:
+        return float("nan")
+    total_echoes = sum(
+        1 for t in trajectories for s in t.steps if "call_echo" in s.reward_breakdown
+    )
+    return total_echoes / total_call_events
 
 
 def action_validity_rate(n_valid: int, n_total: int) -> float:
@@ -226,6 +246,7 @@ class MetricReport:
     post_switch_violation_decay: dict[int, float]
     pakad_rate: float
     jugalbandi_coherence: float
+    call_echo_rate: float
     safe_set_occupancy: float
     action_validity_rate: float  # 1.0 unless the caller overrides it
 
@@ -252,6 +273,7 @@ class MetricReport:
             },
             "pakad_rate": self.pakad_rate,
             "jugalbandi_coherence": self.jugalbandi_coherence,
+            "call_echo_rate": self.call_echo_rate,
             "safe_set_occupancy": self.safe_set_occupancy,
             "action_validity_rate": self.action_validity_rate,
         }
@@ -274,6 +296,7 @@ def compute_all_metrics(
         post_switch_violation_decay=post_switch_violation_decay(trajectories),
         pakad_rate=pakad_rate(trajectories),
         jugalbandi_coherence=jugalbandi_coherence(trajectories),
+        call_echo_rate=call_echo_rate(trajectories),
         safe_set_occupancy=safe_set_occupancy(trajectories),
         action_validity_rate=action_validity_rate_override,
     )

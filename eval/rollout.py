@@ -9,12 +9,20 @@
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Callable, Protocol
 
 import numpy as np
 
 from raaga_env.jugalbandi_env import JugalbandiEnv
+
+# Type of eval.policies.sample_call_phrase, injected rather than imported
+# directly — eval.policies imports DriftSchedule FROM this module, so a
+# top-level import the other way would be circular. This module stays
+# knowing nothing about *how* a call phrase gets generated, same as it
+# already knows nothing about prompts/arms/models for Policy itself.
+CallPhraseFn = Callable[[dict, random.Random], list[int]]
 
 
 class Policy(Protocol):
@@ -71,9 +79,21 @@ def _run_steps(
     n_steps: int,
     step_offset: int,
     drift_schedule_by_step: dict[int, float] | None = None,
+    call_phrase_fn: CallPhraseFn | None = None,
+    call_rng: random.Random | None = None,
 ) -> list[StepRecord]:
     """Shared step loop for rollout() and rollout_from_state() — the one
-    place a StepRecord gets built, so both entry points score identically."""
+    place a StepRecord gets built, so both entry points score identically.
+
+    call_phrase_fn/call_rng: when both given, submits a fresh call via
+    env.set_call() on the env's own CALL_EVERY cadence (info["call_requested"]
+    firing after env.step()) — same ordering as train_grpo.py's build_dataset
+    (break on terminated first, then check call_requested). Left as None by
+    rollout_from_state() deliberately: that function continues an already-
+    in-progress training snapshot for a short Monte-Carlo horizon, and must
+    not start injecting calls that build_dataset() itself didn't put there —
+    changing what call is active mid-continuation would make per-step
+    training reward disagree with a hand-replay of the same state (Phase 0.3)."""
     schedule = drift_schedule_by_step or {}
     steps: list[StepRecord] = []
     for i in range(n_steps):
@@ -97,6 +117,10 @@ def _run_steps(
         )
         if terminated or truncated:
             break
+
+        if call_phrase_fn is not None and info.get("call_requested"):
+            env.set_call(call_phrase_fn(env.raga, call_rng))
+            obs = env._get_obs()
     return steps
 
 
@@ -108,20 +132,35 @@ def rollout(
     arm: str | None = None,
     episode_length: int = 64,
     initial_dial: float = 0.0,
+    call_phrase_fn: CallPhraseFn | None = None,
 ) -> Trajectory:
     """Run one full episode in-process, from a fresh reset, and return every
     step's observation, action, reward and breakdown.
 
+    call_phrase_fn: pass eval.policies.sample_call_phrase (or compatible) to
+    have this episode submit a fresh call on the env's own CALL_EVERY cadence
+    — without it, call_phrase stays empty all episode and every jugalbandi
+    metric (eval/metrics.py's jugalbandi_coherence, call_echo_rate) is
+    permanently undefined for whatever this call produces, same as every
+    policy run through this harness before this parameter existed. Omit it
+    deliberately for tests that don't care about call-response at all.
+
     Determinism contract: for a fixed seed, a fixed drift_schedule and a
     deterministic policy, two calls return bit-identical trajectories. The
     env's own randomness (gymnasium's seeded np_random) is the only source of
-    stochasticity, and it is seeded here.
+    *environment* stochasticity, and it is seeded here. If call_phrase_fn is
+    given, the call sequence is a second, independent but equally
+    seed-deterministic source — seeded from `seed` too (random.Random(seed),
+    a separate instance from gymnasium's np_random, so it doesn't interact
+    with it) — so the determinism contract still holds exactly.
     """
     env = JugalbandiEnv(initial_dial=initial_dial, episode_length=episode_length)
     obs, info = env.reset(seed=seed)
     steps = _run_steps(
         env, policy, obs=obs, info=info, n_steps=episode_length, step_offset=0,
         drift_schedule_by_step=drift_schedule.as_dict() if drift_schedule else None,
+        call_phrase_fn=call_phrase_fn,
+        call_rng=random.Random(seed) if call_phrase_fn is not None else None,
     )
     total_reward = sum(s.reward for s in steps)
     switch_steps = tuple(step for step, _ in drift_schedule.switches) if drift_schedule else ()

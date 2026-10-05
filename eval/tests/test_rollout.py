@@ -59,6 +59,71 @@ def test_trajectory_switch_steps_empty_when_no_schedule():
     assert traj.switch_steps == ()
 
 
+# ── call_phrase_fn (eval harness used to never call env.set_call() at all —
+# jugalbandi_coherence/call_echo_rate were silently NaN/0 for every policy
+# ever run through this module) ─────────────────────────────────────────
+
+_JUGALBANDI_KEYS = {"tension_resolve", "direction_contrast", "call_echo"}
+
+
+def _fixed_call_phrase(raga, rng):
+    return [0, 2, 4, 7]  # fixed, ignores raga/rng — just needs to be raga-valid
+
+
+def _random_call_phrase(raga, rng):
+    return [rng.choice(sorted(raga["valid_notes"])) for _ in range(4)]
+
+
+def test_rollout_without_call_phrase_fn_never_submits_a_call():
+    """Default/backward-compatible behaviour: omitting call_phrase_fn (every
+    call site before this parameter existed) must still never call
+    env.set_call() — no jugalbandi reward term can appear without a call."""
+    actions = [0, 4, 7, 11]
+    traj = rollout(_cycling_policy(actions), seed=0, episode_length=32)
+    assert not any(_JUGALBANDI_KEYS & s.reward_breakdown.keys() for s in traj.steps)
+
+
+def test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence():
+    actions = [0, 2, 4, 7]  # Sa Re Ga Pa — stays in Yaman, no forbidden notes
+    traj = rollout(
+        _cycling_policy(actions), seed=0, episode_length=32, call_phrase_fn=_fixed_call_phrase,
+    )
+    # CALL_EVERY=8, so call_requested fires at step indices 7, 15, 23, 31 —
+    # by the next step after each, the call must be visible in the obs
+    # (obs[8:12] are the call-phrase slots, JugalbandiEnv's own encoding).
+    first_call_requested = next(s.step for s in traj.steps if s.info.get("call_requested"))
+    after = traj.steps[first_call_requested + 1]
+    assert any(after.observation[8:12]), "call phrase never reached obs after call_requested fired"
+
+
+def test_rollout_call_sequence_is_deterministic_for_the_same_seed():
+    actions = [0, 2, 4, 7]
+    traj_a = rollout(
+        _cycling_policy(actions), seed=5, episode_length=32, call_phrase_fn=_random_call_phrase,
+    )
+    traj_b = rollout(
+        _cycling_policy(actions), seed=5, episode_length=32, call_phrase_fn=_random_call_phrase,
+    )
+    assert traj_a.steps == traj_b.steps
+
+
+def test_rollout_from_state_never_submits_a_call_even_mid_episode():
+    """rollout_from_state() has no call_phrase_fn parameter at all — this
+    locks that in: continuing a training snapshot must never start
+    injecting calls build_dataset() itself didn't put there (eval/rollout.py's
+    _run_steps docstring)."""
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    for _ in range(10):
+        env.step(4)
+    snapshot = env.get_state()
+
+    traj = rollout_from_state(
+        _cycling_policy([2]), state=snapshot, episode_length=64, max_extra_steps=10,
+    )
+    assert not any(_JUGALBANDI_KEYS & s.reward_breakdown.keys() for s in traj.steps)
+
+
 # ── rollout_from_state (Phase 2.3 / Claim B: per-step scoring needs a way to
 # restart from a mid-episode snapshot instead of a fresh reset) ────────────
 

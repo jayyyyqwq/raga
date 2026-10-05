@@ -169,7 +169,13 @@ Some episodes never see a new pakad before they end — that's a **censored** ob
 
 ### 7.6 `jugalbandi_coherence` — responsiveness to the human's call
 
-**Plain language:** every 8 steps, a simulated "human" injects a short 4-note phrase, and the model gets extra reward for responding to it in a musically coherent way (e.g. resolving unresolved tension, or contrasting direction with what the human played). This metric averages that call-response reward across every one of those human "turns" in the evaluation set. It's the metric behind this project's secondary claim — that a rule-schema environment like this one produces genuinely more *interesting*, humanlike output than a plain JSON-schema-adherence task would.
+**Plain language:** every 8 steps, a simulated "human" injects a short 4-note phrase, and the model gets extra reward for responding to it in a musically coherent way (resolving unresolved tension, contrasting direction with what the human played, or — added 2026-10, see `RETRAIN_PLAN.md` — landing on the exact swara the human's phrase ended on). This metric averages that call-response reward across every one of those human "turns" in the evaluation set. It's the metric behind this project's secondary claim — that a rule-schema environment like this one produces genuinely more *interesting*, humanlike output than a plain JSON-schema-adherence task would.
+
+**2026-10 correction:** `eval.rollout.rollout()` never actually submitted a call before this date — `jugalbandi_coherence` was silently `NaN`/meaningless for every policy ever run through the eval harness, baselines included, regardless of how well a policy would have answered a real call. Fixed (`rollout()` gained a `call_phrase_fn` parameter; every call site in this harness now passes one). §8's table below is the first real data for this metric.
+
+### 7.6b `call_echo_rate` — a plainer companion to the above
+
+**Plain language:** out of every human "turn," what fraction did the policy land on the human's last note at least once? 0 to 1, more directly readable than `jugalbandi_coherence`'s reward average. **Read §8's baseline numbers before trusting any trained model's score here** — a policy that has no idea a call happened still echoes it some of the time by chance alone (a call's last note is one of roughly 7 valid swaras, and a policy gets 8 notes per turn to possibly land on it), and that chance floor turns out to be surprisingly high.
 
 ### 7.7 `action_validity_rate` — did the model even answer correctly?
 
@@ -183,20 +189,22 @@ Some episodes never see a new pakad before they end — that's a **censored** ob
 
 ## 8. What we've actually measured so far
 
-The four scripted baselines have been run for real, on the current codebase, **after** the F11 reward fix described below (`updatedplan.md` Phase 5.1 — see each file's own `fingerprint` field in `eval/results/*.json` for the exact commit and file hashes this run corresponds to; if that fingerprint doesn't match the current tree, the numbers below are stale and must be regenerated, not trusted, per `updatedplan.md` Phase 0.5).
+The four scripted baselines have been run for real, on the current codebase, **after** both the F11 reward fix (`updatedplan.md` Phase 5.1) and the 2026-10 fix that made `eval.rollout.rollout()` actually submit a call during an episode (§7.6's correction note — before this, `jugalbandi_coherence`/`call_echo_rate` were measuring nothing, for any policy) — see each file's own `fingerprint` field in `eval/results/*.json` for the exact commit and file hashes this run corresponds to; if that fingerprint doesn't match the current tree, the numbers below are stale and must be regenerated, not trusted, per `updatedplan.md` Phase 0.5.
 
-| Policy | mean reward | adherence (overall) | adaptation speed (median, censoring) | success@5/10/20 | pakad rate | safe-set occupancy |
-|---|---|---|---|---|---|---|
-| `random-uniform` | -68.58 | 0.875 | — , 99.5% censored | 0.0 / 0.0 / 0.0 | 0.005 | 0.333 |
-| `random-valid` | -37.41 | 1.000 | 20.0 steps, 99% censored | 0.005 / 0.005 / 0.005 | 0.025 | 0.562 |
-| `safe-set-cycle` | -22.34 | 1.000 | — , 100% censored | 0.0 / 0.0 / 0.0 | 0.000 | **1.000** |
-| `scripted-oracle` | -22.24 | 1.000 | 2.5 steps, 0% censored | 1.0 / 1.0 / 1.0 | 1.020 | 0.562 |
+| Policy | mean reward | adherence (overall) | adaptation speed (median, censoring) | success@5/10/20 | pakad rate | safe-set occupancy | jugalbandi coherence | call-echo rate |
+|---|---|---|---|---|---|---|---|---|
+| `random-uniform` | -67.17 | 0.875 | 35 steps, 99.5% censored | 0.0 / 0.0 / 0.0 | 0.005 | 0.333 | 0.426 | 0.419 |
+| `random-valid` | -35.26 | 1.000 | 20.0 steps, 99% censored | 0.005 / 0.005 / 0.005 | 0.025 | 0.562 | 0.709 | 0.611 |
+| `safe-set-cycle` | -25.20 | 1.000 | — , 100% censored | 0.0 / 0.0 / 0.0 | 0.000 | **1.000** | 0.823 | 0.481 |
+| `scripted-oracle` | -20.46 | 1.000 | 2.5 steps, 0% censored | 1.0 / 1.0 / 1.0 | 1.020 | 0.562 | 0.720 | 0.588 |
 
 A few things worth understanding about these numbers before any trained model enters the picture:
 
 **The drought-penalty floor (F11, Phase 5.1) is applied in these numbers.** Both `raaga_env/reward.py`'s drought penalties (for not playing the vadi, or not completing a pakad, recently enough) used to grow without limit — long enough neglect eventually cost *more* than an outright rule violation. They're now floored (vadi: -1.0, pakad: -0.5 per step), so neither can ever be worse than the mildest hard-rule penalty. An earlier version of this table, measured before that fix, is preserved in this document's git history for anyone who wants to see the before/after directly.
 
-**Every mean reward here is still negative**, including the ceiling policy. That's expected, not a leftover bug: the melodic-leap penalty (playing two notes too far apart) is still unbounded per step, and none of these four baselines are trying to play smoothly except `safe-set-cycle` by accident. The *ordering* is still what matters most: `scripted-oracle` (-22.24) narrowly beats `safe-set-cycle` (-22.34), which clearly beats `random-valid` (-37.41), which clearly beats `random-uniform` (-68.58).
+**Every mean reward here is still negative**, including the ceiling policy. That's expected, not a leftover bug: the melodic-leap penalty (playing two notes too far apart) is still unbounded per step, and none of these four baselines are trying to play smoothly except `safe-set-cycle` by accident. The *ordering* is still what matters most: `scripted-oracle` (-20.46) clearly beats `safe-set-cycle` (-25.20), which clearly beats `random-valid` (-35.26), which clearly beats `random-uniform` (-67.17).
+
+**Correction to an earlier version of this table's claim:** a prior version of these numbers (measured before the call-injection fix, when the jugalbandi reward layer never actually fired for any baseline) described the gap between `scripted-oracle` and `safe-set-cycle` as "narrow" (-22.24 vs -22.34) and called that the interesting open finding. With calls now actually happening, that gap is no longer narrow (-20.46 vs -25.20, a 4.74-point difference) — real drift adaptation is worth something after all, once the jugalbandi layer is actually contributing reward instead of sitting at zero the whole episode. The open question this raises instead: **`call_echo_rate` for a policy with zero awareness of the call is already 0.42-0.61** (chance alone, since a call's last note is one of ~7 valid swaras and a policy gets 8 notes per turn to land on it). A trained model's `call_echo_rate` only means something once it's clearly above this range — anything inside it is indistinguishable from not listening at all.
 
 **The interesting, still-open finding is how *narrow* the gap is between `scripted-oracle` and `safe-set-cycle`.** Before the F11 fix, `safe-set-cycle` (a policy that never adapts to drift at all, by construction) actually *beat* `random-valid` on reward, which was a visible symptom of the drought penalty being too harsh. After the fix, that specific distortion is gone — but a new, more concerning shape is visible instead: `scripted-oracle`, which adapts perfectly and immediately (2.5-step median, 0% censored, 100% success at every K), scores only marginally better than `safe-set-cycle`, which never adapts at all (100% censored, 0% success at every K) and occupies the exploit-flagging safe set 100% of the time. Genuine, fast, perfect drift adaptation is currently worth almost nothing in the reward function relative to the degenerate "never leave the safe four notes" strategy. This is exactly the shape of problem Phase 5.2/5.3's leave-one-out ablations and sensitivity sweep exist to investigate — the adaptation bonus (`+3.0`, fires once per switch) and the pakad-completion bonus may simply be too small relative to everything else in a 64-step episode to matter, and that is a hypothesis this document is now flagging, not a conclusion — the next honest step is Phase 5.2/5.3, not a bigger bonus applied by guesswork.
 
@@ -206,17 +214,26 @@ A few things worth understanding about these numbers before any trained model en
 
 ## 9. What's done, what's pending, what's still an open decision
 
-**Done, and verified by an automated test suite (currently 120 tests passing across the whole project):**
+**Done, and verified by an automated test suite (currently 151 tests passing across the whole project):**
 - The F11 drought-penalty fix (Phase 5.1) and the retightened reward bounds it enables
 - The fixed, shared 200-episode evaluation set (§6)
 - All four scripted baseline policies (§5) and their real, post-fix results (§8)
-- Every metric in §7, implemented once in `eval/metrics.py`
-- Result fingerprinting, so a stale result can never silently masquerade as current (§8's table)
+- Every metric in §7, implemented once in `eval/metrics.py`, including `call_echo_rate` (§7.6b)
+- The call-injection fix so the jugalbandi metrics actually measure something (§7.6's correction)
+- Result fingerprinting, so a stale result can never silently masquerade as current (§8's table) —
+  now also covers `eval/rollout.py` and `eval/evaluate.py` themselves, not just the reward/metric
+  definitions, after the call-injection fix above proved a harness-behaviour change could otherwise
+  go undetected by the fingerprint that exists specifically to catch this
+- `eval/llm_policy.py` + `eval/evaluate_llm.py`: the runner for a trained checkpoint this section
+  used to say didn't exist yet ("their runner lives with the training code once a checkpoint exists
+  to evaluate" — eval/evaluate.py's own module docstring). One now does; not yet run against a real
+  adapter (needs the GPU stack, same as training)
 - This document
 
 **Pending — needs an actual GPU, which this setup work did not have access to:**
 - `base-zeroshot`: needs `torch` + `transformers` installed and the base model downloaded
 - `grpo-ORACLE`, `grpo-DIAL`, `grpo-HIDDEN`: each needs a real training run via `training/train_grpo.py --arm {oracle,dial,hidden}`, on Colab, Kaggle, or a cloud GPU — see that script's module docstring and `training/train_grpo.ipynb` for the runnable notebook
+- Once a checkpoint exists: `python -m eval.evaluate_llm --adapter-repo ... --arm hidden --name grpo-hidden-v2` — the full 200-episode comparison against this section's baselines, the thing a single inference-check episode (`training/train_grpo.ipynb` Cell 8) was never meant to substitute for
 
 **Still an open decision, not this document's to make:**
 - **Compute source and seed count** (`updatedplan.md` §9 decision 3). The full design in §10 below assumes 5 training seeds per trained arm; if compute is constrained, this drops to 2–3 seeds, which is a real decision with a real cost (fewer seeds means less statistical power in §11) and needs to be made explicitly, not discovered by running out of GPU-hours partway through.

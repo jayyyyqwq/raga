@@ -12,6 +12,18 @@
 # Phase 4.1's other three named baselines: the absolute floor, the named
 # degenerate-policy detector (F13), and the ceiling that calibrates what
 # drift_adaptation_speed can physically be.
+#
+# sample_call_phrase is used the same two-places-one-definition way as
+# random_valid_policy above: by training (train_grpo.py's build_dataset,
+# which used to define its own copy — moved here 2026-10 once
+# eval.rollout.rollout() needed the exact same generator, see that
+# module's call_rng) and by eval.rollout.rollout(), which injects a call
+# every CALL_EVERY steps so jugalbandi_coherence/call_echo_rate
+# (eval/metrics.py) have anything to measure at all — eval.rollout never
+# called env.set_call() before this, which meant those two metrics were
+# silently NaN/0 for every policy ever run through the eval harness,
+# baselines included, regardless of how good a policy actually was at
+# answering a call.
 
 from __future__ import annotations
 
@@ -57,6 +69,30 @@ def random_valid_policy(rng: random.Random = random):
         return note + duration * 24
 
     return policy
+
+
+def sample_call_phrase(raga: dict, rng: random.Random = random) -> list[int]:
+    """A plausible human call phrase: 4 swaras drawn uniformly from the
+    currently-active raga's valid notes (same sampling approach as
+    random_valid_policy, minus register/duration — calls are swara-only,
+    see JugalbandiEnv.set_call's contract).
+
+    Deliberately raga-valid, not uniform over 0-11: a real human partner's
+    phrase is musically coherent too, and training/evaluating against
+    garbage calls (forbidden swaras with no raga-grammar meaning) would
+    reward treating the call as noise instead of as something to listen to.
+
+    Documented caveat (ML retrain finding, 2026-10; docs/RETRAIN_PLAN.md):
+    because this is raga-valid, the call phrase's note choices become a
+    soft, implicit signal about the active raga for every arm the call
+    renders in (raaga_env.prompting), including HIDDEN. HIDDEN's guarantee
+    is still "no raga name or dial value is ever written in words" — that's
+    unchanged and still enforced by test_prompting.py's leak tests — but it
+    is no longer a guarantee that *zero* information about the raga reaches
+    the prompt. Treated as acceptable and realistic (a real accompanist
+    gives exactly this kind of implicit signal) rather than worked around.
+    """
+    return [rng.choice(sorted(raga["valid_notes"])) for _ in range(4)]
 
 
 def safe_set_cycle_policy():

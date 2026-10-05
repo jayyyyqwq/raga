@@ -16,11 +16,10 @@ import random
 
 import pytest
 
-from eval.policies import random_valid_policy
+from eval.policies import random_valid_policy, sample_call_phrase
 from eval.rollout import rollout_from_state
 from raaga_env.jugalbandi_env import JugalbandiEnv
 from raaga_env.prompting import Arm
-from raaga_env.ragas import RAGAS
 from training.train_grpo import (
     DRIFT_WINDOW,
     EPISODE_LENGTH,
@@ -29,7 +28,6 @@ from training.train_grpo import (
     STEP_PARSE_FAILURE_PENALTY,
     build_dataset,
     make_step_reward_fn,
-    sample_call_phrase,
     sample_drift_schedule,
 )
 
@@ -99,15 +97,6 @@ def test_build_dataset_oracle_arm_names_the_opening_raga():
 
 # ── ML retrain fix (2026-10, docs/RETRAIN_PLAN.md): build_dataset() must
 # actually exercise the call-response path, not just the drift path ────────
-
-def test_sample_call_phrase_is_raga_valid():
-    rng = random.Random(0)
-    yaman = RAGAS["yaman"]
-    for _ in range(50):
-        phrase = sample_call_phrase(yaman, rng)
-        assert len(phrase) == 4
-        assert all(swara in yaman["valid_notes"] for swara in phrase)
-
 
 def test_build_dataset_some_snapshots_carry_a_live_call():
     """CALL_EVERY=8, so any snapshot taken at step_count >= 8 should have

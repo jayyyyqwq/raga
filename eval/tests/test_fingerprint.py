@@ -11,6 +11,8 @@ def test_fingerprint_has_expected_keys():
         "eval_episodes_hash",
         "metrics_hash",
         "policies_hash",
+        "rollout_hash",
+        "evaluate_hash",
     }
 
 

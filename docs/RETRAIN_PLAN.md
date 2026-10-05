@@ -127,3 +127,51 @@ documented baseline in `FIRST_TRAINING_RUN.md`. A pilot run also saves under `-v
 overwritten by the final run under the same name — that's fine, nothing worth keeping from a 50-step
 pilot once it's told you what you needed to know. Only bump to `-v3` if you want to keep both a pilot
 and a final run's checkpoints side by side on purpose.
+
+## The pilot run (2026-10) — what it showed, and what it didn't
+
+A 50-step pilot ran clean end to end on the current dependency stack (unsloth 2026.9.14,
+transformers 5.5.0, torch 2.11.0 — materially newer than this project was last verified against,
+confirming the pilot-first advice above was worth having). Cell 8's inference check:
+
+```
+Steps completed: 64/64
+Episode return: -59.08
+Forbidden-note steps: 0/64
+Call-echo bonuses: 2 (times the model landed on the partner's last call note)
+```
+
+**What this is:** one improvised episode, same caveat `FIRST_TRAINING_RUN.md` already states for v1
+— a sanity check that the pipeline works, not a real evaluation. 50 steps is also a small fraction of
+v1's own 300, so nothing here should be read as "the fix made things worse" — this checkpoint is
+drastically less trained than v1 was, on top of now having a harder job (learning to use a call it
+never saw before).
+
+**What's actually informative:** the call-echo count, compared against a real baseline. A follow-up
+fix the same day found that `eval.rollout.rollout()` had never once submitted a call during an
+evaluation episode — `jugalbandi_coherence` had been silently `NaN` for every policy ever run through
+the harness. Fixed, and the four scripted baselines were re-run for real (§8 of
+`EXPERIMENT_PLAN.md` has the full table). The baselines' `call_echo_rate` — how often a policy with
+**zero** awareness of the call lands on it anyway, purely by chance (a call's last note is one of
+~7 valid swaras, 8 notes per turn to maybe land on it) — turned out to be **0.42 to 0.61**.
+
+The pilot's own rate: 2 echoes out of 7 calls in its one episode (`CALL_EVERY=8` over 64 steps) ≈
+**0.29** — below every baseline's chance floor, not above it. On one noisy episode from a 50-step
+checkpoint that's the wrong conclusion to draw hard lines from, but it's the opposite of evidence
+that the fix is already working, and worth watching for in the real run: if a properly-trained
+checkpoint's `call_echo_rate` isn't clearly above ~0.6, that's a sign the model still isn't using the
+call, not a sign the metric is broken.
+
+**The real way to answer this** — not from one episode, but from the same 200-episode set the
+baselines just ran on — now exists: `eval/evaluate_llm.py` (new, same day). Once a real (non-pilot)
+checkpoint exists:
+
+```bash
+python -m eval.evaluate_llm \
+    --adapter-repo /content/drive/MyDrive/jugalbandi/jugalbandi-grpo-hidden-v2/final \
+    --arm hidden --name grpo-hidden-v2
+```
+
+writes `eval/results/grpo-hidden-v2.json` in exactly the shape the four baseline files are in —
+directly comparable, same fingerprinting, same metrics, `call_echo_rate` included. That comparison,
+not a pasted Cell 8 output, is what a real "did the fix work" finding looks like.

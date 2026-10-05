@@ -11,14 +11,16 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
 ## Status
 
 - Environment, reward function, drift mechanic, prompting layer, HTTP server, and evaluation harness:
-  **built and tested** (137 tests, `pytest -q`).
+  **built and tested** (151 tests, `pytest -q`).
 - Four scripted baselines (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`):
   **run for real** — see `eval/results/`.
-- Trained model: **one `grpo-HIDDEN` run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
-  [`docs/FIRST_TRAINING_RUN.md`](docs/FIRST_TRAINING_RUN.md) for what the numbers mean. That run
-  predates a call-response bug fix ([`docs/RETRAIN_PLAN.md`](docs/RETRAIN_PLAN.md)) — it's a solo
-  improviser with drift adaptation, not a call-and-response result. A retrain with the fix hasn't
-  been run yet. `DIAL`/`ORACLE` arms and a full baseline comparison: **not run yet**.
+- Trained model: **`grpo-HIDDEN` v1 run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
+  [`docs/FIRST_TRAINING_RUN.md`](docs/FIRST_TRAINING_RUN.md). That run predates the call-response fix
+  ([`docs/RETRAIN_PLAN.md`](docs/RETRAIN_PLAN.md)) — it's a solo improviser with drift adaptation,
+  not a call-and-response result. A **v2 pilot (50 steps) with the fix has run** and the pipeline
+  survives on the current dependency stack; a real full-length v2 run and the proper 200-episode
+  comparison (`eval/evaluate_llm.py`, new — see `docs/RETRAIN_PLAN.md`) haven't happened yet.
+  `DIAL`/`ORACLE` arms: **not run yet**.
 
 ## Training on Colab — 3 steps
 
@@ -118,7 +120,7 @@ just failing silently.
 python -m venv venv
 venv/Scripts/activate          # Windows; source venv/bin/activate on Linux/Mac
 pip install -r requirements.txt
-pytest -q                      # 137 tests, no GPU needed
+pytest -q                      # 151 tests, no GPU needed
 python -m eval.evaluate --all  # re-run the four scripted baselines
 ```
 

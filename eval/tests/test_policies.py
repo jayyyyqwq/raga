@@ -7,9 +7,20 @@ from eval.policies import (
     random_uniform_policy,
     random_valid_policy,
     safe_set_cycle_policy,
+    sample_call_phrase,
     scripted_oracle_policy,
 )
 from eval.rollout import DriftSchedule, rollout
+from raaga_env.ragas import RAGAS
+
+
+def test_sample_call_phrase_is_raga_valid():
+    rng = random.Random(0)
+    yaman = RAGAS["yaman"]
+    for _ in range(50):
+        phrase = sample_call_phrase(yaman, rng)
+        assert len(phrase) == 4
+        assert all(swara in yaman["valid_notes"] for swara in phrase)
 
 
 def test_random_valid_policy_never_hits_a_forbidden_note_in_yaman():

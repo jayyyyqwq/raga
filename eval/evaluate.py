@@ -25,6 +25,7 @@ from .policies import (
     random_uniform_policy,
     random_valid_policy,
     safe_set_cycle_policy,
+    sample_call_phrase,
     scripted_oracle_policy,
 )
 from .rollout import DriftSchedule, Trajectory, rollout
@@ -51,7 +52,11 @@ def run_policy_over_eval_set(
 ) -> list[Trajectory]:
     """Runs policy_factory(episode) over every episode in the fixed,
     shared eval set (Phase 4.2), each with its own recorded drift schedule
-    replayed exactly."""
+    replayed exactly. Also submits a call every CALL_EVERY steps
+    (call_phrase_fn=sample_call_phrase — eval.rollout.rollout()'s
+    docstring explains why this must be explicit) so jugalbandi_coherence
+    and call_echo_rate are measurable for these baselines too, not just
+    whatever trained model gets compared against them."""
     trajectories = []
     for ep in EVAL_EPISODES:
         policy = policy_factory(ep)
@@ -63,6 +68,7 @@ def run_policy_over_eval_set(
             drift_schedule=schedule,
             arm=arm,
             episode_length=64,
+            call_phrase_fn=sample_call_phrase,
         )
         trajectories.append(traj)
     return trajectories
