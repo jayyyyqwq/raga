@@ -6,6 +6,15 @@
 #   !pip install -r requirements-train.txt
 #   !python train_grpo.py --arm hidden --steps 500
 #
+# Run a cheap pilot (e.g. --steps 50, a few minutes on a T4) before a long
+# "final" run — this is the actual, current trl/unsloth/transformers stack
+# (requirements-train.txt pins only unsloth and lets it resolve the rest;
+# see that file's header), not the exact versions this script was last
+# verified against, and GRPOTrainer's constructor has changed shape between
+# trl releases before. A pilot run is what catches an API mismatch, a
+# reward/loss that isn't moving, or a training-loop crash in minutes
+# instead of an hour. See docs/RETRAIN_PLAN.md.
+#
 # Training is in-process (updatedplan.md Phase 3.1) — no HTTP server, no
 # shared mutable env instance across samples (F9).
 #
@@ -30,6 +39,7 @@
 
 import argparse
 import json
+import os
 import random
 
 from raaga_env.jugalbandi_env import JugalbandiEnv
@@ -219,7 +229,21 @@ def main() -> None:
 
     random.seed(args.seed)
 
-    import wandb
+    # Optional, same as the notebook's Cell 2 (docs/RETRAIN_PLAN.md-adjacent
+    # fix, 2026-10): this used to call wandb.init() unconditionally, which
+    # either hangs on an interactive login prompt or raises outright when
+    # run exactly as this file's own usage comment above says to (plain
+    # `python train_grpo.py ...`, no notebook secret-handling in front of
+    # it) and WANDB_API_KEY isn't set. A training run must not depend on
+    # wandb to start.
+    use_wandb = bool(os.environ.get("WANDB_API_KEY"))
+    if use_wandb:
+        import wandb
+        wandb.init(project="jugalbandi", name=args.run, config={**vars(args), "arm": args.arm.value})
+    else:
+        print("No WANDB_API_KEY set — training without wandb logging. "
+              "Reward/loss still print to stdout every `logging_steps`.")
+
     from unsloth import FastLanguageModel
     from trl import GRPOConfig, GRPOTrainer
 
@@ -238,18 +262,25 @@ def main() -> None:
         use_gradient_checkpointing="unsloth",
     )
 
-    wandb.init(project="jugalbandi", name=args.run, config={**vars(args), "arm": args.arm.value})
-
     config = GRPOConfig(
         output_dir=f"./checkpoints/{args.run}",
-        num_train_epochs=1,
+        # No num_train_epochs: HF's Trainer always lets a positive max_steps
+        # override num_train_epochs, so setting it here would be dead config
+        # implying something false. What actually happens: each optimizer
+        # step consumes per_device_train_batch_size * gradient_accumulation_
+        # steps rows, so with gradient_accumulation_steps=4 below, every row
+        # build_dataset() generates gets visited ~4 times over a full
+        # --steps run — the same "K epochs per rollout batch" pattern PPO
+        # uses, not a bug. mc_seed (see build_dataset's docstring) exists
+        # partly because of this: a row scored more than once needs a
+        # varied Monte-Carlo continuation each time, not a frozen one.
         max_steps=args.steps,
         per_device_train_batch_size=args.batch,
         gradient_accumulation_steps=4,
         learning_rate=5e-5,
         logging_steps=10,
         save_steps=50,
-        report_to="wandb",
+        report_to="wandb" if use_wandb else "none",
         # GRPO-specific
         num_generations=args.num_generations,
         max_completion_length=8,  # one action index; 1-2 tokens

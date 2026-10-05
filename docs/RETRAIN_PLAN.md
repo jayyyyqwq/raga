@@ -62,17 +62,15 @@ this run, say this plainly rather than letting "HIDDEN" imply more than it now d
 
 ## Running the retrain
 
-Same process as the first run (see [`FIRST_TRAINING_RUN.md`](FIRST_TRAINING_RUN.md) and the
-README's Colab section) — no new steps, just re-run `training/train_grpo.ipynb` top to bottom
-against this code. Cannot be run here: `train_grpo.py`'s `main()` needs `unsloth`/`trl`/`torch` on a
-CUDA GPU (`requirements-train.txt`), which this machine doesn't have. What *was* verified locally,
-without the GPU stack:
+Cannot be run here: `train_grpo.py`'s `main()` needs `unsloth`/`trl`/`torch` on a CUDA GPU
+(`requirements-train.txt`), which this machine doesn't have. What *was* verified locally, without
+the GPU stack:
 
 ```bash
 python -m venv venv && venv/Scripts/activate
 pip install -r requirements.txt
 pytest raaga_env/tests training/tests eval/tests openenv_server/tests -q
-# 134 passed
+# 137 passed
 ```
 
 This exercises everything up to the GPU boundary: `build_dataset()` actually produces rows with a
@@ -81,7 +79,51 @@ HIDDEN still never writes a raga name. The one thing that cannot be checked with
 GRPO actually learns to use the call — that's what the retrain itself, plus a re-run of
 `eval/evaluate.py` comparing against `random-valid`, would show.
 
+### 2026-10 script fixes (do before any run, not just the first one)
+
+Found on a pre-flight review, not from a failed run — fixed now rather than waiting to hit them:
+
+- `train_grpo.py`'s `main()` called `wandb.init()` unconditionally — would hang on an interactive
+  login prompt or crash outright if run exactly as its own usage comment says to (plain
+  `python train_grpo.py ...`, no notebook secret-handling in front of it) without `WANDB_API_KEY`
+  set. Now conditional, matching the notebook's Cell 2 pattern.
+- Both `train_grpo.py` and the notebook's Cell 6 set `num_train_epochs=1` on `GRPOConfig` — dead
+  config. HF's Trainer always lets a positive `max_steps` override `num_train_epochs`, so this
+  implied something false. What actually happens: every row `build_dataset()` generates gets
+  visited `gradient_accumulation_steps` (4) times over a full run — the same "K epochs per rollout
+  batch" pattern PPO uses, not a bug, just previously undocumented. Removed the misleading line,
+  added a comment explaining the real relationship in both places.
+- The notebook's `RUN_NAME` was still hardcoded to `-v1` — running it as-is would have silently
+  overwritten the first run's checkpoint on Drive, the exact thing this doc already warned against
+  below. Bumped to `-v2` in the notebook itself, not just this doc.
+
+### Pilot run first, then decide on the final run — this is the actual recommendation
+
+Run a cheap pilot before any long run: in the notebook, set `STEPS = 50` (a few minutes on a T4)
+instead of 300, run top to bottom, and look at three things before going further:
+
+1. **Did it finish without crashing?** `requirements-train.txt` now pins only `unsloth` and lets it
+   resolve its own compatible `trl`/`transformers`/`peft` — a real version jump from the `trl==0.12.2`
+   this script was originally written against. `GRPOTrainer`'s constructor has changed shape between
+   trl releases before; a pilot catches that in minutes instead of an hour into a "final" run.
+2. **Does `train/reward_mean` trend up** (wandb, if configured) or at least not look broken in the
+   per-`logging_steps` stdout output?
+3. **Does Cell 8's inference check run end to end**, and does its new `Call-echo bonuses` count show
+   anything nonzero at least some of the time? Zero every time across a few pilot runs would be a
+   sign the call-response fix isn't actually landing in the trained behaviour, worth investigating
+   before spending a long run on it.
+
+Only once the pilot looks sane, raise `STEPS` for the real run. **How high:** the first run (v1) used
+300 steps and only had to learn drift adaptation; this run also has to learn to use a call phrase it
+never saw before, which is strictly more to learn from the same model size. Recommend starting the
+final run at **500–800 steps** rather than repeating 300 — but let the pilot's actual reward/loss
+trend inform that number rather than picking it blind; if reward is still climbing steadily at 300 in
+the pilot's own curve, that's a stronger signal than any number in this doc.
+
 **Before re-running:** pull latest, confirm `pytest` is green locally first (catches anything Colab
-would otherwise fail on 45 minutes into a T4 run), then run the notebook. Save the new adapter as a
-new run name (e.g. `jugalbandi-grpo-hidden-v2`) rather than overwriting `v1` on Drive — `v1` stays
-as the documented baseline in `FIRST_TRAINING_RUN.md`.
+would otherwise fail on 45 minutes into a T4 run), then run the notebook — pilot first, per above.
+`RUN_NAME` is `jugalbandi-grpo-hidden-v2` now (fixed above); `v1` stays on Drive untouched as the
+documented baseline in `FIRST_TRAINING_RUN.md`. A pilot run also saves under `-v2` and gets
+overwritten by the final run under the same name — that's fine, nothing worth keeping from a 50-step
+pilot once it's told you what you needed to know. Only bump to `-v3` if you want to keep both a pilot
+and a final run's checkpoints side by side on purpose.
