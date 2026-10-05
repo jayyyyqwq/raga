@@ -35,6 +35,12 @@ That's it — 3 clicks, then wait. Takes roughly 45–60 minutes; the trained mo
 your Google Drive automatically, no further action needed. Everything below is optional extra
 context, not required steps.
 
+**If Cell 1 raises `RuntimeError: pip install did not actually install: [...]`** — that's the
+install-verification check doing its job: `requirements-train.txt`'s `unsloth` pin has gone stale
+against whatever PyPI/Colab ships now. Scroll up in that cell's output for pip's actual error, then
+see `requirements-train.txt`'s header comment for how to re-pin it (this has happened twice before;
+the fix is always the same shape).
+
 If the badge or GitHub's clone is ever flaky (offline mirror, you're testing local uncommitted
 changes), there's a fallback: double-click **`make_training_zip.bat`** in this folder to build a
 `raga.zip`, then drag it into Colab's Files panel (folder icon, left sidebar) before running the

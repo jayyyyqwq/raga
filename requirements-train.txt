@@ -1,22 +1,44 @@
-# Training stack — GPU only (Colab/Kaggle/cloud). Pinned so a training run is
-# reproducible instead of a version lottery (updatedplan.md Phase 0.1 / F6).
+# Training stack — GPU only (Colab/Kaggle/cloud).
 #
 # `requirements.txt` deliberately leaves these commented out and unversioned;
 # this file is the single source of truth for the training environment.
-# Every result file must record these resolved versions (see eval/fingerprint.py).
 #
-# TRL GRPOTrainer constraint verified against trl==0.12.2: per_device_train_
-# batch_size * num_processes must be divisible by num_generations, and
-# `tokenizer=` on GRPOTrainer is deprecated in favour of `processing_class=`
-# from this version onward. Both training/train_grpo.py and
-# training/train_grpo.ipynb (Cell 9) were fixed to match.
+# This file has now broken Colab's "Run all" twice, in two different ways —
+# read this before changing pins again:
+#
+#   1. The original `unsloth[colab-new] @ git+https://github.com/unslothai/
+#      unsloth.git` line built xformers from source against whatever CUDA
+#      Colab's current image happened to ship, which broke whenever that
+#      image drifted ("Failed to build xformers"). Fixed in db8d7c0 by
+#      switching to this pinned-PyPI-wheel file instead.
+#   2. By Oct 2026, this file's own pins (torch==2.5.1, transformers==4.46.3,
+#      trl==0.12.2, peft==0.13.2, accelerate==1.1.1, datasets==3.1.0,
+#      bitsandbytes==0.44.1, unsloth==2024.11.9 — this project's state as of
+#      its first training run, late 2024) had rotted: unsloth's PyPI
+#      releases had moved on to the 2026.9.x line, which declares minimum
+#      versions for transformers/trl/peft/bitsandbytes/datasets well above
+#      every number in that old pin set. `pip install -r
+#      requirements-train.txt` failed to resolve — silently, since a failed
+#      `!pip install` doesn't raise inside a notebook cell — so "Run all"
+#      sailed straight into `from unsloth import FastLanguageModel` with
+#      nothing actually installed, surfacing 3 cells later as a confusing
+#      ModuleNotFoundError instead of at the real point of failure.
+#
+# Current approach: pin only unsloth, to an exact version confirmed on PyPI
+# as of this fix (2026-10). Its sub-dependencies are deliberately left
+# unpinned — unsloth's own package metadata declares compatible ranges for
+# all of them and is actively maintained to track Colab/CUDA/torch drift,
+# which a once-written file in this repo cannot be. The install cell
+# (Cell 1) verifies the install actually succeeded before continuing, so a
+# third staleness episode fails loudly, at the install step, instead of
+# cascading into another confusing error three cells later.
+#
+# TRL GRPOTrainer constraint (still applies, check against whatever trl
+# version actually resolves): per_device_train_batch_size * num_processes
+# must be divisible by num_generations, and GRPOTrainer wants
+# `processing_class=`, not the deprecated `tokenizer=` — both
+# training/train_grpo.py and training/train_grpo.ipynb (Cell 9) already use
+# processing_class=.
 
-torch==2.5.1
-transformers==4.46.3
-trl==0.12.2
-peft==0.13.2
-accelerate==1.1.1
-datasets==3.1.0
-bitsandbytes==0.44.1
-unsloth==2024.11.9
+unsloth==2026.9.14
 wandb==0.18.7
