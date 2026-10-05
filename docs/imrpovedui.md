@@ -189,7 +189,14 @@ Reward change worth adding with A: a **call-relatedness** term (e.g. shares a 2�
 
 ## 8. Tech
 
-- **Rendering:** PixiJS (pinned, jsdelivr CDN). 2D WebGL with glow filters; three.js unnecessary for a 2D stage.
+- **Rendering:** PixiJS **v7** (pixi.js@7.4.3, pinned, jsdelivr CDN) — not v8. v8.x (0.0 through at
+  least 8.22.0) has a confirmed WebGL-renderer crash (`pixijs/pixijs#12048`) triggered by mutating a
+  Container's transform every tick with a Graphics anywhere beneath it — exactly the "breathing
+  orb" pattern this stage needs — reproduced independent of this app down to a single Graphics
+  circle, and not fixed by any workaround tried (extra wrapper Container, mutating the Graphics'
+  own transform directly, different GL backends). v7 doesn't have v8's RenderGroup system and
+  doesn't hit this at all; same-frame visual quality for this stage's needs. three.js unnecessary
+  for a 2D stage.
 - **Audio:** Tone.js, pinned on jsdelivr (replace unpinned skypack). `Tone.Sampler` for sitar/bansuri, `Tone.Player` loop for tanpura.
 - **Serving:** FastAPI serves `ui/` itself → one process, one port, drop CORS `*` and the separate `http.server` in `run_demo.bat`.
 - **New endpoint `/respond`:** body = `{call: [8 notes], n: 8}` → sets call, runs n × (infer + step) server-side, returns `{notes, durations, rewards, breakdowns, raga, in_grace}`. One round trip per AI line instead of 16.

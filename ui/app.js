@@ -3,7 +3,10 @@
 // modules together. Those modules know nothing about each other or about
 // the env — this file is the only place that does.
 
-import { Application } from "https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/+esm";
+// Pinned to v7, not v8 — see stage/river.js's header comment for why
+// (a confirmed v8.x WebGL-renderer crash with per-frame transform
+// mutation, pixijs/pixijs#12048, reproduced independent of this app).
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@7.4.3/+esm";
 import * as Tone from "https://cdn.jsdelivr.net/npm/tone@15.1.22/+esm";
 
 import { EnvClient } from "./env_client.js";
@@ -58,9 +61,11 @@ let app, river, mandala, orbs, input, tabla, sitarVoice, fluteVoice, drone;
 // ── Bootstrap ──────────────────────────────────────────────────────────
 
 async function init() {
-  app = new Application();
-  await app.init({ width: STAGE_WIDTH, height: STAGE_HEIGHT, backgroundAlpha: 0, antialias: true, autoDensity: true, resolution: window.devicePixelRatio || 1 });
-  dom.stageHost.appendChild(app.canvas);
+  app = new PIXI.Application({
+    width: STAGE_WIDTH, height: STAGE_HEIGHT, backgroundAlpha: 0, antialias: true,
+    autoDensity: true, resolution: window.devicePixelRatio || 1,
+  });
+  dom.stageHost.appendChild(app.view);
 
   river = new River(app, { x: 0, y: 0, width: STAGE_WIDTH, height: 400 });
   mandala = new TalaMandala(app, { x: 440, y: 515, radius: 78 });
@@ -190,8 +195,8 @@ function applyTheme(raga) {
   document.documentElement.style.setProperty("--accent2", t.accent2);
   document.documentElement.style.setProperty("--you", t.you);
   document.documentElement.style.setProperty("--ai", t.ai);
-  orbs.you.color = t.you;
-  orbs.ai.color = t.ai;
+  orbs.you.setColor(t.you);
+  orbs.ai.setColor(t.ai);
 }
 
 // ── Intro (your recorded opening line) ───────────────────────────────────

@@ -1,7 +1,15 @@
 // Tala mandala — a circular 16-beat Teentaal wheel. Makes rhythm legible
 // without needing to read a "beat 7/16" label (docs/imrpovedui.md §6).
+//
+// Pixi v7 (see stage/river.js's header comment for why, not v8). The
+// playhead is repositioned (never redrawn) each beat, and the countdown
+// ring is 32 pre-drawn dots toggled via .visible — reasonable practice
+// regardless of Pixi version, and it was already the plan before the v8
+// bug was found.
 
-import { Container, Graphics } from "https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/+esm";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@7.4.3/+esm";
+
+const COUNTDOWN_SEGMENTS = 32;
 
 export class TalaMandala {
   constructor(app, { x, y, radius }) {
@@ -9,22 +17,57 @@ export class TalaMandala {
     this.cy = y;
     this.r = radius;
 
-    this.root = new Container();
+    this.root = new PIXI.Container();
     app.stage.addChild(this.root);
 
-    this.ring = new Graphics();
-    this.ticks = new Graphics();
-    this.countdownArc = new Graphics();
-    this.playhead = new Graphics();
-    this.root.addChild(this.ring, this.ticks, this.countdownArc, this.playhead);
+    this.ring = new PIXI.Graphics();
+    this.ticks = new PIXI.Graphics();
+    this.root.addChild(this.ring, this.ticks);
+
+    this.countdownLayer = new PIXI.Container();
+    this.root.addChild(this.countdownLayer);
+    this._buildCountdownDots();
+
+    this.playhead = new PIXI.Container();
+    this.playheadGlow = new PIXI.Graphics();
+    this.playheadDot = new PIXI.Graphics();
+    this.playhead.addChild(this.playheadGlow, this.playheadDot);
+    this.root.addChild(this.playhead);
+    this._paintPlayhead();
 
     this.currentBeat = 0;
     this._drawStatic();
     this.setBeat(0);
   }
 
+  _paintPlayhead() {
+    this.playheadGlow.beginFill(0xf2c14e, 0.22);
+    this.playheadGlow.drawCircle(0, 0, 9);
+    this.playheadGlow.endFill();
+    this.playheadDot.beginFill(0xf2c14e, 1);
+    this.playheadDot.drawCircle(0, 0, 5);
+    this.playheadDot.endFill();
+  }
+
+  _buildCountdownDots() {
+    this.countdownDots = [];
+    for (let i = 0; i < COUNTDOWN_SEGMENTS; i++) {
+      const angle = (i / COUNTDOWN_SEGMENTS) * Math.PI * 2 - Math.PI / 2;
+      const dot = new PIXI.Graphics();
+      dot.beginFill(0x8f7bd1, 1);
+      dot.drawCircle(0, 0, 2.5);
+      dot.endFill();
+      dot.x = this.cx + Math.cos(angle) * (this.r + 8);
+      dot.y = this.cy + Math.sin(angle) * (this.r + 8);
+      dot.visible = false;
+      this.countdownLayer.addChild(dot);
+      this.countdownDots.push(dot);
+    }
+  }
+
   _drawStatic() {
-    this.ring.circle(this.cx, this.cy, this.r).stroke({ width: 2, color: 0xffffff, alpha: 0.15 });
+    this.ring.lineStyle(2, 0xffffff, 0.15);
+    this.ring.drawCircle(this.cx, this.cy, this.r);
 
     for (let i = 0; i < 16; i++) {
       const angle = (i / 16) * Math.PI * 2 - Math.PI / 2;
@@ -36,14 +79,18 @@ export class TalaMandala {
       const y2 = this.cy + Math.sin(angle) * outer;
       const isSam = i === 0;
       const isKhali = i === 8;
-      this.ticks
-        .moveTo(x1, y1)
-        .lineTo(x2, y2)
-        .stroke({ width: isSam ? 3 : 1.5, color: isSam ? 0xf2c14e : 0xffffff, alpha: isSam ? 1 : isKhali ? 0.6 : 0.35 });
+
+      this.ticks.lineStyle(isSam ? 3 : 1.5, isSam ? 0xf2c14e : 0xffffff, isSam ? 1 : isKhali ? 0.6 : 0.35);
+      this.ticks.moveTo(x1, y1).lineTo(x2, y2);
+
       if (isSam) {
-        this.ticks.circle(x2, y2, 4).fill({ color: 0xf2c14e }); // sam — filled gold
+        this.ticks.lineStyle(0);
+        this.ticks.beginFill(0xf2c14e, 1);
+        this.ticks.drawCircle(x2, y2, 4); // sam — filled gold
+        this.ticks.endFill();
       } else if (isKhali) {
-        this.ticks.circle(x2, y2, 3).stroke({ width: 1.5, color: 0xffffff, alpha: 0.7 }); // khali — hollow
+        this.ticks.lineStyle(1.5, 0xffffff, 0.7);
+        this.ticks.drawCircle(x2, y2, 3); // khali — hollow
       }
     }
   }
@@ -51,20 +98,16 @@ export class TalaMandala {
   setBeat(beat) {
     this.currentBeat = beat;
     const angle = (beat / 16) * Math.PI * 2 - Math.PI / 2;
-    const px = this.cx + Math.cos(angle) * (this.r - 10);
-    const py = this.cy + Math.sin(angle) * (this.r - 10);
-    this.playhead.clear();
-    this.playhead.circle(px, py, 9).fill({ color: 0xf2c14e, alpha: 0.22 });
-    this.playhead.circle(px, py, 5).fill({ color: 0xf2c14e });
+    this.playhead.x = this.cx + Math.cos(angle) * (this.r - 10);
+    this.playhead.y = this.cy + Math.sin(angle) * (this.r - 10);
   }
 
-  /** fraction 1 = just started (full ring left), 0 = turn over. Used during
+  /** fraction 1 = just started (full ring lit), 0 = turn over. Used during
    * the human's live-reply turn (docs/imrpovedui.md §4.4's turn window). */
   setCountdown(fraction) {
-    this.countdownArc.clear();
-    if (fraction <= 0) return;
-    const start = -Math.PI / 2;
-    const end = start + Math.min(1, fraction) * Math.PI * 2;
-    this.countdownArc.arc(this.cx, this.cy, this.r + 7, start, end).stroke({ width: 3, color: 0x8f7bd1, alpha: 0.7 });
+    const lit = Math.round(Math.max(0, Math.min(1, fraction)) * COUNTDOWN_SEGMENTS);
+    for (let i = 0; i < COUNTDOWN_SEGMENTS; i++) {
+      this.countdownDots[i].visible = i < lit;
+    }
   }
 }
