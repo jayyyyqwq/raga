@@ -204,19 +204,31 @@ Reward change worth adding with A: a **call-relatedness** term (e.g. shares a 2�
 
 ## 9. Build phases (next steps)
 
-| # | Deliverable | Depends on |
-|---|---|---|
-| 0 | Download + licence-check samples per `AUDIO_SOURCES.md`; write `ATTRIBUTION.md` | — |
-| 1 | Audio engine: drone, sitar + bansuri samplers, transport clock, meend. Play the Yaman intro end-to-end | 0 |
-| 2 | Env/server fixes: absolute-pitch calls, 8-note `set_call`, tension calc, phantom-call bug, `/respond`, FastAPI serves `ui/` | — |
-| 3 | Turn loop with current adapter (Option B): intro → AI line → your live line → AI line | 1, 2 |
-| 4 | **Option A:** call in prompt + call injection in training + relatedness reward; retrain on Colab; drop new adapter into `checkpoints/final` | 2 |
-| 5 | Stage visuals: river, tala mandala, orbs, escalation strip, palettes | 3 |
-| 6 | Echo arcs, captions, reward chips, suggest-reply | 3, 5 |
-| 7 | Drift visuals + finale screen | 5 |
-| 8 | Polish: full-screen laptop sizing, CPU latency, before/after toggle (random-valid vs trained) | all |
+| # | Deliverable | Depends on | Status |
+|---|---|---|---|
+| 0 | Download + licence-check samples per `AUDIO_SOURCES.md`; write `ATTRIBUTION.md` | — | **Done** (2026-10-05) |
+| 1 | Audio engine: drone, sitar + bansuri samplers, transport clock, meend. Play the Yaman intro end-to-end | 0 | **Done** — meend shipped as a visual curve only, not a synthesised pitch glide (see §9.1) |
+| 2 | Env/server fixes: absolute-pitch calls, 8-note `set_call`, tension calc, phantom-call bug, `/respond`, FastAPI serves `ui/` | — | **Partly done, partly descoped** — phantom-call bug and tension calc were already fixed in the ML retrain pass (`RETRAIN_PLAN.md`); FastAPI now serves `ui/`; call stayed 4 notes and there's no `/respond` endpoint — see §9.1 |
+| 3 | Turn loop with current adapter (Option B): intro → AI line → your live line → AI line | 1, 2 | **Done** |
+| 4 | **Option A:** call in prompt + call injection in training + relatedness reward; retrain on Colab; drop new adapter into `checkpoints/final` | 2 | **Code done** (`RETRAIN_PLAN.md`), **GPU retrain not run** — needs Colab |
+| 5 | Stage visuals: river, tala mandala, orbs, escalation strip, palettes | 3 | **Done** |
+| 6 | Echo arcs, captions, reward chips, suggest-reply | 3, 5 | **Echo arcs/captions/chips done. Suggest-reply (ghost lines) descoped** — not built, see §9.1 |
+| 7 | Drift visuals + finale screen | 5 | **Partly done** — dial/raga switch repaints the palette and river lane labels live; no dedicated finale screen or grace-period shimmer animation yet |
+| 8 | Polish: full-screen laptop sizing, CPU latency, before/after toggle (random-valid vs trained) | all | **Not done** — no before/after toggle mode; basic responsive CSS only |
 
-Phases 1, 2 and 4 can run in parallel.
+Phases 1, 2 and 4 ran in parallel, as planned.
+
+### 9.1 What shipped differently than planned, and why
+
+| Planned | Shipped | Why |
+|---|---|---|
+| Call phrase extended to 8 notes | **Stayed at 4** (`JugalbandiEnv.set_call`'s existing contract) | Extending it means growing the 22-dim observation space (`obs[8:12]` only has room for 4 call-note slots) — that's an env/model contract change, not a UI change, and would invalidate the ML retrain work that just landed. Deferred; line *length* escalation is simulated differently (next row) |
+| Lines grow 4→8→16 notes as part of the escalation ladder | AI line is a **fixed 8 notes per turn** (matches `CALL_EVERY`); the "growth" step (`BADHAT`) is relabelled as an echo/development emphasis rather than literal length growth | Keeps the ladder's visible 5-step climb without an env change. `BADHAT`'s distinctiveness from `UTTAR` is weaker than planned until the retrained model (Phase 4) actually conditions on the call — tracked, not silently dropped |
+| New `/respond` server endpoint (one round trip per AI line) | **No server change** — client prefetches all 8 notes via sequential `/infer` + `/step` calls *before* playing any of them, then schedules playback on the next beat | Same latency-hiding effect (§4.3's goal) without touching `server.py`'s contract; simpler, no new endpoint to version |
+| Meend = synthesised pitch glide between samples | **Visual-only** — a curved glow line on the river; audio plays the two notes back to back, no pitch-bend | Tone.Sampler has no clean per-note portamento API; a real glide would need custom playback-rate automation. Visual meend delivers most of the "feels like a glide" effect for a fraction of the risk |
+| Suggest-reply (3 ghost lines) if you don't want to play | **Not built** — if your turn times out with 0 notes played, your previous call is resubmitted unchanged | Scope cut to ship the core loop; this is the first thing to add next if "watch only" mode matters |
+| Input quantised to the nearest 16th note | **Not built** — notes play the instant you press a key/button | Scope cut; doesn't block the core experience, worth adding if live input feels loose against the tabla |
+| Sitar / bansuri **or shehnai** | **Sitar (you) + flute/bansuri (AI)** shipped; shehnai not downloaded | See §11 — shehnai stays a one-line swap in `scripts/fetch_samples.py`'s `INSTRUMENTS` dict if you want to A/B it |
 
 ### What to test
 - `echo.js`: detects exact repeat, transposition, inversion, shared ending; no arcs on random phrases.
@@ -240,10 +252,13 @@ Phases 1, 2 and 4 can run in parallel.
 | 2026-10-04 | Deps | PixiJS (pinned) allowed; Tone.js pinned |
 | 2026-10-04 | Audio | All free pre-recorded samples, sourced by Claude. Combo: sitar (you) + bansuri (AI); single-instrument fallback = sitar |
 | 2026-10-04 | Flow | Click → recorded intro → AI improved line → your live reply → AI reply → … |
+| 2026-10-05 | Build | Shipped the full stage per §9's table — river, tala mandala, orbs, escalation ladder, echo arcs, reward chips, sampled sitar+flute+tanpura, single-process serving. Deviations logged in §9.1 |
+| 2026-10-05 | AI voice | Flute (bansuri stand-in) — no longer open, see §11 |
+| 2026-10-05 | Tabla | Synth (`Tone.MembraneSynth`), per `AUDIO_SOURCES.md` §3's decision — no cleared-licence real tabla pack found |
 
 ## 11. Still open
 
-1. **AI voice:** bansuri (`flute`) or shehnai (`shanai`)? Plan to A/B both in phase 1 and pick by ear unless you have a preference.
-2. **Tabla:** real samples (licence pending) or keep the synth tabla?
-3. **Visual references** for the traditional-modern look, if you have any.
-4. **Timeline:** target date or open-ended? Decides how soon the Option A retrain runs.
+1. **Visual references** for the traditional-modern look, if you have any — current palette/layout is my own interpretation, not checked against a reference.
+2. **Timeline for the Option A retrain** (`RETRAIN_PLAN.md`): target date or open-ended? The stage runs fine on the current (un-retrained) adapter in the meantime — captions say "improvises after your line" rather than claiming it's answering you, honestly, until the retrain lands.
+3. **Shehnai A/B** — only flute (bansuri) shipped for the AI voice; want it compared against shehnai? One line in `scripts/fetch_samples.py`'s `INSTRUMENTS` dict plus a constructor arg change in `app.js`.
+4. **Which §9.1 deviation to close next** — quantised input, suggest-reply, a before/after toggle, or a finale screen, if any of them turn out to matter once you've actually played with it.

@@ -1,7 +1,14 @@
 // Thin wrapper around the FastAPI server.
 // Everything in app.js talks to the env through this — no raw fetch calls elsewhere.
+//
+// Default is same-origin ("") — openenv_server/server.py now serves this ui/
+// directory itself (docs/imrpovedui.md's "one process, one port" decision),
+// so the page and the API share an origin and need no CORS. Set
+// window.ENV_SERVER_URL before this module loads only if running the UI
+// from somewhere else (e.g. a separate static file server) against a
+// server.py on a different host/port.
 
-const BASE = window.ENV_SERVER_URL || "http://localhost:7860";
+const BASE = window.ENV_SERVER_URL || "";
 
 async function _post(path, body = {}) {
   const res = await fetch(`${BASE}${path}`, {

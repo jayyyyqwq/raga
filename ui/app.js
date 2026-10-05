@@ -1,192 +1,409 @@
-// State machine for the Jugalbandi demo UI.
-// Owns: env session, UI sync, call-response flow, raga dial.
-// Talks to:  env_client.js (server), sitar.js, tabla.js
+// Jugalbandi stage — turn-based call-and-response (docs/imrpovedui.md).
+// Owns: episode lifecycle, the turn loop, and wiring the audio/visual/input
+// modules together. Those modules know nothing about each other or about
+// the env — this file is the only place that does.
+
+import { Application } from "https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/+esm";
+import * as Tone from "https://cdn.jsdelivr.net/npm/tone@15.1.22/+esm";
 
 import { EnvClient } from "./env_client.js";
-import { Sitar, RAGA_NOTES } from "./sitar.js";
-import { Tabla } from "./tabla.js";
+import { Voice } from "./audio/voices.js";
+import { Drone } from "./audio/drone.js";
+import { Tabla } from "./audio/tabla.js";
+import { River } from "./stage/river.js";
+import { TalaMandala } from "./stage/talaMandala.js";
+import { Orbs } from "./stage/orbs.js";
+import { InputStrip } from "./input.js";
+import { INTROS, callPhraseFromIntro } from "./presets.js";
+import { analyzeResponse } from "./analysis/echo.js";
+import { RAGA_THEME, ragaFromDial, escalationForTurn, ESCALATION, SWARA_LATIN } from "./stage/theme.js";
 
-// ── State ──────────────────────────────────────────────────────────────
-
-const state = {
-  phase: "idle",        // idle | human_call | ai_response | ended
-  callBuffer: [],       // notes user played during human_call phase
-  callExpected: 4,
-  aiResponseNotes: [],
-  stepCount: 0,
-  totalReward: 0,
-  lastBreakdown: {},
-};
-
-// ── DOM refs ───────────────────────────────────────────────────────────
+const STAGE_WIDTH = 880;
+const STAGE_HEIGHT = 620;
+const AI_NOTES_PER_TURN = 8;     // matches JugalbandiEnv.CALL_EVERY
+const YOUR_TURN_MS = 22000;
+const NOTE_PACE_MS = 260;        // intro/fixed pacing between visible notes
 
 const $ = (id) => document.getElementById(id);
-const ragaLabel     = $("raga-label");
-const phaseLabel    = $("phase-label");
-const rewardDisplay = $("reward-display");
-const talaDisplay   = $("tala-display");
-const beatDots      = Array.from(document.querySelectorAll(".beat-dot"));
-const dialInput     = $("raga-dial");
-const dialValue     = $("dial-value");
-const startBtn      = $("start-btn");
-const resetBtn      = $("reset-btn");
-const logEl         = $("reward-log");
+const dom = {
+  startBtn: $("start-btn"),
+  resetBtn: $("reset-btn"),
+  dialInput: $("raga-dial"),
+  dialValue: $("dial-value"),
+  ragaLabel: $("raga-label"),
+  phaseLabel: $("phase-label"),
+  rewardDisplay: $("reward-display"),
+  log: $("log"),
+  caption: $("caption"),
+  chips: $("chips"),
+  escalation: $("escalation"),
+  stageHost: $("stage-host"),
+  inputHost: $("input-strip"),
+};
 
-// ── Instruments ────────────────────────────────────────────────────────
+const state = {
+  phase: "idle",          // idle | intro | listening | ai_playing | your_turn | ended
+  raga: "yaman",
+  turnIndex: 0,            // 0-based AI-turn counter, drives the escalation ladder
+  totalReward: 0,
+  lastCall: [],            // swara 0-11, your most recent submitted call
+  yourTurnBuffer: [],
+  yourTurnDeadline: 0,
+  yourTurnTimer: null,
+  callPositions: [],       // river {x,y} per note of lastCall, for echo arcs
+};
 
-const sitar = new Sitar("sitar-container", onUserPluck);
-const tabla = new Tabla(onTableBeat);
+let app, river, mandala, orbs, input, tabla, sitarVoice, fluteVoice, drone;
+
+// ── Bootstrap ──────────────────────────────────────────────────────────
+
+async function init() {
+  app = new Application();
+  await app.init({ width: STAGE_WIDTH, height: STAGE_HEIGHT, backgroundAlpha: 0, antialias: true, autoDensity: true, resolution: window.devicePixelRatio || 1 });
+  dom.stageHost.appendChild(app.canvas);
+
+  river = new River(app, { x: 0, y: 0, width: STAGE_WIDTH, height: 400 });
+  mandala = new TalaMandala(app, { x: 440, y: 515, radius: 78 });
+  orbs = new Orbs(app, {
+    you: { x: 150, y: 515, radius: 28, color: RAGA_THEME.yaman.you },
+    ai: { x: 730, y: 515, radius: 28, color: RAGA_THEME.yaman.ai },
+  });
+  river.setRaga("yaman");
+
+  input = new InputStrip("input-strip", onYourNote);
+  input.setEnabled(false);
+
+  sitarVoice = new Voice("sitar");
+  fluteVoice = new Voice("flute", { volume: -3 });
+  drone = new Drone();
+  tabla = new Tabla(onBeat);
+
+  dom.startBtn.disabled = true;
+  dom.startBtn.textContent = "Loading instruments…";
+  await Promise.all([sitarVoice.loaded(), fluteVoice.loaded(), drone.loaded()]);
+  dom.startBtn.disabled = false;
+  dom.startBtn.textContent = "▶ Play intro";
+
+  buildEscalationStrip();
+
+  dom.startBtn.addEventListener("click", startPerformance);
+  dom.resetBtn.addEventListener("click", resetPerformance);
+  dom.dialInput.addEventListener("input", onDialInput);
+}
+
+function buildEscalationStrip() {
+  dom.escalation.innerHTML = "";
+  ESCALATION.forEach((step, i) => {
+    const el = document.createElement("span");
+    el.className = "escalation-step";
+    el.dataset.index = i;
+    el.textContent = step.label;
+    el.title = step.sub;
+    dom.escalation.appendChild(el);
+    if (i < ESCALATION.length - 1) {
+      const sep = document.createElement("span");
+      sep.className = "escalation-sep";
+      sep.textContent = "›";
+      dom.escalation.appendChild(sep);
+    }
+  });
+  highlightEscalation(0);
+}
+
+function highlightEscalation(turnIndex) {
+  const idx = Math.min(turnIndex, ESCALATION.length - 1);
+  [...dom.escalation.children].forEach((el) => {
+    if (!el.dataset.index) return;
+    el.classList.toggle("active", Number(el.dataset.index) === idx);
+  });
+}
 
 // ── Lifecycle ──────────────────────────────────────────────────────────
 
-startBtn.addEventListener("click", async () => {
+async function startPerformance() {
+  await Tone.start();
   await EnvClient.health();
-  const dial = parseFloat(dialInput.value);
-  const data = await EnvClient.reset(dial);
-  state.phase = "human_call";
-  state.callBuffer = [];
-  state.stepCount = 0;
+
+  const dial = parseFloat(dom.dialInput.value);
+  state.raga = ragaFromDial(dial);
+  state.turnIndex = 0;
   state.totalReward = 0;
-  sitar.setRaga(data.active_raga);
+  state.yourTurnBuffer = [];
+  river.reset();
+  river.setRaga(state.raga);
+  input.setRaga(state.raga);
+  applyTheme(state.raga);
+  highlightEscalation(0);
+  updateReward();
+
+  const data = await EnvClient.reset(dial);
+  state.raga = data.active_raga;
+  river.setRaga(state.raga);
+  input.setRaga(state.raga);
+  applyTheme(state.raga);
+  dom.ragaLabel.textContent = `${RAGA_THEME[state.raga].label} · ${RAGA_THEME[state.raga].time}`;
+
   tabla.start();
-  updateUI(data.active_raga, data.observation);
-  log("Episode started. Play your call phrase (4 notes).");
-  startBtn.disabled = true;
-  resetBtn.disabled = false;
-});
+  drone.start();
 
-resetBtn.addEventListener("click", async () => {
+  dom.startBtn.disabled = true;
+  dom.resetBtn.disabled = false;
+  log("Episode started.");
+
+  await playIntro(state.raga);
+}
+
+function resetPerformance() {
+  clearTimeout(state.yourTurnTimer);
   tabla.stop();
+  drone.stop();
+  input.setEnabled(false);
   state.phase = "idle";
-  startBtn.disabled = false;
-  resetBtn.disabled = true;
-  phaseLabel.textContent = "—";
+  dom.startBtn.disabled = false;
+  dom.resetBtn.disabled = true;
+  dom.phaseLabel.textContent = "—";
+  dom.caption.textContent = "";
+  dom.chips.innerHTML = "";
   log("Reset.");
-});
+}
 
-dialInput.addEventListener("input", async () => {
-  const v = parseFloat(dialInput.value);
-  dialValue.textContent = v.toFixed(2);
+async function onDialInput() {
+  const v = parseFloat(dom.dialInput.value);
+  dom.dialValue.textContent = v.toFixed(2);
   if (state.phase === "idle") return;
   const res = await EnvClient.setDial(v);
-  sitar.setRaga(res.active_raga);
-  ragaLabel.textContent = res.active_raga;
+  state.raga = res.active_raga;
+  river.setRaga(state.raga);
+  input.setRaga(state.raga);
+  applyTheme(state.raga);
+  dom.ragaLabel.textContent = `${RAGA_THEME[state.raga].label} · ${RAGA_THEME[state.raga].time}`;
   if (res.switched) {
-    log(`⚡ Raga switched → ${res.active_raga}${res.in_grace_period ? " (grace period)" : ""}`);
+    log(`⚡ Raga switched → ${state.raga}${res.in_grace_period ? " (grace period)" : ""}`);
   }
-});
+}
 
-// ── User pluck ─────────────────────────────────────────────────────────
+function applyTheme(raga) {
+  const t = RAGA_THEME[raga];
+  document.documentElement.style.setProperty("--bg0", t.bg0);
+  document.documentElement.style.setProperty("--bg1", t.bg1);
+  document.documentElement.style.setProperty("--accent", t.accent);
+  document.documentElement.style.setProperty("--accent2", t.accent2);
+  document.documentElement.style.setProperty("--you", t.you);
+  document.documentElement.style.setProperty("--ai", t.ai);
+  orbs.you.color = t.you;
+  orbs.ai.color = t.ai;
+}
 
-async function onUserPluck(noteIdx) {
-  if (state.phase !== "human_call") return;
+// ── Intro (your recorded opening line) ───────────────────────────────────
 
-  const semitone = RAGA_NOTES[sitar.raga][noteIdx];
-  state.callBuffer.push(semitone);
-  log(`Call note ${state.callBuffer.length}/4: semitone ${semitone}`);
+async function playIntro(raga) {
+  state.phase = "intro";
+  dom.phaseLabel.textContent = "Your intro";
+  orbs.setTurn("you");
 
-  if (state.callBuffer.length >= state.callExpected) {
-    await EnvClient.submitCall(state.callBuffer);
-    state.callBuffer = [];
-    state.phase = "ai_response";
-    phaseLabel.textContent = "AI responding…";
-    log("Call sent — AI responding…");
-    await runAIResponse();
+  const { pitches, durations } = INTROS[raga];
+  state.callPositions = [];
+  for (let i = 0; i < pitches.length; i++) {
+    const pos = river.addNote(pitches[i] % 12, "you", { octaveUp: pitches[i] >= 24 });
+    state.callPositions.push(pos);
+    sitarVoice.play(pitches[i], durations[i]);
+    orbs.you.pulse();
+    await delay(NOTE_PACE_MS);
   }
+
+  const callSwaras = callPhraseFromIntro(raga);
+  state.lastCall = callSwaras;
+  state.callPositions = state.callPositions.slice(-4); // only the last 4 notes became the call
+  await EnvClient.submitCall(callSwaras);
+  log(`Call: ${callSwaras.map((s) => SWARA_LATIN[s]).join(", ")}`);
+
+  await runAiTurn();
 }
 
 // ── AI turn ────────────────────────────────────────────────────────────
 
-async function runAIResponse() {
-  // AI plays 4 steps. Each step asks the server's /infer endpoint (the
-  // trained LoRA policy) for the next action; if no model is configured yet
-  // (503 — see docs/report-midway.md §9.1) or inference otherwise fails, we
-  // fall back to a safe placeholder note (Ga, the vadi of Yaman) so the demo
-  // still runs end to end.
+async function runAiTurn() {
+  state.phase = "listening";
+  dom.phaseLabel.textContent = "AI listening…";
+  orbs.setTurn("ai");
+  input.setEnabled(false);
+
+  for (const pos of state.callPositions) {
+    orbs.listenTravel(pos.stage);
+    await delay(120);
+  }
+  await delay(300);
+
+  const escalation = escalationForTurn(state.turnIndex);
+  highlightEscalation(state.turnIndex);
+
+  // Prefetch the whole line before playing any of it, so network latency
+  // hides behind the listen phase instead of breaking the beat
+  // (docs/imrpovedui.md §4.3 "scheduled, not streamed").
+  const notes = [];
+  let terminated = false;
   let inferenceUnavailable = false;
 
-  for (let i = 0; i < 4; i++) {
-    let action = 4;
+  for (let i = 0; i < AI_NOTES_PER_TURN && !terminated; i++) {
+    let action = 4; // fallback: Ga, Yaman's vadi — keeps the demo running if /infer is down
     try {
       const inferRes = await EnvClient.infer();
       action = inferRes.action;
     } catch (err) {
       if (!inferenceUnavailable) {
         inferenceUnavailable = true;
-        log(`⚠ Model inference unavailable (${err.message}) — using fallback note.`);
+        log(`⚠ Model inference unavailable (${err.message}) — using fallback notes.`);
       }
     }
-
     const res = await EnvClient.step(action);
     state.totalReward += res.reward;
-    state.lastBreakdown = res.reward_breakdown;
-    state.stepCount++;
-
-    // animate the string that corresponds to the note the AI played
-    const noteIdx = mapSemitoneToStringIndex(res.info.note);
-    if (noteIdx >= 0) sitar.animatePluck(noteIdx);
-    tabla.syncBeat(res.info.tala_position);
-    updateReward();
-    logBreakdown(res.reward_breakdown, res.reward);
-
-    await delay(400);
-
-    if (res.terminated) {
-      state.phase = "ended";
-      phaseLabel.textContent = "Episode ended";
-      tabla.stop();
-      log(`Episode complete. Total reward: ${state.totalReward.toFixed(2)}`);
-      startBtn.disabled = false;
-      return;
-    }
+    notes.push({ note: res.info.note, duration: res.info.duration, reward: res.reward, breakdown: res.reward_breakdown });
+    terminated = res.terminated;
   }
 
-  // Hand back to user for next call phrase
-  state.phase = "human_call";
-  phaseLabel.textContent = "Your turn — play 4 notes";
-  log("Your turn. Play your call phrase.");
+  // ── Scheduled playback, on the beat, with this turn's escalation voicing ──
+  state.phase = "ai_playing";
+  dom.phaseLabel.textContent = "AI responding…";
+  orbs.setTurn("ai");
+  await delay(tabla.msUntilNextBeat());
+
+  const responsePositions = [];
+  const breakdownUnion = {};
+  for (const n of notes) {
+    const voicedPitch = n.note + escalation.octaveUp;
+    const pos = river.addNote(voicedPitch % 12, "ai", { octaveUp: escalation.octaveUp > 0 });
+    responsePositions.push(pos);
+    const seconds = fluteVoice.play(voicedPitch, n.duration, { speed: escalation.speed });
+    orbs.ai.pulse();
+    Object.assign(breakdownUnion, n.breakdown);
+    updateReward();
+    // `seconds` is already speed-adjusted inside Voice.play — don't divide again.
+    await delay(seconds * 1000 + 40);
+  }
+
+  const responseSwaras = notes.map((n) => n.note % 12);
+  const { arcs, caption } = analyzeResponse(state.lastCall, responseSwaras);
+  for (const arc of arcs) {
+    const from = state.callPositions[Math.min(arc.fromIndex, state.callPositions.length - 1)];
+    const to = responsePositions[Math.min(arc.toIndex, responsePositions.length - 1)];
+    if (from && to) river.drawArc(from.local, to.local);
+  }
+  dom.caption.textContent = `${escalation.label} — ${caption}`;
+  renderChips(breakdownUnion);
+  log(`AI turn ${state.turnIndex + 1} (${escalation.label}): reward ${notes.reduce((s, n) => s + n.reward, 0).toFixed(2)}`);
+
+  state.turnIndex += 1;
+
+  if (terminated) {
+    endPerformance();
+    return;
+  }
+
+  beginYourTurn();
+}
+
+// ── Your live reply ───────────────────────────────────────────────────
+
+function beginYourTurn() {
+  state.phase = "your_turn";
+  state.yourTurnBuffer = [];
+  state.callPositions = [];
+  dom.phaseLabel.textContent = "Your turn — play up to 4 notes";
+  orbs.setTurn("you");
+  input.setEnabled(true);
+
+  state.yourTurnDeadline = performance.now() + YOUR_TURN_MS;
+  tickYourTurnCountdown();
+}
+
+function tickYourTurnCountdown() {
+  const remaining = state.yourTurnDeadline - performance.now();
+  mandala.setCountdown(Math.max(0, remaining / YOUR_TURN_MS));
+  if (remaining <= 0) {
+    finishYourTurn();
+    return;
+  }
+  state.yourTurnTimer = setTimeout(tickYourTurnCountdown, 120);
+}
+
+function onYourNote(swara, { register }) {
+  if (state.phase !== "your_turn") return;
+  const pitch = 12 + swara + register * 12; // madhya baseline, ± one register
+  const pos = river.addNote(swara, "you", { octaveUp: register > 0 });
+  state.callPositions.push(pos);
+  sitarVoice.play(pitch, 1);
+  orbs.you.pulse();
+
+  state.yourTurnBuffer.push(swara);
+  if (state.yourTurnBuffer.length >= 4) {
+    finishYourTurn();
+  }
+}
+
+async function finishYourTurn() {
+  clearTimeout(state.yourTurnTimer);
+  mandala.setCountdown(0);
+  input.setEnabled(false);
+
+  if (state.yourTurnBuffer.length === 0) {
+    log("No reply played — repeating your last call.");
+  } else {
+    state.lastCall = state.yourTurnBuffer;
+  }
+  await EnvClient.submitCall(state.lastCall);
+  log(`Call: ${state.lastCall.map((s) => SWARA_LATIN[s]).join(", ")}`);
+
+  await runAiTurn();
 }
 
 // ── Tabla beat sync ────────────────────────────────────────────────────
 
-function onTableBeat(beat) {
-  beatDots.forEach((dot, i) => dot.classList.toggle("active", i === beat));
-  talaDisplay.textContent = `Beat ${beat + 1}/16`;
+function onBeat(beat) {
+  mandala.setBeat(beat);
+}
+
+function endPerformance() {
+  state.phase = "ended";
+  dom.phaseLabel.textContent = "Performance complete";
+  tabla.stop();
+  input.setEnabled(false);
+  log(`Performance complete. Total reward: ${state.totalReward.toFixed(2)}`);
+  dom.startBtn.disabled = false;
+  dom.startBtn.textContent = "▶ Play again";
 }
 
 // ── UI helpers ─────────────────────────────────────────────────────────
 
-function updateUI(ragaName, obs) {
-  ragaLabel.textContent = ragaName;
-  phaseLabel.textContent = "Your turn — play 4 notes";
-  rewardDisplay.textContent = "0.00";
+function updateReward() {
+  dom.rewardDisplay.textContent = state.totalReward.toFixed(2);
 }
 
-function updateReward() {
-  rewardDisplay.textContent = state.totalReward.toFixed(2);
+function renderChips(breakdown) {
+  dom.chips.innerHTML = "";
+  const entries = Object.entries(breakdown).filter(([k]) => k !== "total");
+  if (!entries.length) {
+    dom.chips.innerHTML = '<span class="chip chip-empty">no reward events this turn</span>';
+    return;
+  }
+  for (const [key, value] of entries) {
+    const chip = document.createElement("span");
+    const good = value >= 0;
+    chip.className = `chip ${good ? "chip-good" : "chip-bad"}`;
+    chip.textContent = `${key.replace(/_/g, " ")} ${good ? "✓" : "✕"} ${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+    dom.chips.appendChild(chip);
+  }
 }
 
 function log(msg) {
   const el = document.createElement("div");
   el.className = "log-line";
   el.textContent = msg;
-  logEl.prepend(el);
-  if (logEl.children.length > 30) logEl.lastChild.remove();
-}
-
-function logBreakdown(bd, total) {
-  const parts = Object.entries(bd)
-    .filter(([k]) => k !== "total")
-    .map(([k, v]) => `${k}: ${(+v).toFixed(2)}`)
-    .join(" | ");
-  log(`Reward ${total >= 0 ? "+" : ""}${total.toFixed(2)} → ${parts || "—"}`);
-}
-
-function mapSemitoneToStringIndex(semitone) {
-  const notes = RAGA_NOTES[sitar.raga];
-  return notes.indexOf(semitone);
+  dom.log.prepend(el);
+  while (dom.log.children.length > 40) dom.log.lastChild.remove();
 }
 
 function delay(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, Math.max(0, ms)));
 }
+
+init();

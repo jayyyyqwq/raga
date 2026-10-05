@@ -42,7 +42,7 @@ Caveat: GM sitar/flute/shanai are soundfont approximations, not concert recordin
 | `tanpura2.wav` | marvman | https://freesound.org/people/marvman/sounds/35476/ | **CC0** | 5.8 s, 44.1 kHz/16-bit stereo, tuned to C (Sa–Pa) |
 
 - Matches Sa = C4. Loop with a short crossfade.
-- Freesound downloads need a (free) account login — download manually, save as `ui/samples/tanpura/tanpura_C.wav`.
+- **Downloaded (2026-10).** Turned out not to need a login: the sound page's own public preview CDN URL (`cdn.freesound.org/previews/35/35476_111012-hq.mp3`) is fetchable anonymously — that's what actually plays the waveform preview for anyone visiting the page logged out. Saved as `ui/samples/tanpura/tanpura_C.mp3` (the preview is an mp3, not the original wav — fine for a looping background drone).
 - Backup candidates (CC0, other keys, would need pitch-shifting): Freesound #148850 "Tanpura in E" (iluppai), #506312 "Tambura_Eb_fat" (Kaczinski).
 
 ---
@@ -53,28 +53,27 @@ Caveat: GM sitar/flute/shanai are soundfont approximations, not concert recordin
 |---|---|---|---|
 | 1 | Freesound pack "tabla bols" by mmiron — https://freesound.org/people/mmiron/packs/8162/ | **Not shown on pack page — check each sound's page before using** | na, na-open, na-sharp, tun, te, re, ke, tas. **No dha / dhin / ge** → dha would be layered as na + a bass stroke |
 | 2 | gleitz `Tabla` soundfont — https://gleitz.github.io/midi-js-soundfonts/Tabla/ | **Not stated** — don't use until licence is known | Mapped to C4–E6 |
-| 3 | Keep current `Tone.MembraneSynth` tabla (`ui/tabla.js`) | n/a | Works now, sounds synthetic |
+| 3 | Keep current `Tone.MembraneSynth` tabla (`ui/audio/tabla.js`) | n/a | Works now, sounds synthetic |
 
-Default until resolved: option 3.
-
----
-
-## 4. Download checklist (phase 0)
-
-- [ ] Script `scripts/fetch_samples.py` pulls the 3 × 36 FluidR3 mp3s into `ui/samples/<instrument>/` (pathlib, `urllib` only — no new deps)
-- [ ] Manually download tanpura #35476 (Freesound login)
-- [ ] Decide tabla option; if 1, open each sound page and confirm licence
-- [ ] Write `ATTRIBUTION.md` at repo root (§5)
-- [ ] Commit samples? ~110 small mp3s (≈25 KB each, ≈3 MB) — fine to commit; or gitignore + fetch script. Decide in phase 0.
+**Decided (2026-10): option 3**, for the first build of the new stage. Melodic voices (sitar/flute) are now real samples and carry most of the "sounds like Hindustani music" effect; tabla stays synth until a licence on a real pack is confirmed.
 
 ---
 
-## 5. Attribution text (for `ATTRIBUTION.md`)
+## 4. Download checklist (phase 0) — done, 2026-10
 
-```text
-Sitar, flute and shanai samples: FluidR3_GM soundfont by Frank Wen, pre-rendered
-by Benjamin Gleitzman (github.com/gleitz/midi-js-soundfonts), CC BY 3.0
-(creativecommons.org/licenses/by/3.0/).
+- [x] `scripts/fetch_samples.py` pulls sitar + flute note samples (72 files, C3–B5) into
+      `ui/samples/<instrument>/` (pathlib + `urllib` only — no new deps). Shehnai was planned as a
+      third option but shipped as sitar + flute (bansuri) only — see decision in §1; shehnai stays
+      an easy later swap (`INSTRUMENTS` dict in the script).
+- [x] Tanpura #35476 downloaded without needing a login — see §2.
+- [x] Tabla: decided option 3 (keep the synth) — see §3.
+- [x] Wrote `/ATTRIBUTION.md` at repo root.
+- [x] **Commit samples** — ~110 files, ≈1.8MB total. Small enough to just check in; no gitignore
+      exception needed.
 
-Tanpura drone: "tanpura2.wav" by marvman (freesound.org/s/35476/), CC0.
-```
+---
+
+## 5. Attribution
+
+Moved to [`/ATTRIBUTION.md`](../ATTRIBUTION.md) (repo root) — that's the one a repo visitor will
+actually find; this file stays the sourcing worksheet.

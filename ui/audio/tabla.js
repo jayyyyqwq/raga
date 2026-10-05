@@ -1,27 +1,30 @@
 // Tabla — auto-plays on the Teentaal beat cycle (16 beats).
 // Drives its own clock; syncs to tala_position from env state.
 //
-// WHY MembraneSynth: free, no samples needed, gives a percussive hit.
-// In production you'd replace with actual tabla samples (.wav / .ogg).
+// WHY MembraneSynth still: no CC0/CC-BY-cleared tabla bol samples found yet
+// (docs/AUDIO_SOURCES.md §3 — the one candidate pack has no stated licence).
+// Free, no samples needed, gives a percussive hit good enough to keep time
+// against while the melodic voices carry the "real instrument" feel.
 
-import * as Tone from "https://cdn.skypack.dev/tone";
+import * as Tone from "https://cdn.jsdelivr.net/npm/tone@15.1.22/+esm";
 
 const BEAT_PATTERNS = {
   //  beat index → { gain, pitch } for each of 16 beats
   //  Teentaal: Dha Dhin Dhin Dha | Dha Dhin Dhin Dha | Dha Tin Tin Ta | Ta Dhin Dhin Dha
-  0:  { gain: 1.0, pitch: "C1" },   // sam — heaviest
-  4:  { gain: 0.8, pitch: "C1" },
-  8:  { gain: 0.5, pitch: "F1" },   // khali — lighter
+  0: { gain: 1.0, pitch: "C1" },   // sam — heaviest
+  4: { gain: 0.8, pitch: "C1" },
+  8: { gain: 0.5, pitch: "F1" },   // khali — lighter
   12: { gain: 0.8, pitch: "C1" },
 };
 
-class Tabla {
+export class Tabla {
   constructor(onBeat) {
-    this.onBeat = onBeat;   // callback(beatIndex) — lets app.js sync tala display
+    this.onBeat = onBeat;   // callback(beatIndex, tickTimestampMs)
     this.bpm = 80;
     this.beatDuration = 60 / this.bpm;  // seconds per beat
     this.intervalId = null;
     this.currentBeat = 0;
+    this.lastTickAt = performance.now(); // consumed by app.js's beat-aligned scheduler
 
     this.synth = new Tone.MembraneSynth({
       pitchDecay: 0.08,
@@ -65,6 +68,14 @@ class Tabla {
     }
   }
 
+  /** ms until the start of the next beat — lets a prefetched AI line start
+   * exactly on the beat instead of whenever its network round-trip happened
+   * to finish (docs/imrpovedui.md §4.3's "scheduled, not streamed"). */
+  msUntilNextBeat() {
+    const elapsed = performance.now() - this.lastTickAt;
+    return Math.max(0, this.beatDuration * 1000 - elapsed);
+  }
+
   _tick() {
     const beat = this.currentBeat % 16;
     const pattern = BEAT_PATTERNS[beat];
@@ -76,9 +87,8 @@ class Tabla {
       this.hiSynth.triggerAttackRelease("G1", "16n");
     }
 
-    this.onBeat(beat);
+    this.lastTickAt = performance.now();
+    this.onBeat(beat, this.lastTickAt);
     this.currentBeat = (beat + 1) % 16;
   }
 }
-
-export { Tabla };

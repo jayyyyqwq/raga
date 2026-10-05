@@ -34,15 +34,21 @@ if not exist venv\Scripts\python.exe (
     exit /b 1
 )
 
-echo Starting the server ^(this window^) and the demo page ^(new window^) ...
-start "Jugalbandi UI (port 5500)" /D "%~dp0ui" cmd /k ""%~dp0venv\Scripts\python.exe" -m http.server 5500"
+REM One process now — server.py serves the ui/ page itself (same origin, no
+REM CORS dance, no separate static-file-server window). Still launched in
+REM its own titled window (not this one) so the browser can be opened only
+REM once it's actually listening, same ordering guarantee the old two-window
+REM version had.
+echo Starting the server ^(serves both the API and the demo page^) ...
+start "Jugalbandi Server (port 7860)" /D "%~dp0" cmd /k ""%~dp0venv\Scripts\python.exe" openenv_server\server.py"
 
-timeout /t 2 >nul
-start http://localhost:5500
+timeout /t 3 >nul
+start http://localhost:7860
 
 echo.
-echo Server logs below. First real /infer call loads the model into memory
-echo and can take a minute or two on CPU - that's normal, not stuck.
-echo Close this window (or Ctrl+C) to stop the server when you're done.
+echo Server is running in the "Jugalbandi Server" window - its logs (and the
+echo first /infer call's one-time model-load pause, up to a minute or two on
+echo CPU) are there, not here. Close that window when you're done.
+echo This window can be closed now.
 echo.
-venv\Scripts\python.exe openenv_server\server.py
+pause >nul

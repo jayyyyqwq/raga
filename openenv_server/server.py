@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -238,6 +239,18 @@ async def infer(req: InferRequest):
 @app.get("/health")
 async def health():
     return {"status": "ok", "env": "JugalbandiEnv"}
+
+
+# ── Serve the UI itself ───────────────────────────────────────────────
+# One process, one port (docs/imrpovedui.md's "serving" decision) — replaces
+# the old setup of this API server plus a separate `python -m http.server`
+# for ui/, which needed the CORS "*" above and a second terminal window.
+# Mounted last and at "/" so every @app.* route above still matches first;
+# StaticFiles only sees requests nothing else claimed, and html=True serves
+# ui/index.html for "/" itself.
+UI_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ui")
+if os.path.isdir(UI_DIR):
+    app.mount("/", StaticFiles(directory=UI_DIR, html=True), name="ui")
 
 
 if __name__ == "__main__":

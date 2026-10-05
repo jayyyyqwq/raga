@@ -81,3 +81,25 @@ def test_last_step_feedback_integrates_with_render_prompt_for_every_arm():
         )
         assert "Last action" in prompt
         assert "penalised" in prompt
+
+
+# ── UI static mount (docs/imrpovedui.md "one process, one port") ───────────
+
+def test_root_serves_the_ui_index_page():
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "Jugalbandi" in res.text
+
+
+def test_static_mount_serves_an_app_module():
+    res = client.get("/app.js")
+    assert res.status_code == 200
+    assert "EnvClient" in res.text
+
+
+def test_api_routes_still_take_priority_over_the_static_mount():
+    """The mount is at "/" — this is what guarantees /reset, /step etc.
+    never get shadowed by StaticFiles looking for files named "reset"."""
+    res = client.post("/reset", json={"dial": 0.0})
+    assert res.status_code == 200
+    assert "active_raga" in res.json()

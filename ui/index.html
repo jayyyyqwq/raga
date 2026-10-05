@@ -1,72 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Jugalbandi — Raga RL Demo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jugalbandi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-  <h1>Jugal<span>bandi</span></h1>
-
-  <!-- Status -->
-  <div class="status-bar">
-    <span>Raga: <strong id="raga-label">—</strong></span>
-    <span id="phase-label">Press Start</span>
-    <span>Step: <strong id="step-label">0</strong></span>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls">
-    <div class="dial-row">
-      <label>Raga dial</label>
+  <header class="topbar">
+    <h1>Jugal<span class="accent-text">bandi</span></h1>
+    <div id="raga-label" class="raga-label">Raag Yaman · evening</div>
+    <div class="dial-group">
+      <label for="raga-dial">Raga dial</label>
       <input type="range" id="raga-dial" min="0" max="1" step="0.01" value="0" />
       <span id="dial-value">0.00</span>
     </div>
-    <div class="dial-raga-labels">
-      <span>← Yaman (evening)</span>
-      <span>Bhairav (morning) →</span>
+  </header>
+
+  <main class="stage-wrap">
+    <div id="stage-host" class="stage-host"></div>
+
+    <div class="escalation-row">
+      <span class="escalation-caption-label">Escalation</span>
+      <div id="escalation" class="escalation"></div>
     </div>
-    <div class="btn-row">
-      <button id="start-btn">Start</button>
-      <button id="reset-btn" disabled>Reset</button>
+
+    <div id="input-strip" class="input-strip disabled"></div>
+    <p class="input-hint">Keys: S R G M P D N (madhya) · Shift+key (taar saptak) · Z X C V B N M (mandra)</p>
+
+    <div class="controls-row">
+      <button id="start-btn" class="btn btn-primary" disabled>Loading…</button>
+      <button id="reset-btn" class="btn" disabled>Reset</button>
+      <span id="phase-label" class="phase-label">—</span>
     </div>
-  </div>
 
-  <!-- Sitar (7 strings) -->
-  <div id="sitar-container" role="region" aria-label="Sitar strings — swipe to pluck"></div>
+    <p id="caption" class="caption"></p>
+    <div id="chips" class="chips"></div>
 
-  <!-- Tabla beat visualiser (16 dots = teentaal) -->
-  <div class="tala-row" id="tala-dots" aria-label="Tala position">
-    <!-- Beat dots injected by JS below -->
-  </div>
-  <div style="font-size:0.8rem; color:var(--muted)" id="tala-display">Beat 1/16</div>
+    <div class="reward-row">
+      <span class="reward-label">Total reward</span>
+      <span id="reward-display" class="reward-display">0.00</span>
+    </div>
 
-  <!-- Reward -->
-  <div class="reward-panel">
-    <div style="color:var(--muted); margin-bottom:4px">Total Reward</div>
-    <div class="reward-big" id="reward-display">0.00</div>
-  </div>
-
-  <!-- Event log -->
-  <div id="reward-log" aria-live="polite"></div>
-
-  <script type="module">
-    // Inject 16 beat dots; mark sam (0) and khali (8) specially
-    const dotContainer = document.getElementById("tala-dots");
-    for (let i = 0; i < 16; i++) {
-      const d = document.createElement("div");
-      d.className = "beat-dot" + (i === 0 ? " sam" : i === 8 ? " khali" : "");
-      d.setAttribute("data-beat", i);
-      dotContainer.appendChild(d);
-    }
-  </script>
-
-  <!-- Set server URL before loading app (override in prod) -->
-  <script>window.ENV_SERVER_URL = "http://localhost:7860";</script>
+    <details class="log-panel">
+      <summary>Log</summary>
+      <div id="log"></div>
+    </details>
+  </main>
 
   <script type="module" src="app.js"></script>
-
 </body>
 </html>

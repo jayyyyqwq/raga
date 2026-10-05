@@ -11,7 +11,7 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
 ## Status
 
 - Environment, reward function, drift mechanic, prompting layer, HTTP server, and evaluation harness:
-  **built and tested** (134 tests, `pytest -q`).
+  **built and tested** (137 tests, `pytest -q`).
 - Four scripted baselines (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`):
   **run for real** — see `eval/results/`.
 - Trained model: **one `grpo-HIDDEN` run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
@@ -71,20 +71,19 @@ git archive HEAD -o raga.zip --prefix=raga/
 
 See `docs/EXPERIMENT_PLAN.md` for what the resulting model is evaluated against.
 
-## Running the interactive demo (after training)
+## Running the interactive demo
 
-Once you have a trained adapter, you can play against it in the browser — the sitar/tabla UI
-talking to a local server that runs the real model. No GPU needed for this part; it runs fine on
-CPU, just slower per move (a second or two) than it would on a GPU.
+A turn-based jugalbandi stage — you play a recorded intro (real sitar samples, tanpura drone), the
+AI answers (real flute/bansuri samples), you reply live on the keyboard, it answers again, each
+turn a step up an escalation ladder. Design doc: [`docs/imrpovedui.md`](docs/imrpovedui.md). Audio
+sources and licences: [`docs/AUDIO_SOURCES.md`](docs/AUDIO_SOURCES.md) /
+[`ATTRIBUTION.md`](ATTRIBUTION.md).
 
-1. In Google Drive, find `jugalbandi/<run-name>/final` (the folder Colab's Cell 7 saved to —
-   e.g. `jugalbandi/jugalbandi-grpo-hidden-v1/final`). Right-click it → **Download**. Drive zips it
-   for you.
-2. Unzip it so its files (`adapter_config.json`, `adapter_model.safetensors`, tokenizer files, …)
-   land directly inside a `checkpoints/final` folder in this repo — i.e.
-   `checkpoints/final/adapter_config.json` should exist. Create the `checkpoints` folder if it's
-   not there yet. (This folder is gitignored — your downloaded weights never get committed.)
-3. One-time setup, in a terminal in this folder:
+It runs **with or without a trained adapter** — without one, `/infer` falls back to a safe default
+note (logged on screen) so the whole loop still plays end to end; the point of this step is the UI,
+not the model (see [`docs/RETRAIN_PLAN.md`](docs/RETRAIN_PLAN.md) for where the model itself stands).
+
+1. One-time setup, in a terminal in this folder:
 
    ```bash
    python -m venv venv
@@ -92,19 +91,26 @@ CPU, just slower per move (a second or two) than it would on a GPU.
    pip install -r requirements.txt -r requirements-infer.txt
    ```
 
-4. Double-click **`run_demo.bat`**. It starts the server, starts a page server for `ui/`, and opens
-   your browser to the demo. The first time you click Start and the AI takes its turn, it has to
-   load the model into memory — that one-time pause (up to ~1-2 minutes on CPU) is normal, not frozen.
-5. Click **Start**, pluck 4 sitar strings for your "call" phrase, and watch the trained model
-   respond. The raga dial slider controls the drift mechanic live.
+2. **(Optional, for the real trained model)** In Google Drive, find `jugalbandi/<run-name>/final`
+   (the folder Colab's Cell 7 saved to). Right-click → **Download**, unzip it so its files
+   (`adapter_config.json`, `adapter_model.safetensors`, tokenizer files, …) land directly inside a
+   `checkpoints/final` folder here — i.e. `checkpoints/final/adapter_config.json` should exist.
+   (Gitignored — downloaded weights never get committed.) Skip this to run on the fallback notes.
 
-If something's missing (no adapter downloaded yet, no venv set up), `run_demo.bat` tells you
-exactly what to fix instead of just failing silently.
+3. Double-click **`run_demo.bat`**. It starts one server (API + the demo page, same origin — no
+   second window, no CORS) and opens your browser to it. If a trained adapter is configured, the
+   first time the AI plays it has to load the model into memory — a one-time pause (up to ~1-2
+   minutes on CPU) is normal, not frozen.
 
-> **UI redesign planned.** The current UI is being replaced by a turn-based jugalbandi stage
-> (recorded intro → AI answers → you reply → AI answers, with sampled sitar/bansuri/tanpura).
-> Plan: [`docs/imrpovedui.md`](docs/imrpovedui.md). Audio sources and licences:
-> [`docs/AUDIO_SOURCES.md`](docs/AUDIO_SOURCES.md).
+4. Click **▶ Play intro** — your opening line plays on sitar, the tanpura drone fades in, tabla
+   keeps teentaal. The AI answers on flute. Your turn: play up to 4 notes on the on-screen strings
+   or the keyboard (`S R G M P D N`, `Shift` for the octave up, `Z X C V B N M` for the octave
+   down) within the turn window. It keeps alternating, climbing the escalation ladder shown above
+   the river, until the episode's step budget runs out. The raga dial above the stage still
+   controls the drift mechanic live, same as before.
+
+If something's missing (no venv set up), `run_demo.bat` tells you exactly what to fix instead of
+just failing silently.
 
 ## Dev quickstart (code changes, not training)
 
@@ -112,7 +118,7 @@ exactly what to fix instead of just failing silently.
 python -m venv venv
 venv/Scripts/activate          # Windows; source venv/bin/activate on Linux/Mac
 pip install -r requirements.txt
-pytest -q                      # 134 tests, no GPU needed
+pytest -q                      # 137 tests, no GPU needed
 python -m eval.evaluate --all  # re-run the four scripted baselines
 ```
 
@@ -120,9 +126,15 @@ python -m eval.evaluate --all  # re-run the four scripted baselines
 
 ```
 raaga_env/        core RL environment (ragas.py, env.py, jugalbandi_env.py, reward.py, drift.py, prompting.py)
-openenv_server/   FastAPI HTTP wrapper (server.py)
+openenv_server/   FastAPI HTTP wrapper (server.py) — also serves ui/ itself
 training/         GRPO training script + Colab notebook
 eval/              in-process evaluation harness (rollout, policies, metrics, fixed 200-episode set)
-ui/                browser demo client (vanilla JS)
+ui/                jugalbandi stage (vanilla JS + PixiJS + Tone.js, no build step)
+  stage/            river, tala mandala, orbs, theme, tween — the Pixi visuals
+  audio/            sampled sitar/flute voices, tanpura drone, synth tabla
+  analysis/         echo.js — pure functions behind the echo-arc visualisation
+  samples/           sitar/flute note recordings + tanpura drone (see /ATTRIBUTION.md)
+  app.js, input.js, presets.js, env_client.js — orchestrator, live input, intros, API client
+scripts/           fetch_samples.py — re-downloads ui/samples/ if needed
 docs/              full writeups — start with docs/summary.md
 ```
