@@ -115,10 +115,11 @@ instead of 300, run top to bottom, and look at three things before going further
 
 Only once the pilot looks sane, raise `STEPS` for the real run. **How high:** the first run (v1) used
 300 steps and only had to learn drift adaptation; this run also has to learn to use a call phrase it
-never saw before, which is strictly more to learn from the same model size. Recommend starting the
-final run at **500–800 steps** rather than repeating 300 — but let the pilot's actual reward/loss
-trend inform that number rather than picking it blind; if reward is still climbing steadily at 300 in
-the pilot's own curve, that's a stronger signal than any number in this doc.
+never saw before, which is strictly more to learn from the same model size — the original
+recommendation here was 500–800 steps. **Decided (2026-10): 1000 steps** — `train_grpo.ipynb`'s
+`STEPS` default and `train_grpo.py`'s usage comment both updated to match. ~2.5–3.5 hours on a free
+T4 (scaling from v1's ~50 min / 300 steps), past Colab free tier's ~90-minute idle-disconnect window
+— keep the tab active, or expect to resume from Cell 6's `save_total_limit=3` checkpoints on Drive.
 
 **Before re-running:** pull latest, confirm `pytest` is green locally first (catches anything Colab
 would otherwise fail on 45 minutes into a T4 run), then run the notebook — pilot first, per above.

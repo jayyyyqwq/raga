@@ -4,7 +4,7 @@
 #
 # Usage (Colab):
 #   !pip install -r requirements-train.txt
-#   !python train_grpo.py --arm hidden --steps 500
+#   !python train_grpo.py --arm hidden --steps 1000
 #
 # Run a cheap pilot (e.g. --steps 50, a few minutes on a T4) before a long
 # "final" run — this is the actual, current trl/unsloth/transformers stack
@@ -13,7 +13,9 @@
 # verified against, and GRPOTrainer's constructor has changed shape between
 # trl releases before. A pilot run is what catches an API mismatch, a
 # reward/loss that isn't moving, or a training-loop crash in minutes
-# instead of an hour. See docs/RETRAIN_PLAN.md.
+# instead of an hour. See docs/RETRAIN_PLAN.md — the 2026-10 pilot (50
+# steps) confirmed the pipeline runs clean on the current dependency stack,
+# so 1000 steps is the real run now, not another pilot.
 #
 # Training is in-process (updatedplan.md Phase 3.1) — no HTTP server, no
 # shared mutable env instance across samples (F9).
@@ -260,7 +262,15 @@ def main() -> None:
         gradient_accumulation_steps=4,
         learning_rate=5e-5,
         logging_steps=10,
-        save_steps=50,
+        # A 1000-step run saves 10 checkpoints at save_steps=100 (was 50,
+        # sized for the earlier 200-300 step runs — 50 would mean 20 saves
+        # here). save_total_limit keeps only the latest 3 on disk/Drive —
+        # without it, HF's Trainer keeps every single one, and each save is
+        # the adapter + optimizer state (~25-30MB going by the first run's
+        # checkpoint sizes), so uncapped would be several hundred MB of
+        # intermediate checkpoints nobody needs once training finishes.
+        save_steps=100,
+        save_total_limit=3,
         report_to="wandb" if use_wandb else "none",
         # GRPO-specific
         num_generations=args.num_generations,
