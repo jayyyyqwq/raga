@@ -110,9 +110,18 @@ def make_llm_policy(
     from peft import PeftModel
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
+    # Real bug, not just inherent per-call overhead: neither
+    # AutoModelForCausalLM.from_pretrained nor PeftModel.from_pretrained
+    # moves the model onto a GPU by default — with no explicit device_map
+    # or .to(device), this ran entirely on CPU even on a Colab T4 instance,
+    # which is easily 10-30x slower than it needed to be over a 200-episode
+    # (up to 12,800-call) run. Found the hard way, mid-run, 2026-10.
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.float16 if device == "cuda" else torch.float32
+
     tokenizer = AutoTokenizer.from_pretrained(base_model)
-    base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float32)
-    model = PeftModel.from_pretrained(base, adapter_repo)
+    base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=dtype).to(device)
+    model = PeftModel.from_pretrained(base, adapter_repo).to(device)
     model.eval()
     # The base model's generation_config.json ships a default max_length
     # (32768) alongside the max_new_tokens we pass per call below — with
@@ -126,7 +135,7 @@ def make_llm_policy(
     model.generation_config.max_length = None
 
     def generate_fn(prompt: str) -> str:
-        inputs = tokenizer(prompt, return_tensors="pt")
+        inputs = tokenizer(prompt, return_tensors="pt").to(device)
         with torch.no_grad():
             output = model.generate(
                 **inputs,
