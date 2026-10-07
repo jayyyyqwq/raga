@@ -110,6 +110,11 @@ def _load_inference_model():
     base_model = AutoModelForCausalLM.from_pretrained(base_repo, torch_dtype=torch.float32)
     model = PeftModel.from_pretrained(base_model, adapter_repo)
     model.eval()
+    # Avoids a "Both max_new_tokens and max_length seem to have been set"
+    # warning on every /infer call — see eval/llm_policy.py's
+    # make_llm_policy() for the full explanation (found there first, while
+    # running a 200-episode eval that made the spam impossible to ignore).
+    model.generation_config.max_length = None
 
     _inference_cache["model"] = model
     _inference_cache["tokenizer"] = tokenizer

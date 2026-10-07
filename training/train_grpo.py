@@ -244,6 +244,12 @@ def main() -> None:
         bias="none",
         use_gradient_checkpointing="unsloth",
     )
+    # Base model's generation_config.json ships a default max_length
+    # alongside GRPOConfig's max_completion_length below — avoids a "Both
+    # max_new_tokens and max_length seem to have been set" warning on every
+    # single completion GRPOTrainer generates (thousands, over a real run;
+    # see eval/llm_policy.py's make_llm_policy() for where this was found).
+    model.generation_config.max_length = None
 
     config = GRPOConfig(
         output_dir=f"./checkpoints/{args.run}",

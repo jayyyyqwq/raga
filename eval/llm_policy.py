@@ -114,6 +114,16 @@ def make_llm_policy(
     base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float32)
     model = PeftModel.from_pretrained(base, adapter_repo)
     model.eval()
+    # The base model's generation_config.json ships a default max_length
+    # (32768) alongside the max_new_tokens we pass per call below — with
+    # both set, transformers warns "Both max_new_tokens and max_length seem
+    # to have been set" on every single .generate() call. Harmless (the
+    # warning itself says max_new_tokens wins, which is what we want), but
+    # a 200-episode x up to-64-step run means up to ~12,800 near-identical
+    # warning lines — noisy enough to make the real output hard to find and
+    # slow to scroll through. Clearing it once here, rather than at each
+    # call site, removes the conflict for the rest of this policy's life.
+    model.generation_config.max_length = None
 
     def generate_fn(prompt: str) -> str:
         inputs = tokenizer(prompt, return_tensors="pt")
