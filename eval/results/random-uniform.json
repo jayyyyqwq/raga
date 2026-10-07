@@ -3,24 +3,36 @@
   "n_episodes": 200,
   "eval_master_seed": 20260910,
   "fingerprint": {
-    "git_sha": "8c818e6a9bd7c8fa8891ce357acd2bdc2fa2e077",
+    "git_sha": "919ae820a859961a1937d2e188f5a9bd0156e36b",
+    "git_dirty": true,
     "requirements_train_hash": "48d3bf9526431f96e3cc2a4e0beb8aa8999cc1db0ddb09e7e2a3cb6d3558fbfb",
-    "ragas_hash": "e059ce249c491c79c5536adb02f76cdb85f1bb4cffd2c89b661510417d6f2da9",
-    "reward_hash": "8c3a514ab29cf95ef78f2ea76d883aa48054b42000f0876c7d3f91e3bc09e3c3",
+    "ragas_hash": "9556c9631b2735ad7d026e139f98963489c9fd63685ad5b8fc8ff655ce9f96cb",
+    "reward_hash": "a488138a5616a047d01554e053a3fd5d460d9dce3b05359a4ac95985e6b6fe3c",
     "eval_episodes_hash": "1da7b03ccefb0ef680a211a4e0a8e44706fa11fc15a8ebe3952318748d77937c",
-    "metrics_hash": "7d31fc6c55f99cc168cdfb398023afa2915ae200ffbb7cdc803af04b8123f73b",
+    "metrics_hash": "7092a527a275a498239a52470cc8641a9fe30a3c084d076e29099b593f2c0cfd",
     "policies_hash": "c2a2a32c4dd5312eae5b43b8c2f956e95c3ea2214e3fcac5195e235e5252b5aa",
-    "rollout_hash": "614be10e95e09858c94e5108067f9bfbc5c7a78fafe7c68dd2d5ae85ca84a42c",
-    "evaluate_hash": "6f23ed68ed609388465eed8848a16523b7ad1096831e7c9f7921434378137672"
+    "rollout_hash": "d13dfc6c2069506b88885299e52f3234f93bb7c0c597d0cc5ab52aa90623d253",
+    "evaluate_hash": "6f23ed68ed609388465eed8848a16523b7ad1096831e7c9f7921434378137672",
+    "env_hash": "46b1397b8242ab674b7c631e053f9123d23f4f44fe0cab39032cbdd85a1ede71",
+    "jugalbandi_env_hash": "8619b2868989dc9c97556e19390bbe41b9add189f06d7626a062b247794e5eba",
+    "drift_hash": "0a0eee5c4172067ea6dc3c822702540e2d1a214561bd15ee49b20380e30de104",
+    "prompting_hash": "6f1306189ebdd0a754197dab97dd8ccde282e7f690b9b132a9c4452df3d0094f",
+    "llm_policy_hash": "e6d6d81bcd740a93258833421f4a859442c9d3d3f910674607506ab92aa60d55"
   },
   "metrics": {
     "n_episodes": 200,
-    "mean_reward": -67.16615,
+    "mean_reward": -57.050983333333335,
     "valid_raga_adherence": {
       "pre_switch": 0.8748620961386919,
       "grace": 0.8733333333333333,
       "post_grace": 0.874466268146883,
       "overall": 0.874609375
+    },
+    "hard_rule_adherence": {
+      "pre_switch": 0.5588652482269504,
+      "grace": 0.5333333333333333,
+      "post_grace": 0.5622544833475662,
+      "overall": 0.55921875
     },
     "drift_adaptation_speed": {
       "median_steps": 35,
@@ -50,9 +62,27 @@
       "14": 0.155,
       "15": 0.125
     },
+    "post_switch_hard_violation_decay": {
+      "0": 0.48,
+      "1": 0.465,
+      "2": 0.455,
+      "3": 0.36,
+      "4": 0.365,
+      "5": 0.42,
+      "6": 0.415,
+      "7": 0.43,
+      "8": 0.515,
+      "9": 0.44,
+      "10": 0.455,
+      "11": 0.445,
+      "12": 0.45,
+      "13": 0.505,
+      "14": 0.45,
+      "15": 0.435
+    },
     "pakad_rate": 0.005,
-    "jugalbandi_coherence": 0.426125,
-    "call_echo_rate": 0.419375,
+    "jugalbandi_coherence": 0.9181666666666667,
+    "call_echo_rate": 0.46714285714285714,
     "safe_set_occupancy": 0.33265625,
     "action_validity_rate": 1.0
   }

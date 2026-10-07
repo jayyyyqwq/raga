@@ -11,7 +11,7 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
 ## Status
 
 - Environment, reward function, drift mechanic, prompting layer, HTTP server, and evaluation harness:
-  **built and tested** (151 tests, `pytest -q`).
+  **built and tested** (196 tests, `pytest -q`).
 - Four scripted baselines (`random-uniform`, `random-valid`, `safe-set-cycle`, `scripted-oracle`):
   **run for real** — see `eval/results/`.
 - Trained model: **`grpo-HIDDEN` v1 run completed on Colab** (300 steps, Qwen2.5-0.5B QLoRA) — see
@@ -21,19 +21,30 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
   survives on the current dependency stack; a real full-length v2 run and the proper 200-episode
   comparison (`eval/evaluate_llm.py`, new — see `docs/RETRAIN_PLAN.md`) haven't happened yet.
   `DIAL`/`ORACLE` arms: **not run yet**.
+- **2026-10-07 audit: every existing adapter (v1, the pilot, any later run) must be retrained.**
+  Their prompts were corrupted by a note-decoding bug (12 of 24 pitches rendered a semitone flat),
+  and the reward has since changed (leap penalty floored; ascending rule judged on the actual move).
+  See `docs/RETRAIN_PLAN.md`'s audit note and `docs/EXPERIMENT_PLAN.md` §7.9.
+- Paper draft: [`paper/`](paper/).
 
-## Training on Colab — 3 steps
+## Training on Colab — 4 steps
 
-This repo is public on GitHub, so Colab opens and clones it directly — no download, no zip
-upload, no Hugging Face account, no sign-in beyond your own Google account.
+This repo is **private** on GitHub, so Colab can't clone it anonymously. Upload a zip instead:
+
+1. Double-click **`make_training_zip.bat`** in this folder. It builds `raga.zip` from the committed
+   tree (`git archive`, so uncommitted changes are *not* included — commit first).
+2. Open `training/train_grpo.ipynb` in Colab (`File → Upload notebook`, or the badge below — Colab
+   asks to authorise GitHub for a private repo), then drag `raga.zip` into the Files panel (folder
+   icon, left sidebar).
+3. `Runtime → Change runtime type → T4 GPU` (free tier) → `Save`.
+4. `Runtime → Run all`. Cell 1 finds the zip and uses it instead of cloning.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/jayyyyqwq/raga/blob/main/training/train_grpo.ipynb)
 
-1. **Click the badge above.** It opens `training/train_grpo.ipynb` directly in Colab.
-2. `Runtime → Change runtime type → T4 GPU` (free tier) → `Save`.
-3. `Runtime → Run all`.
+Alternatively, add a `GH_TOKEN` Colab secret (a fine-grained, read-only token for this repo) and
+Cell 1 clones with it instead of needing the zip.
 
-That's it — 3 clicks, then wait. Takes roughly 45–60 minutes; the trained model saves itself to
+That's it — then wait. Takes roughly 45–60 minutes; the trained model saves itself to
 your Google Drive automatically, no further action needed. Everything below is optional extra
 context, not required steps.
 
@@ -43,10 +54,8 @@ against whatever PyPI/Colab ships now. Scroll up in that cell's output for pip's
 see `requirements-train.txt`'s header comment for how to re-pin it (this has happened twice before;
 the fix is always the same shape).
 
-If the badge or GitHub's clone is ever flaky (offline mirror, you're testing local uncommitted
-changes), there's a fallback: double-click **`make_training_zip.bat`** in this folder to build a
-`raga.zip`, then drag it into Colab's Files panel (folder icon, left sidebar) before running the
-first code cell — the notebook auto-detects the zip and uses that instead of cloning.
+The zip always wins over cloning when both are possible, so it's also the way to test a specific
+committed state.
 
 ### What about Hugging Face?
 
@@ -120,7 +129,7 @@ just failing silently.
 python -m venv venv
 venv/Scripts/activate          # Windows; source venv/bin/activate on Linux/Mac
 pip install -r requirements.txt
-pytest -q                      # 151 tests, no GPU needed
+pytest -q                      # 196 tests, no GPU needed
 python -m eval.evaluate --all  # re-run the four scripted baselines
 ```
 

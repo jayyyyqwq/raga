@@ -158,3 +158,51 @@ def test_set_state_tolerates_snapshots_without_call_echoed():
     restored = JugalbandiEnv()
     restored.set_state(state)  # must not raise KeyError
     assert restored.call_echoed is False
+
+
+def test_no_call_is_requested_on_the_terminal_step():
+    """A call requested on the last step can never be answered (the episode
+    is over), but eval.metrics counted it — capping call_echo_rate at 7/8."""
+    env = JugalbandiEnv(episode_length=64)
+    env.reset(seed=0)
+    requested = []
+    for i in range(64):
+        _, _, term, _, info = env.step(4)
+        if info["call_requested"]:
+            requested.append(i)
+    assert term
+    assert 63 not in requested
+    assert requested == [7, 15, 23, 31, 39, 47, 55]
+
+
+def test_set_call_tension_uses_the_stored_phrase():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.set_call([0, 2, 4, 11, 4])  # 5th note is dropped from call_phrase
+    assert env.call_phrase == [0, 2, 4, 11]
+    assert env.call_tension == pytest.approx(5 / 6.0)  # Ni->Ga: 7 up = 5 around
+
+
+
+def test_reset_starts_from_initial_dial_not_the_previous_episodes_dial():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.set_dial(1.0)  # switch to Bhairav mid-episode
+    env.reset(seed=1)
+    assert env.drift.active_raga_name == "yaman"
+
+
+def test_reset_dial_option_overrides_initial_dial():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0, options={"dial": 1.0})
+    assert env.drift.active_raga_name == "bhairav"
+    assert not env.drift.in_grace_period  # starting in a raga is not a switch
+
+
+def test_call_tension_is_circular():
+    env = JugalbandiEnv(initial_dial=0.0)  # Yaman, vadi Ga (4)
+    env.reset(seed=0)
+    env.set_call([0, 0, 0, 4])
+    assert env.call_tension == 0.0
+    env.set_call([0, 0, 0, 10])  # ni: 6 semitones either way — maximal
+    assert env.call_tension == pytest.approx(1.0)

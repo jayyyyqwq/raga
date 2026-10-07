@@ -19,6 +19,24 @@ from .ragas import match_pakad
 # since neglecting a phrase is a lesser lapse than neglecting the vadi.
 VADI_DROUGHT_FLOOR = -1.0
 PAKAD_DROUGHT_FLOOR = -0.5
+# Same F11 invariant, applied to the leap penalty (audit 2026-10-07): it was
+# unbounded at -0.2 per semitone past max_smooth_interval, so a two-octave
+# leap cost -3.2 — more than playing a forbidden note (-2.0). It was also the
+# single largest reward term for every baseline, which is what let a
+# never-adapting four-note cycle outscore raga-informed play.
+LEAP_PENALTY_FLOOR = -1.0
+
+
+def move_direction(note: int, note_history: list[int]) -> int:
+    """Direction of the move *into* `note`: 0=neutral (repeat or no
+    history), 1=ascending, 2=descending — same encoding as
+    RaagaEnv._direction(). Rule checks use this, not the preceding contour
+    (audit 2026-10-07): with the contour, a descending Dha->Pa after a rise
+    was penalised as an ascending-Pa violation in Yaman, while an actually
+    ascending Ga->Pa went unpenalised whenever the 3-note window was mixed."""
+    if not note_history or note == note_history[-1]:
+        return 0
+    return 1 if note > note_history[-1] else 2
 
 
 def compute_reward(
@@ -27,7 +45,6 @@ def compute_reward(
     note_history: list[int],
     dur_history: list[int],
     tala_position: int,
-    direction: int,
     raga: dict,
     tala: dict,
     pakad_drought: int,
@@ -53,6 +70,7 @@ def compute_reward(
     """
     breakdown: dict[str, float] = {}
     swara = note % 12
+    direction = move_direction(note, note_history)
 
     # ── LAYER 1: HARD RULES ─────────────────────────────────────────────
     if swara in raga["forbidden_notes"]:
@@ -93,7 +111,7 @@ def compute_reward(
     if note_history:
         interval = abs(note - note_history[-1])
         if interval > raga["max_smooth_interval"]:
-            p = -0.2 * (interval - raga["max_smooth_interval"])
+            p = max(-0.2 * (interval - raga["max_smooth_interval"]), LEAP_PENALTY_FLOOR)
             breakdown["large_leap_penalty"] = p
             reward += p
 

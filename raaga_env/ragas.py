@@ -134,7 +134,9 @@ def match_pakad(note_history: list[int], note: int, raga: dict) -> tuple[list[in
 
 
 def is_valid_note(note: int, raga: dict, direction: int) -> bool:
-    """Swara-level validation. note is absolute (0-23); rules use % 12."""
+    """Swara-level validation. note is absolute (0-23); rules use % 12.
+    `direction` is the direction of the move *into* this note (1 =
+    ascending) — see reward.move_direction."""
     swara = note % 12
     if swara in raga["forbidden_notes"]:
         return False

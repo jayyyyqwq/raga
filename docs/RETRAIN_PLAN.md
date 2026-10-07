@@ -2,6 +2,14 @@
 
 Status: **code done, tests passing locally. GPU retrain not run yet — needs Colab.**
 
+> **2026-10-07 audit — every existing adapter must be retrained.** `raaga_env/prompting.py` decoded
+> note pitches from the float32 observation with `int()` truncation, so 12 of the 24 pitches
+> (including madhya Sa, Re, Pa, Ma#) rendered one semitone flat in *every* prompt, in training and
+> in evaluation; and for the first 3 steps of each episode the last-listed note was an empty slot,
+> not the note just played. Fixed (rounding + right-aligned history, regression-tested), but v1, the
+> 50-step pilot, and any run started before this fix were trained on corrupted prompts. Do not
+> evaluate or report them — retrain from the current tree.
+
 Scope: Option A from [`imrpovedui.md`](imrpovedui.md) §7, pulled forward and done first, on its
 own, before any UI work. The UI plan is unchanged and picks up again once this lands.
 
@@ -154,13 +162,13 @@ evaluation episode — `jugalbandi_coherence` had been silently `NaN` for every 
 the harness. Fixed, and the four scripted baselines were re-run for real (§8 of
 `EXPERIMENT_PLAN.md` has the full table). The baselines' `call_echo_rate` — how often a policy with
 **zero** awareness of the call lands on it anyway, purely by chance (a call's last note is one of
-~7 valid swaras, 8 notes per turn to maybe land on it) — turned out to be **0.42 to 0.61**.
+~7 valid swaras, 8 notes per turn to maybe land on it) — turned out to be **0.47 to 0.68** (regenerated 2026-10-07 after the audit fixes; first quoted as 0.42 to 0.61).
 
 The pilot's own rate: 2 echoes out of 7 calls in its one episode (`CALL_EVERY=8` over 64 steps) ≈
 **0.29** — below every baseline's chance floor, not above it. On one noisy episode from a 50-step
 checkpoint that's the wrong conclusion to draw hard lines from, but it's the opposite of evidence
 that the fix is already working, and worth watching for in the real run: if a properly-trained
-checkpoint's `call_echo_rate` isn't clearly above ~0.6, that's a sign the model still isn't using the
+checkpoint's `call_echo_rate` isn't clearly above ~0.68 (random-valid's chance rate), that's a sign the model still isn't using the
 call, not a sign the metric is broken.
 
 **The real way to answer this** — not from one episode, but from the same 200-episode set the

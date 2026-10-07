@@ -52,17 +52,40 @@ class AdherenceSplit:
     overall: float
 
 
+HARD_RULE_KEYS = ("forbidden_note", "out_of_raga", "aaroha_violation")
+
+
 def valid_raga_adherence(trajectories: list[Trajectory]) -> AdherenceSplit:
     """Fraction of steps with no forbidden-note violation, split three ways
     (openenv.yaml's rubric names this metric; Phase 4.3 requires the split
-    because a single average hides the entire drift-adaptation effect)."""
+    because a single average hides the entire drift-adaptation effect).
+
+    Pre-registered definition, kept as-is: counts `forbidden_note` only.
+    Note what that misses — out-of-scale notes (`out_of_raga`) are *not*
+    violations here, so e.g. Ma# carried over into Bhairav after a
+    Yaman->Bhairav switch is invisible to this metric. See
+    hard_rule_adherence for the stricter companion."""
+    return _adherence_split(trajectories, ("forbidden_note",))
+
+
+def hard_rule_adherence(trajectories: list[Trajectory]) -> AdherenceSplit:
+    """Fraction of steps with no hard-rule violation of any kind
+    (forbidden note, out-of-raga note, aaroha violation), split the same
+    three ways. Added 2026-10-07 (audit) as a protocol amendment *alongside*
+    valid_raga_adherence, before any trained-model number was computed with
+    either: the pre-registered metric scores random-uniform at 0.87
+    "adherence" despite ~42% of its notes breaking a hard rule."""
+    return _adherence_split(trajectories, HARD_RULE_KEYS)
+
+
+def _adherence_split(trajectories: list[Trajectory], violation_keys: tuple[str, ...]) -> AdherenceSplit:
     counts = {"pre_switch": [0, 0], "grace": [0, 0], "post_grace": [0, 0]}
     for t in trajectories:
         for s in t.steps:
             segment = _segment(_offset_since_switch(s.step, t.switch_steps))
             valid, total = counts[segment]
             counts[segment][1] = total + 1
-            if "forbidden_note" not in s.reward_breakdown:
+            if not any(k in s.reward_breakdown for k in violation_keys):
                 counts[segment][0] = valid + 1
 
     def rate(segment: str) -> float:
@@ -147,7 +170,22 @@ def post_switch_violation_decay(
 ) -> dict[int, float]:
     """Forbidden-note rate as a function of steps since switch, averaged
     across episodes — the real adaptation figure, more informative than any
-    scalar (Phase 4.3)."""
+    scalar (Phase 4.3). Pre-registered (forbidden-only) definition; see
+    post_switch_hard_violation_decay for the hard-rule companion."""
+    return _violation_decay(trajectories, horizon, ("forbidden_note",))
+
+
+def post_switch_hard_violation_decay(
+    trajectories: list[Trajectory], horizon: int = DEFAULT_DECAY_HORIZON
+) -> dict[int, float]:
+    """As post_switch_violation_decay, counting any hard-rule violation
+    (protocol amendment alongside hard_rule_adherence, 2026-10-07)."""
+    return _violation_decay(trajectories, horizon, HARD_RULE_KEYS)
+
+
+def _violation_decay(
+    trajectories: list[Trajectory], horizon: int, violation_keys: tuple[str, ...]
+) -> dict[int, float]:
     switched = [t for t in trajectories if t.switch_steps]
     counts = {offset: [0, 0] for offset in range(horizon)}
     for t in switched:
@@ -157,7 +195,7 @@ def post_switch_violation_decay(
             if 0 <= offset < horizon:
                 forbidden, total = counts[offset]
                 counts[offset][1] = total + 1
-                if "forbidden_note" in s.reward_breakdown:
+                if any(k in s.reward_breakdown for k in violation_keys):
                     counts[offset][0] = forbidden + 1
     return {
         offset: (c[0] / c[1] if c[1] else float("nan")) for offset, c in counts.items()
@@ -241,9 +279,11 @@ class MetricReport:
     n_episodes: int
     mean_reward: float
     adherence: AdherenceSplit
+    hard_rule_adherence: AdherenceSplit
     adaptation_speed: AdaptationSpeed
     adaptation_success_at_k: dict[int, float]
     post_switch_violation_decay: dict[int, float]
+    post_switch_hard_violation_decay: dict[int, float]
     pakad_rate: float
     jugalbandi_coherence: float
     call_echo_rate: float
@@ -260,6 +300,12 @@ class MetricReport:
                 "post_grace": self.adherence.post_grace,
                 "overall": self.adherence.overall,
             },
+            "hard_rule_adherence": {
+                "pre_switch": self.hard_rule_adherence.pre_switch,
+                "grace": self.hard_rule_adherence.grace,
+                "post_grace": self.hard_rule_adherence.post_grace,
+                "overall": self.hard_rule_adherence.overall,
+            },
             "drift_adaptation_speed": {
                 "median_steps": self.adaptation_speed.median_steps,
                 "censoring_rate": self.adaptation_speed.censoring_rate,
@@ -270,6 +316,9 @@ class MetricReport:
             },
             "post_switch_violation_decay": {
                 str(k): v for k, v in self.post_switch_violation_decay.items()
+            },
+            "post_switch_hard_violation_decay": {
+                str(k): v for k, v in self.post_switch_hard_violation_decay.items()
             },
             "pakad_rate": self.pakad_rate,
             "jugalbandi_coherence": self.jugalbandi_coherence,
@@ -291,9 +340,11 @@ def compute_all_metrics(
         n_episodes=len(trajectories),
         mean_reward=sum(t.total_reward for t in trajectories) / len(trajectories),
         adherence=valid_raga_adherence(trajectories),
+        hard_rule_adherence=hard_rule_adherence(trajectories),
         adaptation_speed=drift_adaptation_speed(trajectories),
         adaptation_success_at_k=adaptation_success_rate_at_k(trajectories),
         post_switch_violation_decay=post_switch_violation_decay(trajectories),
+        post_switch_hard_violation_decay=post_switch_hard_violation_decay(trajectories),
         pakad_rate=pakad_rate(trajectories),
         jugalbandi_coherence=jugalbandi_coherence(trajectories),
         call_echo_rate=call_echo_rate(trajectories),

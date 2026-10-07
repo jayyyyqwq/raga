@@ -103,3 +103,11 @@ def test_api_routes_still_take_priority_over_the_static_mount():
     res = client.post("/reset", json={"dial": 0.0})
     assert res.status_code == 200
     assert "active_raga" in res.json()
+
+
+@pytest.mark.parametrize("notes", [[12], [-1], [0, 2, 4, 99]])
+def test_call_rejects_out_of_range_swaras(notes):
+    """Calls are swaras 0-11; anything else used to reach set_call() and
+    then crash prompt rendering (IndexError) or push obs outside [0, 1]."""
+    resp = client.post("/call", json={"notes": notes})
+    assert resp.status_code == 422

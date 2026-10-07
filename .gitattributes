@@ -1,0 +1,6 @@
+# Line endings: LF in the repo and working tree for everything, so commits
+# behave the same on every machine regardless of core.autocrlf. Windows
+# batch files need CRLF to run in cmd.exe.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf

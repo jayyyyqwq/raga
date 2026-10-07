@@ -1,5 +1,5 @@
 # JugalbandiEnv — extends RaagaEnv with drift + call-response mechanics.
-# This is what gets deployed to HF Spaces and used in training.
+# This is what the server, training, and eval harness all use.
 # The base RaagaEnv stays clean; all extensions live here.
 
 import numpy as np
@@ -15,14 +15,10 @@ class JugalbandiEnv(RaagaEnv):
     """
     22-dim observation space.
 
-    Extra dims vs base (14):
-      [14-21] human call phrase (last 4 notes, note + duration each = 8 dims)
-      BUT we collapse to: [14-17] call notes, [18] tension, [19] dial, [20] pakad_drought, [21] steps_since_switch
-    So base obs is 12 dims (last 4 notes only) + 8 jugalbandi dims = 22 total.
-
     Obs layout:
-      0-7  : last 4 played notes (note/23, duration/3 interleaved) — reused
-             verbatim from RaagaEnv._get_obs() so the two can't diverge again
+      0-7  : last 4 played notes (note/23, duration/3 interleaved, right-
+             aligned: slots 6-7 are the most recent note) — reused verbatim
+             from RaagaEnv._get_obs() so the two can't diverge again
       8-11 : human call phrase (4 note values / 11)
       12   : melodic direction        (from RaagaEnv._get_obs())
       13   : tala position            (from RaagaEnv._get_obs())
@@ -40,6 +36,7 @@ class JugalbandiEnv(RaagaEnv):
         kwargs.setdefault("episode_length", 64)
         super().__init__(**kwargs)
 
+        self.initial_dial = initial_dial
         self.drift = DriftManager(initial_dial)
         # Override raga to follow the dial
         self.raga_name = self.drift.active_raga_name
@@ -60,7 +57,7 @@ class JugalbandiEnv(RaagaEnv):
         # [0,0,0,0] used to be the default, which is truthy in Python, so
         # reward.py's `if call_phrase:` guard on the whole jugalbandi layer
         # fired on every single step of every training episode — training
-        # never calls set_call() (see train_grpo.py), so the model was being
+        # never called set_call() before the 2026-10 fix, so the v1 model was
         # scored the entire time against a phantom call it never received
         # (ML retrain finding, 2026-10; see docs/RETRAIN_PLAN.md).
         self.call_phrase: list[int] = []
@@ -74,7 +71,12 @@ class JugalbandiEnv(RaagaEnv):
 
     def reset(self, seed=None, options=None):
         obs, info = super().reset(seed=seed, options=options)
-        self.drift = DriftManager(self.drift.dial)
+        # Start from options["dial"] if given, else the constructor's
+        # initial_dial — not whatever dial the *previous* episode ended on
+        # (audit 2026-10-07: a reset after a mid-episode switch used to start
+        # the next episode in the switched-to raga).
+        dial = (options or {}).get("dial", self.initial_dial)
+        self.drift = DriftManager(dial)
         self.raga_name = self.drift.active_raga_name
         self.raga = self.drift.active_raga
         self.call_phrase = []
@@ -95,7 +97,6 @@ class JugalbandiEnv(RaagaEnv):
             note_history=list(self.note_history),
             dur_history=list(self.dur_history),
             tala_position=self.tala_position,
-            direction=self._direction(),
             raga=self.raga,
             tala=self.tala,
             pakad_drought=self.pakad_drought,
@@ -121,13 +122,17 @@ class JugalbandiEnv(RaagaEnv):
         self._update_state(note, duration)
         self.episode_reward += reward
 
+        terminated = self.step_count >= self.episode_length
+
+        # Never on the terminal step: a call requested there can't be
+        # submitted or answered, but eval.metrics still counted it as a
+        # call-response pair — 8 per 64-step episode instead of the 7 that
+        # actually happen, capping call_echo_rate at 0.875 (audit 2026-10-07).
         self.steps_until_call -= 1
         call_requested = False
         if self.steps_until_call <= 0:
             self.steps_until_call = CALL_EVERY
-            call_requested = True
-
-        terminated = self.step_count >= self.episode_length
+            call_requested = not terminated
         info = {
             "reward_breakdown": breakdown,
             "forbidden_note_count": self.forbidden_count,
@@ -163,9 +168,15 @@ class JugalbandiEnv(RaagaEnv):
         """Human submits a 4-note call phrase (swara values 0-11, matching
         obs[8:12]'s n/11.0 encoding — no register, calls carry no octave)."""
         self.call_phrase = notes[:4]
-        # Tension: how far from vadi the last call note lands
-        last = notes[-1] if notes else 0
-        self.call_tension = abs(last - self.raga["vadi"]) / 11.0
+        # Tension: how far from vadi the last call note lands. Read from the
+        # stored (truncated) phrase so tension and call_echo agree on which
+        # note "ended" the call.
+        last = self.call_phrase[-1] if self.call_phrase else 0
+        # Circular swara distance (max 6 semitones), matching the vadi-
+        # distance obs dims — linear |last - vadi| / 11 treated Ni and Sa,
+        # one semitone apart, as maximally distant (audit 2026-10-07).
+        dist = abs(last - self.raga["vadi"])
+        self.call_tension = min(dist, 12 - dist) / 6.0
         # A new call is a fresh chance to answer it.
         self.call_echoed = False
 

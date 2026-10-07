@@ -60,7 +60,9 @@ def test_build_dataset_produces_expected_columns():
     rows = build_dataset(80, Arm.HIDDEN, rng)
     assert len(rows) == 80
     for row in rows:
-        assert set(row.keys()) == {"prompt", "state_json", "mc_seed"}
+        assert set(row.keys()) == {"prompt", "state_json", "mc_seed", "switches_json"}
+        state = json.loads(row["state_json"])
+        assert all(s > state["step_count"] - 1 for s, _ in json.loads(row["switches_json"]))
         assert isinstance(row["prompt"], str)
         assert "hidden" not in row["prompt"].lower()  # sanity: arm-gating actually engaged
         state = json.loads(row["state_json"])
@@ -156,6 +158,8 @@ def test_step_reward_matches_a_manual_state_replay():
             episode_length=EPISODE_LENGTH,
             max_extra_steps=MC_HORIZON,
             arm=Arm.HIDDEN.value,
+            call_phrase_fn=sample_call_phrase,
+            call_rng=random.Random(seed + 1),
         )
         expected += continuation.total_reward
 

@@ -64,7 +64,8 @@ All three arms see the exact same underlying information about the music — sam
 Active raga: bhairav (dial=0.75  GRACE PERIOD - rules just changed)
 Steps since last rule change: 0.0 (normalised)
 Tala position: beat 0/16
-Last 4 notes: ṉNi(quarter), ṉSa(sixteenth), ṉSa(sixteenth), ṉSa(sixteenth)
+Recent notes (oldest first): Sa(quarter)
+Partner's call phrase: none yet
 Human call tension: 0.00 (how unresolved their phrase was)
 Pakad drought: 0.00 (0=just played a phrase, 1=very long since last phrase)
 Vadi drought: 0.00 (0=vadi just played, 1=long since)
@@ -77,7 +78,8 @@ Choose action (0-95):
 ```text
 Raga dial: 0.75
 Tala position: beat 0/16
-Last 4 notes: ṉNi(quarter), ṉSa(sixteenth), ṉSa(sixteenth), ṉSa(sixteenth)
+Recent notes (oldest first): Sa(quarter)
+Partner's call phrase: none yet
 Human call tension: 0.00 (how unresolved their phrase was)
 Pakad drought: 0.00 (0=just played a phrase, 1=very long since last phrase)
 Vadi drought: 0.00 (0=vadi just played, 1=long since)
@@ -89,7 +91,8 @@ Choose action (0-95):
 
 ```text
 Tala position: beat 0/16
-Last 4 notes: ṉNi(quarter), ṉSa(sixteenth), ṉSa(sixteenth), ṉSa(sixteenth)
+Recent notes (oldest first): Sa(quarter)
+Partner's call phrase: none yet
 Human call tension: 0.00 (how unresolved their phrase was)
 Pakad drought: 0.00 (0=just played a phrase, 1=very long since last phrase)
 Vadi drought: 0.00 (0=vadi just played, 1=long since)
@@ -97,7 +100,7 @@ Last action: Ma(sixteenth) -> outcome: penalised (-2.00)
 Choose action (0-95):
 ```
 
-(This is exact, real output from `raaga_env/prompting.py` — not a hand-written illustration. The `ṉ` prefix marks a note in the lower octave; `Ni`, `Sa` etc. are the seven scale-degree names, the Indian-classical equivalent of do-re-mi.)
+(This is exact, real output from `raaga_env/prompting.py` — not a hand-written illustration, except that the `Last action:` line is supplied for illustration; regenerated 2026-10-07. The previous version of these examples showed `ṉNi(quarter), ṉSa(sixteenth), …` for the same state — that was the prompt note-decoding bug itself, visible in this document: madhya Sa rendered a semitone flat as ṉNi, and listed *first* instead of last. Empty history slots at episode start are no longer rendered at all (§7.9), so only the one real note appears. The `ṉ` prefix marks a note in the lower octave; `Ni`, `Sa` etc. are the seven scale-degree names, the Indian-classical equivalent of do-re-mi.)
 
 Notice the one line every arm shares: `Last action: Ma(sixteenth) -> outcome: penalised (-2.00)`. That's the "did it go well or badly" feedback described in §2 and §3 — it's rule-agnostic by design (it never says "penalised because Ma is forbidden in Bhairav"), so showing it doesn't give away the answer. This line is what makes the HIDDEN and DIAL arms' task possible at all: without it, the model reading the HIDDEN prompt above has *no way whatsoever* to know that the last action was a mistake, since nothing else in the text changed. This is Claim B, resolved as the project's chosen research question (see `updatedplan.md` §9 decision 2): **can the model use only that one feedback line to notice the rules changed and adjust, with no raga name and no dial number to lean on?**
 
@@ -145,7 +148,13 @@ Every metric below is implemented once, in `eval/metrics.py`, and every number q
 - **grace** — the 3 steps immediately after a switch (during this short window, mistakes are penalized much more gently — a few in-character seconds to "notice," instead of "get it right the very first note or lose a lot of points")
 - **post_grace** — everything after that grace window, where full penalties apply again
 
-**A concrete example, from real measurements (§8):** `scripted-oracle` scores exactly 1.0 (perfect) in all three segments — it never plays a note that's illegal in whatever the active raga is at that moment, before or after the switch. `random-uniform`, which doesn't even try to pick legal notes, scores around 0.87 in every segment — it's *breaking rules at almost the same rate before and after the switch*, which makes sense: it isn't reacting to the switch at all, it's just guessing randomly the whole time regardless.
+**A concrete example, from real measurements (§8):** `scripted-oracle` scores exactly 1.0 (perfect) in all three segments — it never plays a forbidden note in whatever the active raga is at that moment, before or after the switch (it does commit ascending-rule violations, which this metric doesn't count — §7.1b). `random-uniform`, which doesn't even try to pick legal notes, scores around 0.87 in every segment — it's *breaking rules at almost the same rate before and after the switch*, which makes sense: it isn't reacting to the switch at all, it's just guessing randomly the whole time regardless.
+
+**Fine print (audit, 2026-10-07):** "legal" here means *no forbidden-note violation* — that is the whole definition (`eval/metrics.py`). A note that is simply outside the raga's scale (`out_of_raga`, e.g. Ma# in Bhairav or komal Re in Yaman) or an ascending-only rule break (`aaroha_violation`) does **not** count against this metric. That matters most exactly where this experiment looks: after a Yaman→Bhairav switch, carrying over Ma# is an out-of-raga error this metric cannot see. Kept unchanged because it is the pre-registered definition — see §7.1b for the stricter companion.
+
+### 7.1b `hard_rule_adherence` — protocol amendment (2026-10-07)
+
+**Added before any trained-model number was computed with either adherence metric**, alongside §7.1, not replacing it. Same three-way split; a step counts as a violation if it triggered *any* hard rule (`forbidden_note`, `out_of_raga`, or `aaroha_violation`). Motivation: §7.1 scores `random-uniform` at 0.875 while §7.1b scores it at 0.559 (after the §7.9 fixes) — 44% of its notes break a hard rule, and only the forbidden-note fraction (12.5%) is visible to §7.1. Both are reported for every policy; any claim about rule adherence should cite §7.1b.
 
 ### 7.2 `drift_adaptation_speed` — how fast did it recover?
 
@@ -175,6 +184,8 @@ Some episodes never see a new pakad before they end — that's a **censored** ob
 
 ### 7.6b `call_echo_rate` — a plainer companion to the above
 
+**Fine print (audit, 2026-10-07):** before this date, `JugalbandiEnv` flagged `call_requested` on the episode's final step too, so the denominator counted 8 calls per 64-step episode when only 7 can ever be submitted — every `call_echo_rate` was understated by a factor of 7/8 and capped at 0.875, and `jugalbandi_coherence` likewise. Fixed in the env; §8's numbers are regenerated.
+
 **Plain language:** out of every human "turn," what fraction did the policy land on the human's last note at least once? 0 to 1, more directly readable than `jugalbandi_coherence`'s reward average. **Read §8's baseline numbers before trusting any trained model's score here** — a policy that has no idea a call happened still echoes it some of the time by chance alone (a call's last note is one of roughly 7 valid swaras, and a policy gets 8 notes per turn to possibly land on it), and that chance floor turns out to be surprisingly high.
 
 ### 7.7 `action_validity_rate` — did the model even answer correctly?
@@ -187,28 +198,51 @@ Some episodes never see a new pakad before they end — that's a **censored** ob
 
 ---
 
+### 7.9 Reward and environment amendments (2026-10-07 audit)
+
+These change the environment itself, so every number measured before this date is superseded. No trained-model result existed under the old definitions, so nothing pre-registered about a trained model was lost. Every change has a regression test.
+
+- **Leap penalty floored at −1.0.** The penalty was unbounded (−0.2 per semitone past 7, so a two-octave leap cost −3.2, more than a forbidden note's −2.0). That broke the same invariant F11 already enforces for the drought penalties: neglecting good practice must never cost more than breaking a rule. It was also the largest single reward term for every baseline, and it is what let `safe-set-cycle` outscore `random-valid`.
+- **The ascending rule is judged on the actual move into the note.** It used to use the contour of the 3 preceding notes. Under that rule, Dha→Pa (standard Yaman avaroha) after a rise was penalised, and a rising Ga→Pa went unpenalised whenever the window happened to be mixed. `direction_contrast` uses the same move direction now.
+- **Call tension uses circular swara distance**, `min(d, 12−d)/6`. It used to be linear `|d|/11`, which treated Ni and Sa, a semitone apart, as maximally distant.
+- **`reset()` starts from `initial_dial`** (or `options["dial"]`), not from the dial the previous episode ended on.
+- **Prompt rendering:** empty note-history slots carry a sentinel and are no longer shown as fake ṉSa notes. A genuine all-Sa call is distinguished from "no call yet" via tension. The note line is now labelled `Recent notes (oldest first):`.
+- **Training continuation:** the 8-step Monte-Carlo continuation now replays the source episode's remaining drift switch and its partner calls (seeded from the row's `mc_seed`). Before, it silently dropped them.
+- **Evaluation precision:** on GPU, `eval/llm_policy.py` loads the base model in 4-bit NF4, matching training.
+
+---
+
 ## 8. What we've actually measured so far
 
-The four scripted baselines have been run for real, on the current codebase, **after** both the F11 reward fix (`updatedplan.md` Phase 5.1) and the 2026-10 fix that made `eval.rollout.rollout()` actually submit a call during an episode (§7.6's correction note — before this, `jugalbandi_coherence`/`call_echo_rate` were measuring nothing, for any policy) — see each file's own `fingerprint` field in `eval/results/*.json` for the exact commit and file hashes this run corresponds to; if that fingerprint doesn't match the current tree, the numbers below are stale and must be regenerated, not trusted, per `updatedplan.md` Phase 0.5.
+The four scripted baselines, regenerated 2026-10-07 after every fix in §7.1b, §7.6b and §7.9. The `fingerprint` in each `eval/results/*.json` holds content hashes of every file a number depends on. Those hashes, not `git_sha`, are the staleness check: a result committed together with its code necessarily records the *parent* commit, with `git_dirty: true`.
 
-| Policy | mean reward | adherence (overall) | adaptation speed (median, censoring) | success@5/10/20 | pakad rate | safe-set occupancy | jugalbandi coherence | call-echo rate |
-|---|---|---|---|---|---|---|---|---|
-| `random-uniform` | -67.17 | 0.875 | 35 steps, 99.5% censored | 0.0 / 0.0 / 0.0 | 0.005 | 0.333 | 0.426 | 0.419 |
-| `random-valid` | -35.26 | 1.000 | 20.0 steps, 99% censored | 0.005 / 0.005 / 0.005 | 0.025 | 0.562 | 0.709 | 0.611 |
-| `safe-set-cycle` | -25.20 | 1.000 | — , 100% censored | 0.0 / 0.0 / 0.0 | 0.000 | **1.000** | 0.823 | 0.481 |
-| `scripted-oracle` | -20.46 | 1.000 | 2.5 steps, 0% censored | 1.0 / 1.0 / 1.0 | 1.020 | 0.562 | 0.720 | 0.588 |
+| Policy | mean reward | adherence §7.1 | hard-rule adherence §7.1b | adaptation speed (median, censoring) | success@5/10/20 | pakad rate | safe-set occupancy | jugalbandi coherence | call-echo rate |
+|---|---|---|---|---|---|---|---|---|---|
+| `random-uniform` | -57.05 | 0.875 | 0.559 | 35 steps, 99.5% censored | 0.0 / 0.0 / 0.0 | 0.005 | 0.333 | 0.918 | 0.467 |
+| `random-valid` | -18.03 | 1.000 | 0.963 | 20.0 steps, 99% censored | 0.005 / 0.005 / 0.005 | 0.025 | 0.562 | 1.528 | 0.684 |
+| `safe-set-cycle` | -27.49 | 1.000 | 0.875 | — , 100% censored | 0.0 / 0.0 / 0.0 | 0.000 | **1.000** | 1.449 | 0.474 |
+| `scripted-oracle` | -4.43 | 1.000 | 0.965 | 2.5 steps, 0% censored | 1.0 / 1.0 / 1.0 | 1.020 | 0.562 | 1.525 | 0.661 |
 
-A few things worth understanding about these numbers before any trained model enters the picture:
+Paired comparisons over the 200 shared episodes (`paper/data/baseline_stats.json`: paired bootstrap 95% CI and Wilcoxon signed-rank):
 
-**The drought-penalty floor (F11, Phase 5.1) is applied in these numbers.** Both `raaga_env/reward.py`'s drought penalties (for not playing the vadi, or not completing a pakad, recently enough) used to grow without limit — long enough neglect eventually cost *more* than an outright rule violation. They're now floored (vadi: -1.0, pakad: -0.5 per step), so neither can ever be worse than the mildest hard-rule penalty. An earlier version of this table, measured before that fix, is preserved in this document's git history for anyone who wants to see the before/after directly.
+| Comparison | Δ return | 95% CI | Wilcoxon p | wins |
+|---|---|---|---|---|
+| scripted-oracle − safe-set-cycle | 23.06 | [21.48, 24.61] | 5.0e-34 | 194/200 |
+| scripted-oracle − random-valid | 13.60 | [13.22, 14.01] | 1.4e-34 | 200/200 |
+| safe-set-cycle − random-valid | −9.46 | [−11.04, −7.87] | 2.7e-20 | 42/200 |
+| random-valid − random-uniform | 39.02 | [37.44, 40.59] | 1.4e-34 | 200/200 |
 
-**Every mean reward here is still negative**, including the ceiling policy. That's expected, not a leftover bug: the melodic-leap penalty (playing two notes too far apart) is still unbounded per step, and none of these four baselines are trying to play smoothly except `safe-set-cycle` by accident. The *ordering* is still what matters most: `scripted-oracle` (-20.46) clearly beats `safe-set-cycle` (-25.20), which clearly beats `random-valid` (-35.26), which clearly beats `random-uniform` (-67.17).
+**The ordering is now the intended one:** `scripted-oracle` > `random-valid` > `safe-set-cycle` > `random-uniform`. Before §7.9, the never-adapting `safe-set-cycle` beat raga-informed `random-valid` by 10.06 and trailed the perfectly adapting oracle by only 4.74. The old reward rewarded the F13 exploit over honest play. The two §7.9 reward fixes reverse that without adding any new reward term. Now the oracle beats the safe set by 23.06 and wins 194 of 200 paired episodes.
 
-**Correction to an earlier version of this table's claim:** a prior version of these numbers (measured before the call-injection fix, when the jugalbandi reward layer never actually fired for any baseline) described the gap between `scripted-oracle` and `safe-set-cycle` as "narrow" (-22.24 vs -22.34) and called that the interesting open finding. With calls now actually happening, that gap is no longer narrow (-20.46 vs -25.20, a 4.74-point difference) — real drift adaptation is worth something after all, once the jugalbandi layer is actually contributing reward instead of sitting at zero the whole episode. The open question this raises instead: **`call_echo_rate` for a policy with zero awareness of the call is already 0.42-0.61** (chance alone, since a call's last note is one of ~7 valid swaras and a policy gets 8 notes per turn to land on it). A trained model's `call_echo_rate` only means something once it's clearly above this range — anything inside it is indistinguishable from not listening at all.
+**Where the oracle's advantage comes from:** mostly the pakad-drought term (−11.57 vs −20.61 for random-valid). One pakad resets the drought counter for the rest of the episode. The rest is the +3.0 adaptation bonus and +0.5 for the pakad itself.
 
-**The interesting, still-open finding is how *narrow* the gap is between `scripted-oracle` and `safe-set-cycle`.** Before the F11 fix, `safe-set-cycle` (a policy that never adapts to drift at all, by construction) actually *beat* `random-valid` on reward, which was a visible symptom of the drought penalty being too harsh. After the fix, that specific distortion is gone — but a new, more concerning shape is visible instead: `scripted-oracle`, which adapts perfectly and immediately (2.5-step median, 0% censored, 100% success at every K), scores only marginally better than `safe-set-cycle`, which never adapts at all (100% censored, 0% success at every K) and occupies the exploit-flagging safe set 100% of the time. Genuine, fast, perfect drift adaptation is currently worth almost nothing in the reward function relative to the degenerate "never leave the safe four notes" strategy. This is exactly the shape of problem Phase 5.2/5.3's leave-one-out ablations and sensitivity sweep exist to investigate — the adaptation bonus (`+3.0`, fires once per switch) and the pakad-completion bonus may simply be too small relative to everything else in a 64-step episode to matter, and that is a hypothesis this document is now flagging, not a conclusion — the next honest step is Phase 5.2/5.3, not a bigger bonus applied by guesswork.
+**`random-valid` and `scripted-oracle` are raga-informed.** Both read the active raga off the observation's dial dimension, so their perfect §7.1 adherence uses information no HIDDEN-arm model has. Their sub-1.0 §7.1b scores come entirely from `aaroha_violation`, since neither tries to avoid rising into Pa in Yaman.
 
-**The harness itself is behaving correctly.** `scripted-oracle`'s near-perfect adaptation numbers and `safe-set-cycle`'s perfect-but-hollow numbers (1.000 adherence, 1.000 safe-set occupancy, 0% ever adapting) are exactly the shape the design in §5 predicts, and the metrics correctly separate the two policies on `drift_adaptation_speed` and `safe_set_occupancy` even though their reward totals are now almost tied — which is itself the argument for reporting all of §7's metrics together rather than reward alone. That agreement is a form of validation: before trusting any trained model's score, it's worth knowing the measurement tool produces sensible, separable answers on cases where the right answer is already known.
+**Call-response metrics have high chance floors.** None of these policies listens to the call, yet `call_echo_rate` is 0.47–0.68. `jugalbandi_coherence` is dominated by `direction_contrast` (≈ +7.5 per episode for *every* policy, call-blind or not), so it is ≈ 1.45–1.53 regardless. A trained model's echo rate means something only if it is clearly above 0.684, and coherence must never be cited without the echo rate beside it.
+
+**Every mean reward is still negative**, including the ceiling. Leap and drought penalties are floored per step but still accrue across 64 steps. Ordering and paired differences are what matter.
+
+**The harness separates the cases it should.** `safe-set-cycle` has perfect §7.1 adherence but 100% censoring, 1.000 safe-set occupancy, and now a visible §7.1b cost (0.875: every rising Ga→Pa in Yaman). `scripted-oracle` adapts in a median of 2.5 steps with 0% censoring.
 
 ---
 

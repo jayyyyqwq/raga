@@ -1,4 +1,4 @@
-# GRPO training script — run on Colab A100 with HF credits.
+# GRPO training script — runs on a free Colab T4 (see train_grpo.ipynb).
 # WHY GRPO over PPO: no value model needed; reward comes directly from env.
 # WHY Qwen2.5-0.5B: smallest Unsloth-supported model that fits T4 (15GB) with QLoRA.
 #
@@ -118,6 +118,12 @@ def build_dataset(n: int, arm: Arm, rng: random.Random = random) -> list[dict]:
                     "prompt": prompt,
                     "state_json": json.dumps(env.get_state()),
                     "mc_seed": rng.randint(0, 2**31 - 1),
+                    # The source episode's remaining switches, so the MC
+                    # continuation plays out the same episode (audit
+                    # 2026-10-07: a switch inside the horizon was dropped).
+                    "switches_json": json.dumps(
+                        [[s, d] for s, d in schedule.switches if s > step_idx]
+                    ),
                 })
                 break
 
@@ -154,10 +160,12 @@ def make_step_reward_fn(arm: Arm):
         completions: list[str],
         state_json: list[str],
         mc_seed: list[int],
+        switches_json: list[str] | None = None,
         **kwargs,
     ) -> list[float]:
         rewards = []
-        for completion, state_str, seed in zip(completions, state_json, mc_seed):
+        switches = switches_json or ["[]"] * len(completions)
+        for completion, state_str, seed, sw in zip(completions, state_json, mc_seed, switches):
             action = parse_action(completion)
             if action is None:
                 rewards.append(STEP_PARSE_FAILURE_PENALTY)
@@ -170,12 +178,20 @@ def make_step_reward_fn(arm: Arm):
 
             total = immediate_reward
             if not (terminated or truncated):
+                # Separate seeded streams for policy and calls, both from
+                # mc_seed, so every completion in a GRPO group sees the same
+                # continuation and a hand-replay with the same seed agrees.
                 continuation = rollout_from_state(
                     random_valid_policy(random.Random(seed)),
                     state=env.get_state(),
                     episode_length=EPISODE_LENGTH,
                     max_extra_steps=MC_HORIZON,
                     arm=arm.value,
+                    drift_schedule=DriftSchedule(
+                        switches=tuple((int(s), float(d)) for s, d in json.loads(sw))
+                    ),
+                    call_phrase_fn=sample_call_phrase,
+                    call_rng=random.Random(seed + 1),
                 )
                 total += continuation.total_reward
             rewards.append(total)
@@ -257,12 +273,12 @@ def main() -> None:
         # override num_train_epochs, so setting it here would be dead config
         # implying something false. What actually happens: each optimizer
         # step consumes per_device_train_batch_size * gradient_accumulation_
-        # steps rows, so with gradient_accumulation_steps=4 below, every row
-        # build_dataset() generates gets visited ~4 times over a full
-        # --steps run — the same "K epochs per rollout batch" pattern PPO
-        # uses, not a bug. mc_seed (see build_dataset's docstring) exists
-        # partly because of this: a row scored more than once needs a
-        # varied Monte-Carlo continuation each time, not a frozen one.
+        # Corrected 2026-10-07 against TRL's grpo_config.py: GRPO's batch
+        # sizes count *completions*. One optimizer step generates
+        # per_device_train_batch_size * gradient_accumulation_steps = 16
+        # completions = 16 / num_generations = 4 prompts, so a --steps run
+        # consumes steps * 4 = len(dataset) rows: each row is visited once
+        # (num_iterations defaults to 1). The old comment said ~4 times.
         max_steps=args.steps,
         per_device_train_batch_size=args.batch,
         gradient_accumulation_steps=4,
@@ -299,7 +315,7 @@ def main() -> None:
 
     model.save_pretrained(f"./checkpoints/{args.run}/final")
     tokenizer.save_pretrained(f"./checkpoints/{args.run}/final")
-    print("Done. Upload checkpoint to HF Hub with `huggingface-cli upload`.")
+    print(f"Done. Adapter saved to ./checkpoints/{args.run}/final")
 
 
 if __name__ == "__main__":

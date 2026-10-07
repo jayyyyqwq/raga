@@ -11,6 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -37,8 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# One env instance per process.
-# In prod (HF Spaces), each user session should get its own process via workers.
+# One env instance per process — single-user local demo.
 env = JugalbandiEnv(initial_dial=0.0, episode_length=64)
 
 # Claim B's feedback channel (updatedplan.md Phase 2.3): the outcome of the
@@ -62,7 +63,9 @@ class DialRequest(BaseModel):
     value: float = Field(..., ge=0.0, le=1.0)
 
 class CallRequest(BaseModel):
-    notes: list[int] = Field(..., min_length=1, max_length=4)
+    # Swaras 0-11 (JugalbandiEnv.set_call's contract). Unbounded ints used to
+    # pass straight through and crash prompt rendering on the next /infer.
+    notes: list[Annotated[int, Field(ge=0, le=11)]] = Field(..., min_length=1, max_length=4)
 
 class InferRequest(BaseModel):
     max_new_tokens: int = Field(4, ge=1, le=16)
@@ -91,7 +94,8 @@ def _load_inference_model():
         raise HTTPException(
             503,
             "No trained adapter configured. Set JUGALBANDI_ADAPTER_REPO to the "
-            "HF Hub repo id produced by training/train_grpo.ipynb (see docs/report-midway.md §9).",
+            "local adapter folder saved by training/train_grpo.ipynb (run_demo.bat sets "
+            "it to checkpoints/final).",
         )
 
     try:
@@ -126,8 +130,7 @@ def _load_inference_model():
 @app.post("/reset")
 async def reset(req: ResetRequest):
     global _last_step_feedback
-    env.set_dial(req.dial)
-    obs, info = env.reset(seed=req.seed)
+    obs, info = env.reset(seed=req.seed, options={"dial": req.dial})
     _last_step_feedback = None  # new episode: no "last action" yet
     return {
         "observation": obs.tolist(),
@@ -199,7 +202,10 @@ async def state():
 
 
 @app.post("/infer")
-async def infer(req: InferRequest):
+def infer(req: InferRequest):
+    # Plain def, not async: model.generate() is blocking, and inside an
+    # async def it froze the whole event loop (every other endpoint) for the
+    # duration of each call. FastAPI runs a plain def in its threadpool.
     """
     Runs the trained policy on the environment's *current* observation and
     returns the action it picks — this does not step the environment.
@@ -259,4 +265,6 @@ if os.path.isdir(UI_DIR):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    # Localhost only: this is a local single-user demo with CORS "*" and an
+    # unauthenticated /infer — 0.0.0.0 exposed both to the whole LAN.
+    uvicorn.run(app, host="127.0.0.1", port=7860)

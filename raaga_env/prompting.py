@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from .env import EMPTY_SLOT_DURATION
 from .ragas import NOTE_NAMES
 
 ACTION_SPACE_N = 96
@@ -67,9 +68,17 @@ def note_name(note: int, duration: int) -> str:
     return f"{NOTE_NAMES[note]}({DURATION_NAMES[duration]})"
 
 
+def _slot_is_empty(obs: list[float], slot: int) -> bool:
+    return abs(obs[slot * 2 + 1] - EMPTY_SLOT_DURATION) < 1e-6
+
+
 def _note_name_from_obs(obs: list[float], slot: int) -> str:
-    note_idx = min(int(obs[slot * 2] * 23), 23)  # obs pitch dims are note/23.0
-    dur_idx = min(int(obs[slot * 2 + 1] * 3), 3)
+    # round(), never int(): obs is float32, so e.g. 12/23 comes back as
+    # 11.9999995 and int() truncated 12 of the 24 pitches a semitone flat
+    # in every prompt ever rendered (Sa -> ṉNi, Re -> Re♭, Pa -> Ma#) —
+    # audit 2026-10-07. Same reason _call_phrase_from_obs uses round().
+    note_idx = min(round(obs[slot * 2] * 23), 23)  # obs pitch dims are note/23.0
+    dur_idx = min(round(obs[slot * 2 + 1] * 3), 3)
     return note_name(note_idx, dur_idx)
 
 
@@ -82,13 +91,19 @@ SWARA_NAMES = NOTE_NAMES[12:]
 
 def _call_phrase_from_obs(obs: list[float]) -> list[int]:
     """Recovers the 4 call-phrase swaras JugalbandiEnv._get_obs() packed
-    into obs[8:12] as n/11.0. All four decoding to 0 (Sa) is ambiguous with
-    "no call yet" — both encode identically, since that's also
-    JugalbandiEnv's "no call" sentinel (ML retrain finding, 2026-10; see
-    docs/RETRAIN_PLAN.md). Accepted: a real call of four Sa's is a
-    vanishingly unlikely edge case next to the alternative of growing the
-    22-dim observation space for an explicit "call active" flag."""
+    into obs[8:12] as n/11.0. All four slots decoding to 0 (Sa) is either
+    "no call yet" or a real call of four Sa's — _call_is_active() tells the
+    two apart."""
     return [round(obs[8 + i] * 11) for i in range(4)]
+
+
+def _call_is_active(call_notes: list[int], tension: float) -> bool:
+    """A real call always has tension > 0 unless it ends on the vadi, and
+    the vadi is never Sa in either raga — so all-zero slots with zero
+    tension can only mean "no call yet", and all-zero slots with nonzero
+    tension are a genuine all-Sa call (audit 2026-10-07: it used to render
+    as "none yet")."""
+    return any(call_notes) or tension > 0
 
 
 def _context_lines(
@@ -123,9 +138,9 @@ def _context_lines(
         lines.append(f"Raga dial: {dial}")
     # HIDDEN: no raga name, no dial, no grace flag, no steps-since-switch.
 
-    last_notes = [_note_name_from_obs(obs, i) for i in range(4)]
+    recent_notes = [_note_name_from_obs(obs, i) for i in range(4) if not _slot_is_empty(obs, i)]
     lines.append(f"Tala position: beat {tala_pos}/16")
-    lines.append(f"Last 4 notes: {', '.join(last_notes)}")
+    lines.append(f"Recent notes (oldest first): {', '.join(recent_notes)}")
 
     # Call phrase: musical input, not a rule signal, so it renders in every
     # arm including HIDDEN (ML retrain fix — it used to not render at all,
@@ -137,7 +152,7 @@ def _context_lines(
     # named in words" guarantee still holds, but its practical difficulty is
     # not quite as absolute as before this field existed.
     call_notes = _call_phrase_from_obs(obs)
-    if any(call_notes):
+    if _call_is_active(call_notes, obs[14]):
         call_names = ", ".join(SWARA_NAMES[n] for n in call_notes)
         lines.append(f"Partner's call phrase: {call_names}")
     else:

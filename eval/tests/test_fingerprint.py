@@ -5,6 +5,7 @@ def test_fingerprint_has_expected_keys():
     fp = compute_fingerprint()
     assert set(fp.keys()) == {
         "git_sha",
+        "git_dirty",
         "requirements_train_hash",
         "ragas_hash",
         "reward_hash",
@@ -13,6 +14,11 @@ def test_fingerprint_has_expected_keys():
         "policies_hash",
         "rollout_hash",
         "evaluate_hash",
+        "env_hash",
+        "jugalbandi_env_hash",
+        "drift_hash",
+        "prompting_hash",
+        "llm_policy_hash",
     }
 
 

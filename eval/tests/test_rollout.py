@@ -107,11 +107,9 @@ def test_rollout_call_sequence_is_deterministic_for_the_same_seed():
     assert traj_a.steps == traj_b.steps
 
 
-def test_rollout_from_state_never_submits_a_call_even_mid_episode():
-    """rollout_from_state() has no call_phrase_fn parameter at all — this
-    locks that in: continuing a training snapshot must never start
-    injecting calls build_dataset() itself didn't put there (eval/rollout.py's
-    _run_steps docstring)."""
+def test_rollout_from_state_submits_no_call_unless_given_a_call_fn():
+    """Default: no call injection — only an explicit call_phrase_fn (the
+    source episode's own generator) starts submitting calls."""
     env = JugalbandiEnv(initial_dial=0.0)
     env.reset(seed=0)
     for _ in range(10):
@@ -196,3 +194,32 @@ def test_rollout_from_state_matches_a_manual_env_replay():
         _cycling_policy([4]), state=snapshot, episode_length=64, max_extra_steps=3,
     )
     assert [s.reward for s in traj.steps] == expected_rewards
+
+
+
+def test_rollout_from_state_applies_a_switch_inside_the_horizon():
+    import random as _random
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    for _ in range(10):
+        env.step(4)
+    traj = rollout_from_state(
+        _cycling_policy([4]), state=env.get_state(), episode_length=64, max_extra_steps=8,
+        drift_schedule=DriftSchedule(switches=((13, 1.0),)),
+    )
+    assert traj.switch_steps == (13,)
+    assert traj.steps[-1].info["active_raga"] == "bhairav"
+    assert traj.steps[0].info["active_raga"] == "yaman"
+
+
+def test_rollout_from_state_injects_calls_when_given_a_call_fn():
+    import random as _random
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    for _ in range(4):
+        env.step(4)
+    traj = rollout_from_state(
+        _cycling_policy([4]), state=env.get_state(), episode_length=64, max_extra_steps=12,
+        call_phrase_fn=_random_call_phrase, call_rng=_random.Random(0),
+    )
+    assert any(s.observation[8:12] != (0.0, 0.0, 0.0, 0.0) for s in traj.steps)

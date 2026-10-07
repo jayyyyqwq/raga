@@ -53,7 +53,7 @@ def test_shared_fields_present_in_every_arm():
         raga = "bhairav" if arm is Arm.ORACLE else None
         prompt = render_prompt(obs, arm=arm, tala_pos=env.tala_position, raga=raga)
         assert "Tala position" in prompt
-        assert "Last 4 notes" in prompt
+        assert "Recent notes" in prompt
         assert "Partner's call phrase" in prompt
         assert "Pakad drought" in prompt
         assert "Vadi drought" in prompt
@@ -143,3 +143,47 @@ def test_decode_matches_env_decode_for_every_action():
     env = JugalbandiEnv()
     for action in range(96):
         assert decode(action) == env._decode(action), f"mismatch at action {action}"
+
+
+# ── Audit (2026-10-07): note decoding from the obs vector ──────────────────
+
+@pytest.mark.parametrize("note", range(24))
+def test_every_played_note_renders_as_itself(note):
+    """obs stores pitch as float32 note/23; int()-truncating that back
+    rendered 12 of 24 pitches a semitone flat (Sa as ṉNi, Re as Re♭, Pa as
+    Ma#) in every prompt. Every pitch must round-trip exactly."""
+    from raaga_env.prompting import note_name
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.step(note + 2 * 24)  # quarter note
+    prompt = render_prompt(env._get_obs().tolist(), arm=Arm.HIDDEN, tala_pos=env.tala_position)
+    last_notes_line = next(l for l in prompt.splitlines() if l.startswith("Recent notes (oldest first):"))
+    assert last_notes_line.endswith(note_name(note, 2)), last_notes_line
+
+
+def test_most_recent_note_is_listed_last_even_early_in_an_episode():
+    """With fewer than 4 notes of history, the real notes used to fill the
+    leading slots and empty slots trailed — so the prompt's *last* listed
+    note was a phantom ṉSa, not the note actually just played."""
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    prompt = render_prompt(env._get_obs().tolist(), arm=Arm.HIDDEN, tala_pos=0)
+    assert "Recent notes (oldest first):" in prompt
+    assert prompt.split("Recent notes (oldest first): ")[1].splitlines()[0].endswith("Sa(quarter)")
+
+
+
+def test_empty_history_slots_are_not_rendered_as_notes():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    prompt = render_prompt(env._get_obs().tolist(), arm=Arm.HIDDEN, tala_pos=0)
+    line = next(l for l in prompt.splitlines() if l.startswith("Recent notes"))
+    assert line == "Recent notes (oldest first): Sa(quarter)"
+
+
+def test_a_real_all_sa_call_is_not_rendered_as_no_call():
+    env = JugalbandiEnv(initial_dial=0.0)
+    env.reset(seed=0)
+    env.set_call([0, 0, 0, 0])
+    prompt = render_prompt(env._get_obs().tolist(), arm=Arm.HIDDEN, tala_pos=0)
+    assert "Partner's call phrase: Sa, Sa, Sa, Sa" in prompt

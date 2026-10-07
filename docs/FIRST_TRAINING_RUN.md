@@ -9,6 +9,10 @@ Plain-language companion to the first completed GRPO run. For the full research 
 > accurate account of that run. It is **not** a call-and-response result: this model is a solo
 > raga improviser with drift adaptation, nothing more. The retrain that fixes this hasn't been run
 > yet.
+>
+> **2026-10-07:** this run's prompts were also corrupted by a note-decoding bug (12 of 24 pitches
+> rendered a semitone flat; see `RETRAIN_PLAN.md`'s audit note). Pipeline validation only — not a
+> result.
 
 ## What was trained
 

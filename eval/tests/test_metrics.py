@@ -199,3 +199,20 @@ def test_compute_all_metrics_report_is_json_serialisable():
     report = compute_all_metrics(trajs)
     encoded = json.dumps(report.to_dict())
     assert "drift_adaptation_speed" in encoded
+
+
+def test_hard_rule_adherence_counts_every_hard_rule_violation():
+    """valid_raga_adherence (pre-registered) only counts forbidden_note;
+    hard_rule_adherence also counts out_of_raga and aaroha_violation."""
+    from eval.metrics import hard_rule_adherence
+    traj = Trajectory(
+        seed=0, arm=None, total_reward=0.0,
+        steps=(
+            _step({"forbidden_note": -2.0}),
+            _step({"out_of_raga": -1.5}),
+            _step({"aaroha_violation": -1.0}),
+            _step({"valid_note": 0.2}),
+        ),
+    )
+    assert valid_raga_adherence([traj]).overall == 0.75
+    assert hard_rule_adherence([traj]).overall == 0.25

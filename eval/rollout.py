@@ -90,10 +90,9 @@ def _run_steps(
     firing after env.step()) — same ordering as train_grpo.py's build_dataset
     (break on terminated first, then check call_requested). Left as None by
     rollout_from_state() deliberately: that function continues an already-
-    in-progress training snapshot for a short Monte-Carlo horizon, and must
-    not start injecting calls that build_dataset() itself didn't put there —
-    changing what call is active mid-continuation would make per-step
-    training reward disagree with a hand-replay of the same state (Phase 0.3)."""
+    in-progress training snapshot, and only injects calls when its caller
+    passes the source episode's call generator explicitly (training does,
+    seeded per row, so a hand-replay with the same seed still agrees)."""
     schedule = drift_schedule_by_step or {}
     steps: list[StepRecord] = []
     for i in range(n_steps):
@@ -176,6 +175,9 @@ def rollout_from_state(
     episode_length: int,
     max_extra_steps: int,
     arm: str | None = None,
+    drift_schedule: DriftSchedule | None = None,
+    call_phrase_fn: CallPhraseFn | None = None,
+    call_rng: random.Random | None = None,
 ) -> Trajectory:
     """rollout()'s sibling for continuing from a mid-episode snapshot instead
     of a fresh reset — restores a JugalbandiEnv to `state` (Phase 0.4) and
@@ -192,6 +194,12 @@ def rollout_from_state(
     the snapshot forward, not the whole episode's cumulative reward, which is
     what a scoring function comparing different first actions from the same
     state actually needs.
+
+    drift_schedule / call_phrase_fn + call_rng: the source episode's own
+    switches and partner calls, so the continuation plays out the episode
+    the snapshot came from. Omitting them (the old and still default
+    behaviour) silently drops a switch that falls inside the horizon and
+    leaves the stale call active (audit 2026-10-07).
     """
     env = JugalbandiEnv(episode_length=episode_length)
     env.set_state(state)
@@ -201,6 +209,12 @@ def rollout_from_state(
     n_steps = max(0, min(max_extra_steps, episode_length - state["step_count"]))
     steps = _run_steps(
         env, policy, obs=obs, info=info, n_steps=n_steps, step_offset=state["step_count"],
+        drift_schedule_by_step=drift_schedule.as_dict() if drift_schedule else None,
+        call_phrase_fn=call_phrase_fn,
+        call_rng=call_rng,
     )
     total_reward = sum(s.reward for s in steps)
-    return Trajectory(seed=-1, arm=arm, steps=tuple(steps), total_reward=total_reward)
+    switch_steps = tuple(step for step, _ in drift_schedule.switches) if drift_schedule else ()
+    return Trajectory(
+        seed=-1, arm=arm, steps=tuple(steps), total_reward=total_reward, switch_steps=switch_steps,
+    )

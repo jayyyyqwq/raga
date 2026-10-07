@@ -259,7 +259,7 @@ async function runAiTurn() {
   let inferenceUnavailable = false;
 
   for (let i = 0; i < AI_NOTES_PER_TURN && !terminated; i++) {
-    let action = 4; // fallback: Ga, Yaman's vadi — keeps the demo running if /infer is down
+    let action = 4; // fallback: mandra Ga (sixteenth), legal in both ragas — keeps the demo running if /infer is down
     try {
       const inferRes = await EnvClient.infer();
       action = inferRes.action;

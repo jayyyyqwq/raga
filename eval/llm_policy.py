@@ -117,11 +117,21 @@ def make_llm_policy(
     # which is easily 10-30x slower than it needed to be over a 200-episode
     # (up to 12,800-call) run. Found the hard way, mid-run, 2026-10.
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    dtype = torch.float16 if device == "cuda" else torch.float32
 
     tokenizer = AutoTokenizer.from_pretrained(base_model)
-    base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=dtype).to(device)
-    model = PeftModel.from_pretrained(base, adapter_repo).to(device)
+    if device == "cuda":
+        # 4-bit NF4, matching training (unsloth load_in_4bit=True): the
+        # adapter was learned against the quantised base, and evaluating it
+        # on a 16-bit base is a train/eval mismatch (audit 2026-10-07).
+        from transformers import BitsAndBytesConfig
+
+        quant = BitsAndBytesConfig(
+            load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16,
+        )
+        base = AutoModelForCausalLM.from_pretrained(base_model, quantization_config=quant, device_map={"": 0})
+    else:
+        base = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float32)
+    model = PeftModel.from_pretrained(base, adapter_repo)
     model.eval()
     # The base model's generation_config.json ships a default max_length
     # (32768) alongside the max_new_tokens we pass per call below — with

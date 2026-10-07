@@ -1,6 +1,12 @@
 import pytest
 from raaga_env.ragas import RAGAS, TALAS
-from raaga_env.reward import PAKAD_DROUGHT_FLOOR, VADI_DROUGHT_FLOOR, compute_reward
+from raaga_env.reward import (
+    LEAP_PENALTY_FLOOR,
+    PAKAD_DROUGHT_FLOOR,
+    VADI_DROUGHT_FLOOR,
+    compute_reward,
+    move_direction,
+)
 
 YAMAN = RAGAS["yaman"]
 TEENTAAL = TALAS["teentaal"]
@@ -10,7 +16,6 @@ BASE = dict(
     note_history=[0],
     dur_history=[2],
     tala_position=4,
-    direction=0,
     raga=YAMAN,
     tala=TEENTAAL,
     pakad_drought=0,
@@ -58,10 +63,10 @@ def test_jugalbandi_tension_resolve():
     assert "tension_resolve" in b
 
 def test_jugalbandi_direction_contrast():
-    # call goes up (2→9), agent going down (direction=2) should get contrast reward
+    # call goes up (2→9), agent moving down (Ga→Re) should get contrast reward
     r, b = compute_reward(
         note=2,
-        **{**BASE, "direction": 2, "call_phrase": [2, 4, 6, 9], "call_tension": 0.3}
+        **{**BASE, "note_history": [4], "call_phrase": [2, 4, 6, 9], "call_tension": 0.3}
     )
     assert "direction_contrast" in b
 
@@ -146,3 +151,48 @@ def test_both_drought_penalties_floored_simultaneously_still_bounded():
     assert b["pakad_drought_penalty"] == PAKAD_DROUGHT_FLOOR
     # valid_note (+0.2) + both floors: still far better than a hard-rule violation.
     assert r == pytest.approx(0.2 + VADI_DROUGHT_FLOOR + PAKAD_DROUGHT_FLOOR)
+
+
+# ── Audit 2026-10-07: rule direction is the move into the note ─────────────
+
+def test_move_direction():
+    assert move_direction(19, []) == 0
+    assert move_direction(19, [19]) == 0
+    assert move_direction(19, [16]) == 1
+    assert move_direction(19, [21]) == 2
+
+
+def test_ascending_into_pa_is_an_aaroha_violation_in_yaman():
+    r, b = compute_reward(note=19, **{**BASE, "note_history": [12, 14, 16]})  # Ga -> Pa, rising
+    assert "aaroha_violation" in b
+
+
+def test_descending_into_pa_after_a_rise_is_legal_in_yaman():
+    """Dha -> Pa is standard Yaman avaroha. The old contour-based direction
+    called this ascending (the 3 notes before it rose) and penalised it."""
+    r, b = compute_reward(note=19, **{**BASE, "note_history": [16, 18, 21]})
+    assert "aaroha_violation" not in b
+    assert r > 0
+
+
+def test_ascending_into_pa_after_a_mixed_contour_is_still_a_violation():
+    """Ni -> Sa -> Ga -> Pa: the old 3-note window was mixed (one fall, one
+    rise) and let this rising Ga -> Pa through unpenalised."""
+    r, b = compute_reward(note=19, **{**BASE, "note_history": [23, 12, 16]})
+    assert "aaroha_violation" in b
+
+
+# ── Audit 2026-10-07: leap penalty is floored like the drought penalties ───
+
+def test_leap_penalty_never_exceeds_its_floor():
+    r, b = compute_reward(note=23, **{**BASE, "note_history": [0]})  # 23-semitone leap
+    assert b["large_leap_penalty"] == LEAP_PENALTY_FLOOR
+
+
+def test_leap_penalty_unfloored_below_the_cap():
+    r, b = compute_reward(note=11, **{**BASE, "note_history": [0]})  # 11 semitones: -0.8
+    assert b["large_leap_penalty"] == pytest.approx(-0.8)
+
+
+def test_leap_floor_never_exceeds_the_mildest_hard_rule_penalty():
+    assert LEAP_PENALTY_FLOOR >= -1.0

@@ -7,13 +7,19 @@ import numpy as np
 from collections import deque
 from .ragas import RAGAS, TALAS, DURATIONS, NOTE_NAMES, match_pakad
 
+# Duration dim of an empty note-history slot. Real durations encode as
+# d/3 in {0, 1/3, 2/3, 1}, so 0.5 can't collide with a played note — without
+# it, an empty slot (0, 0) was indistinguishable from a played ṉSa(sixteenth)
+# and rendered as one in every prompt for the first 3 steps (audit 2026-10-07).
+EMPTY_SLOT_DURATION = 0.5
+
 
 class RaagaEnv(gym.Env):
     """
     RL environment for Indian classical raga composition.
 
     Observation: 14-dim continuous vector (see _get_obs)
-    Action:      Discrete 48 = 12 semitones × 4 durations
+    Action:      Discrete 96 = 24 absolute pitches × 4 durations
     Reward:      Rule-based raga grammar (see reward.py)
     """
 
@@ -64,7 +70,6 @@ class RaagaEnv(gym.Env):
             note_history=list(self.note_history),
             dur_history=list(self.dur_history),
             tala_position=self.tala_position,
-            direction=self._direction(),
             raga=self.raga,
             tala=self.tala,
             pakad_drought=self.pakad_drought,
@@ -166,10 +171,19 @@ class RaagaEnv(gym.Env):
         obs = np.zeros(14, dtype=np.float32)
         hist = list(self.note_history)
         dur = list(self.dur_history)
-        for i, idx in enumerate(range(max(0, len(hist) - 4), len(hist))):
-            slot = i
-            obs[slot * 2] = hist[idx] / 23.0          # normalise over 24-note range
-            obs[slot * 2 + 1] = dur[idx] / 3.0 if idx < len(dur) else 0.0
+        # Right-aligned: slot 3 is always the most recent note, so with fewer
+        # than 4 notes of history the *leading* slots are the empty (zero)
+        # ones. Left-aligned (the old layout) put empty slots last, so a
+        # prompt rendered from this obs listed a phantom ṉSa as the note
+        # just played for the first 3 steps of every episode (audit
+        # 2026-10-07).
+        recent = list(zip(hist, dur))[-4:]
+        for slot in range(4 - len(recent)):
+            obs[slot * 2 + 1] = EMPTY_SLOT_DURATION
+        for i, (note, d) in enumerate(recent):
+            slot = 4 - len(recent) + i
+            obs[slot * 2] = note / 23.0          # normalise over 24-note range
+            obs[slot * 2 + 1] = d / 3.0
         obs[8] = self._direction() / 2.0
         obs[9] = self.tala_position / (self.tala["beats"] - 1)
         # Swara-level distance (circular on 12-note wheel) so octave doesn't distort distance.
