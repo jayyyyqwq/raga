@@ -110,3 +110,22 @@ def test_oracle_arm_names_the_raga_dial_hidden_does_not():
     oracle_policy = _build_policy(generate_fn, arm=Arm.ORACLE, fallback_action=0, stats=stats)
     oracle_policy(_obs_with_call([0, 0, 0, 0]), {})
     assert "yaman" in calls[-1].lower()
+
+
+# ── evaluate_llm progress output (2026-10-08) ──────────────────────────────
+
+def test_run_llm_over_eval_set_reports_progress_with_eta(capsys):
+    from eval.evaluate_llm import run_llm_over_eval_set
+
+    trajs = run_llm_over_eval_set(lambda obs, info: 4, arm_value="hidden", limit=20, progress=True)
+    out = capsys.readouterr().out
+    assert len(trajs) == 20
+    assert "10/20 episodes" in out and "20/20 episodes" in out
+    assert "ETA" in out
+
+
+def test_run_llm_over_eval_set_is_silent_without_progress(capsys):
+    from eval.evaluate_llm import run_llm_over_eval_set
+
+    run_llm_over_eval_set(lambda obs, info: 4, arm_value="hidden", limit=3)
+    assert capsys.readouterr().out == ""

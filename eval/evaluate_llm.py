@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import argparse
+import time
 
 from raaga_env.prompting import Arm
 
@@ -27,15 +28,25 @@ from .policies import sample_call_phrase
 from .rollout import DriftSchedule, Trajectory, rollout
 
 
-def run_llm_over_eval_set(policy, *, arm_value: str, limit: int | None = None) -> list[Trajectory]:
+PROGRESS_EVERY = 10  # episodes
+
+
+def run_llm_over_eval_set(
+    policy, *, arm_value: str, limit: int | None = None, progress: bool = False
+) -> list[Trajectory]:
     """Runs `policy` over the fixed eval set (or its first `limit`
     episodes), each with its own recorded drift schedule replayed exactly
     — same contract as eval.evaluate.run_policy_over_eval_set (including
     call_phrase_fn=sample_call_phrase, so jugalbandi_coherence/
     call_echo_rate are measurable here too), so results from this and the
-    scripted baselines are directly comparable."""
+    scripted baselines are directly comparable.
+
+    progress: print episodes done, running mean return, and an ETA every
+    PROGRESS_EVERY episodes (flushed — a 200-episode run is ~12,800 model
+    calls and used to print nothing for an hour or more, 2026-10-08)."""
     episodes = EVAL_EPISODES[:limit] if limit else EVAL_EPISODES
     trajectories = []
+    start = time.monotonic()
     for ep in episodes:
         schedule = DriftSchedule(switches=((ep.switch_step, ep.switch_dial),))
         traj = rollout(
@@ -48,6 +59,16 @@ def run_llm_over_eval_set(policy, *, arm_value: str, limit: int | None = None) -
             call_phrase_fn=sample_call_phrase,
         )
         trajectories.append(traj)
+        done = len(trajectories)
+        if progress and (done % PROGRESS_EVERY == 0 or done == len(episodes)):
+            elapsed = time.monotonic() - start
+            eta = elapsed / done * (len(episodes) - done)
+            mean_return = sum(t.total_reward for t in trajectories) / done
+            print(
+                f"  {done}/{len(episodes)} episodes | mean return so far {mean_return:7.2f} | "
+                f"elapsed {elapsed / 60:5.1f} min | ETA {eta / 60:5.1f} min",
+                flush=True,
+            )
     return trajectories
 
 
@@ -72,7 +93,7 @@ def main() -> None:
 
     from .llm_policy import make_llm_policy  # GPU-dependent — deferred, see that module's header
 
-    print(f"Loading {args.adapter_repo} (base: {args.base_model}, arm: {arm.value}) ...")
+    print(f"Loading {args.adapter_repo} (base: {args.base_model}, arm: {arm.value}) ...", flush=True)
     policy, stats = make_llm_policy(
         args.adapter_repo,
         base_model=args.base_model,
@@ -82,8 +103,8 @@ def main() -> None:
     )
 
     n_episodes = args.limit or len(EVAL_EPISODES)
-    print(f"Running {n_episodes} episodes ...")
-    trajectories = run_llm_over_eval_set(policy, arm_value=arm.value, limit=args.limit)
+    print(f"Running {n_episodes} episodes (progress every {PROGRESS_EVERY}) ...", flush=True)
+    trajectories = run_llm_over_eval_set(policy, arm_value=arm.value, limit=args.limit, progress=True)
 
     print(f"Action validity: {stats.n_valid}/{stats.n_total} ({stats.validity_rate:.1%})")
     path = save_result(args.name, trajectories, action_validity_rate=stats.validity_rate)
