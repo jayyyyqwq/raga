@@ -98,7 +98,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_evaluate_py",
-      "community": 4,
+      "community": 6,
       "norm_label": "evaluate.py"
     },
     {
@@ -107,7 +107,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L50",
       "id": "evaluate_run_policy_over_eval_set",
-      "community": 4,
+      "community": 6,
       "norm_label": "run_policy_over_eval_set()"
     },
     {
@@ -116,7 +116,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L77",
       "id": "evaluate_save_result",
-      "community": 4,
+      "community": 6,
       "norm_label": "save_result()"
     },
     {
@@ -125,7 +125,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L94",
       "id": "evaluate_run_and_save",
-      "community": 4,
+      "community": 6,
       "norm_label": "run_and_save()"
     },
     {
@@ -134,7 +134,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L104",
       "id": "evaluate_main",
-      "community": 4,
+      "community": 6,
       "norm_label": "main()"
     },
     {
@@ -142,9 +142,9 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate.py",
       "source_location": "L53",
-      "id": "evaluate_rationale_53",
-      "community": 4,
-      "norm_label": "runs policy_factory(episode) over every episode in the fixed,     shared eval se"
+      "community": 6,
+      "norm_label": "runs policy_factory(episode) over every episode in the fixed,     shared eval se",
+      "id": "evaluate_rationale_53"
     },
     {
       "label": "evaluate_llm.py",
@@ -152,43 +152,43 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_evaluate_llm_py",
-      "community": 4,
+      "community": 5,
       "norm_label": "evaluate_llm.py"
     },
     {
       "label": "run_llm_over_eval_set()",
       "file_type": "code",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L30",
+      "source_location": "L34",
       "id": "evaluate_llm_run_llm_over_eval_set",
-      "community": 4,
+      "community": 5,
       "norm_label": "run_llm_over_eval_set()"
     },
     {
       "label": "build_arg_parser()",
       "file_type": "code",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L54",
+      "source_location": "L75",
       "id": "evaluate_llm_build_arg_parser",
-      "community": 4,
+      "community": 5,
       "norm_label": "build_arg_parser()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L69",
+      "source_location": "L90",
       "id": "evaluate_llm_main",
-      "community": 4,
+      "community": 5,
       "norm_label": "main()"
     },
     {
       "label": "Runs `policy` over the fixed eval set (or its first `limit`     episodes), each",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L31",
-      "id": "evaluate_llm_rationale_31",
-      "community": 4,
+      "source_location": "L37",
+      "id": "evaluate_llm_rationale_37",
+      "community": 5,
       "norm_label": "runs `policy` over the fixed eval set (or its first `limit`     episodes), each"
     },
     {
@@ -197,7 +197,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_fingerprint_py",
-      "community": 4,
+      "community": 6,
       "norm_label": "fingerprint.py"
     },
     {
@@ -206,7 +206,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L23",
       "id": "fingerprint_hash_file",
-      "community": 4,
+      "community": 6,
       "norm_label": "_hash_file()"
     },
     {
@@ -215,7 +215,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L29",
       "id": "fingerprint_git_sha",
-      "community": 4,
+      "community": 6,
       "norm_label": "_git_sha()"
     },
     {
@@ -224,7 +224,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L38",
       "id": "fingerprint_git_dirty",
-      "community": 4,
+      "community": 6,
       "norm_label": "_git_dirty()"
     },
     {
@@ -233,7 +233,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L48",
       "id": "fingerprint_compute_fingerprint",
-      "community": 4,
+      "community": 6,
       "norm_label": "compute_fingerprint()"
     },
     {
@@ -241,9 +241,9 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\fingerprint.py",
       "source_location": "L49",
-      "id": "fingerprint_rationale_49",
-      "community": 4,
-      "norm_label": "git sha plus content hashes of everything a reported number depends     on: the"
+      "community": 6,
+      "norm_label": "git sha plus content hashes of everything a reported number depends     on: the",
+      "id": "fingerprint_rationale_49"
     },
     {
       "label": "llm_policy.py",
@@ -251,7 +251,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_llm_policy_py",
-      "community": 7,
+      "community": 5,
       "norm_label": "llm_policy.py"
     },
     {
@@ -260,7 +260,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L33",
       "id": "llm_policy_llmpolicystats",
-      "community": 7,
+      "community": 5,
       "norm_label": "llmpolicystats"
     },
     {
@@ -269,7 +269,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L43",
       "id": "llm_policy_validity_rate",
-      "community": 7,
+      "community": 5,
       "norm_label": "validity_rate()"
     },
     {
@@ -278,7 +278,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L47",
       "id": "llm_policy_build_policy",
-      "community": 7,
+      "community": 5,
       "norm_label": "_build_policy()"
     },
     {
@@ -287,7 +287,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L95",
       "id": "llm_policy_make_llm_policy",
-      "community": 7,
+      "community": 5,
       "norm_label": "make_llm_policy()"
     },
     {
@@ -295,27 +295,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L34",
-      "id": "llm_policy_rationale_34",
-      "community": 7,
-      "norm_label": "what eval.metrics.action_validity_rate needs. a trajectory only     contains st"
+      "community": 5,
+      "norm_label": "what eval.metrics.action_validity_rate needs. a trajectory only     contains st",
+      "id": "llm_policy_rationale_34"
     },
     {
       "label": "Returns an eval.rollout.Policy-shaped callable. `fallback_action` is     substi",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L54",
-      "id": "llm_policy_rationale_54",
-      "community": 7,
-      "norm_label": "returns an eval.rollout.policy-shaped callable. `fallback_action` is     substi"
+      "community": 5,
+      "norm_label": "returns an eval.rollout.policy-shaped callable. `fallback_action` is     substi",
+      "id": "llm_policy_rationale_54"
     },
     {
       "label": "Loads `adapter_repo` (a local path or HF Hub repo id \u2014 anything     `PeftModel.",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\llm_policy.py",
       "source_location": "L104",
-      "id": "llm_policy_rationale_104",
-      "community": 7,
-      "norm_label": "loads `adapter_repo` (a local path or hf hub repo id \u2014 anything     `peftmodel."
+      "community": 5,
+      "norm_label": "loads `adapter_repo` (a local path or hf hub repo id \u2014 anything     `peftmodel.",
+      "id": "llm_policy_rationale_104"
     },
     {
       "label": "metrics.py",
@@ -520,27 +520,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L59",
-      "id": "metrics_rationale_59",
       "community": 0,
-      "norm_label": "fraction of steps with no forbidden-note violation, split three ways     (opene"
+      "norm_label": "fraction of steps with no forbidden-note violation, split three ways     (opene",
+      "id": "metrics_rationale_59"
     },
     {
       "label": "Fraction of steps with no hard-rule violation of any kind     (forbidden note,",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L72",
-      "id": "metrics_rationale_72",
       "community": 0,
-      "norm_label": "fraction of steps with no hard-rule violation of any kind     (forbidden note,"
+      "norm_label": "fraction of steps with no hard-rule violation of any kind     (forbidden note,",
+      "id": "metrics_rationale_72"
     },
     {
       "label": "Steps from switch to the first new-raga pakad. Right-censored when no     pakad",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L116",
-      "id": "metrics_rationale_116",
       "community": 0,
-      "norm_label": "steps from switch to the first new-raga pakad. right-censored when no     pakad"
+      "norm_label": "steps from switch to the first new-raga pakad. right-censored when no     pakad",
+      "id": "metrics_rationale_116"
     },
     {
       "label": "Forbidden-note rate as a function of steps since switch, averaged     across epi",
@@ -556,72 +556,72 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L171",
-      "id": "metrics_rationale_171",
       "community": 0,
-      "norm_label": "forbidden-note rate as a function of steps since switch, averaged     across ep"
+      "norm_label": "forbidden-note rate as a function of steps since switch, averaged     across ep",
+      "id": "metrics_rationale_171"
     },
     {
       "label": "As post_switch_violation_decay, counting any hard-rule violation     (protocol",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L181",
-      "id": "metrics_rationale_181",
       "community": 0,
-      "norm_label": "as post_switch_violation_decay, counting any hard-rule violation     (protocol"
+      "norm_label": "as post_switch_violation_decay, counting any hard-rule violation     (protocol",
+      "id": "metrics_rationale_181"
     },
     {
       "label": "Pakad completions per episode.",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L206",
-      "id": "metrics_rationale_206",
       "community": 0,
-      "norm_label": "pakad completions per episode."
+      "norm_label": "pakad completions per episode.",
+      "id": "metrics_rationale_206"
     },
     {
       "label": "Average jugalbandi (call-response) reward per call-response pair.     The jugal",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L214",
-      "id": "metrics_rationale_214",
       "community": 0,
-      "norm_label": "average jugalbandi (call-response) reward per call-response pair.     the jugal"
+      "norm_label": "average jugalbandi (call-response) reward per call-response pair.     the jugal",
+      "id": "metrics_rationale_214"
     },
     {
       "label": "Fraction of call-response pairs where the agent landed on the     partner's las",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L236",
-      "id": "metrics_rationale_236",
       "community": 0,
-      "norm_label": "fraction of call-response pairs where the agent landed on the     partner's las"
+      "norm_label": "fraction of call-response pairs where the agent landed on the     partner's las",
+      "id": "metrics_rationale_236"
     },
     {
       "label": "Fraction of completions parsing to a legal action with no clamping     (Phase 1",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L253",
-      "id": "metrics_rationale_253",
       "community": 0,
-      "norm_label": "fraction of completions parsing to a legal action with no clamping     (phase 1"
+      "norm_label": "fraction of completions parsing to a legal action with no clamping     (phase 1",
+      "id": "metrics_rationale_253"
     },
     {
       "label": "Fraction of steps inside {Sa, Ga, Pa, Ni} (F13). Flags the     degenerate polic",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L265",
-      "id": "metrics_rationale_265",
       "community": 0,
-      "norm_label": "fraction of steps inside {sa, ga, pa, ni} (f13). flags the     degenerate polic"
+      "norm_label": "fraction of steps inside {sa, ga, pa, ni} (f13). flags the     degenerate polic",
+      "id": "metrics_rationale_265"
     },
     {
       "label": "Every Phase 4.3 metric, bundled into one report. This is the function     every",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\metrics.py",
       "source_location": "L334",
-      "id": "metrics_rationale_334",
       "community": 0,
-      "norm_label": "every phase 4.3 metric, bundled into one report. this is the function     every"
+      "norm_label": "every phase 4.3 metric, bundled into one report. this is the function     every",
+      "id": "metrics_rationale_334"
     },
     {
       "label": "policies.py",
@@ -682,45 +682,45 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\policies.py",
       "source_location": "L46",
-      "id": "policies_rationale_46",
       "community": 3,
-      "norm_label": "uniform over all 96 actions, with no awareness of which notes are     even legal"
+      "norm_label": "uniform over all 96 actions, with no awareness of which notes are     even legal",
+      "id": "policies_rationale_46"
     },
     {
       "label": "Uniformly samples a note valid in the *currently active* raga (read     directly",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\policies.py",
       "source_location": "L57",
-      "id": "policies_rationale_57",
       "community": 3,
-      "norm_label": "uniformly samples a note valid in the *currently active* raga (read     directly"
+      "norm_label": "uniformly samples a note valid in the *currently active* raga (read     directly",
+      "id": "policies_rationale_57"
     },
     {
       "label": "A plausible human call phrase: 4 swaras drawn uniformly from the     currently-a",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\policies.py",
       "source_location": "L75",
-      "id": "policies_rationale_75",
       "community": 3,
-      "norm_label": "a plausible human call phrase: 4 swaras drawn uniformly from the     currently-a"
+      "norm_label": "a plausible human call phrase: 4 swaras drawn uniformly from the     currently-a",
+      "id": "policies_rationale_75"
     },
     {
       "label": "Cycles Sa, Ga, Pa, Ni (madhya register, sixteenth notes) forever.     Names the",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\policies.py",
       "source_location": "L99",
-      "id": "policies_rationale_99",
       "community": 0,
-      "norm_label": "cycles sa, ga, pa, ni (madhya register, sixteenth notes) forever.     names the"
+      "norm_label": "cycles sa, ga, pa, ni (madhya register, sixteenth notes) forever.     names the",
+      "id": "policies_rationale_99"
     },
     {
       "label": "Plays random-valid normally, but the instant the dial switches, it     \"cheats\"",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\policies.py",
       "source_location": "L116",
-      "id": "policies_rationale_116",
       "community": 3,
-      "norm_label": "plays random-valid normally, but the instant the dial switches, it     \"cheats\""
+      "norm_label": "plays random-valid normally, but the instant the dial switches, it     \"cheats\"",
+      "id": "policies_rationale_116"
     },
     {
       "label": "rollout.py",
@@ -728,7 +728,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_rollout_py",
-      "community": 5,
+      "community": 4,
       "norm_label": "rollout.py"
     },
     {
@@ -737,7 +737,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L28",
       "id": "rollout_policy",
-      "community": 7,
+      "community": 5,
       "norm_label": "policy"
     },
     {
@@ -746,7 +746,7 @@
       "source_file": "",
       "source_location": "",
       "id": "protocol",
-      "community": 7,
+      "community": 5,
       "norm_label": "protocol"
     },
     {
@@ -755,7 +755,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L34",
       "id": "rollout_policy_call",
-      "community": 7,
+      "community": 5,
       "norm_label": ".__call__()"
     },
     {
@@ -773,7 +773,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L44",
       "id": "rollout_driftschedule_as_dict",
-      "community": 5,
+      "community": 4,
       "norm_label": ".as_dict()"
     },
     {
@@ -782,7 +782,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L49",
       "id": "rollout_steprecord",
-      "community": 5,
+      "community": 4,
       "norm_label": "steprecord"
     },
     {
@@ -800,7 +800,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L73",
       "id": "rollout_run_steps",
-      "community": 5,
+      "community": 4,
       "norm_label": "_run_steps()"
     },
     {
@@ -809,7 +809,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L126",
       "id": "rollout_rollout",
-      "community": 5,
+      "community": 4,
       "norm_label": "rollout()"
     },
     {
@@ -818,7 +818,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L171",
       "id": "rollout_rollout_from_state",
-      "community": 5,
+      "community": 4,
       "norm_label": "rollout_from_state()"
     },
     {
@@ -826,45 +826,45 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L29",
-      "id": "rollout_rationale_29",
-      "community": 7,
-      "norm_label": "a policy is any callable mapping (observation, info) to a legal action     inde"
+      "community": 5,
+      "norm_label": "a policy is any callable mapping (observation, info) to a legal action     inde",
+      "id": "rollout_rationale_29"
     },
     {
       "label": "When to move the raga dial during an episode. `switches` maps a step     index",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L39",
-      "id": "rollout_rationale_39",
       "community": 3,
-      "norm_label": "when to move the raga dial during an episode. `switches` maps a step     index"
+      "norm_label": "when to move the raga dial during an episode. `switches` maps a step     index",
+      "id": "rollout_rationale_39"
     },
     {
       "label": "Shared step loop for rollout() and rollout_from_state() \u2014 the one     place a S",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L85",
-      "id": "rollout_rationale_85",
-      "community": 5,
-      "norm_label": "shared step loop for rollout() and rollout_from_state() \u2014 the one     place a s"
+      "community": 4,
+      "norm_label": "shared step loop for rollout() and rollout_from_state() \u2014 the one     place a s",
+      "id": "rollout_rationale_85"
     },
     {
       "label": "Run one full episode in-process, from a fresh reset, and return every     step'",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L136",
-      "id": "rollout_rationale_136",
-      "community": 5,
-      "norm_label": "run one full episode in-process, from a fresh reset, and return every     step'"
+      "community": 4,
+      "norm_label": "run one full episode in-process, from a fresh reset, and return every     step'",
+      "id": "rollout_rationale_136"
     },
     {
       "label": "rollout()'s sibling for continuing from a mid-episode snapshot instead     of a",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\rollout.py",
       "source_location": "L182",
-      "id": "rollout_rationale_182",
-      "community": 5,
-      "norm_label": "rollout()'s sibling for continuing from a mid-episode snapshot instead     of a"
+      "community": 4,
+      "norm_label": "rollout()'s sibling for continuing from a mid-episode snapshot instead     of a",
+      "id": "rollout_rationale_182"
     },
     {
       "label": "__init__.py",
@@ -944,7 +944,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L1",
       "id": "eval_tests_test_evaluate_py",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_evaluate.py"
     },
     {
@@ -953,7 +953,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L9",
       "id": "test_evaluate_test_run_policy_over_eval_set_covers_every_episode",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_run_policy_over_eval_set_covers_every_episode()"
     },
     {
@@ -962,7 +962,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L14",
       "id": "test_evaluate_test_run_policy_over_eval_set_replays_each_episodes_own_schedule",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_run_policy_over_eval_set_replays_each_episodes_own_schedule()"
     },
     {
@@ -971,7 +971,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L20",
       "id": "test_evaluate_test_save_result_writes_a_fingerprinted_json_file",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_save_result_writes_a_fingerprinted_json_file()"
     },
     {
@@ -980,7 +980,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L36",
       "id": "test_evaluate_test_run_and_save_works_for_every_scripted_policy",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_run_and_save_works_for_every_scripted_policy()"
     },
     {
@@ -989,7 +989,7 @@
       "source_file": "eval\\tests\\test_evaluate.py",
       "source_location": "L45",
       "id": "test_evaluate_test_run_and_save_rejects_unknown_policy",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_run_and_save_rejects_unknown_policy()"
     },
     {
@@ -998,7 +998,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_fingerprint.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_tests_test_fingerprint_py",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_fingerprint.py"
     },
     {
@@ -1007,7 +1007,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_fingerprint.py",
       "source_location": "L4",
       "id": "test_fingerprint_test_fingerprint_has_expected_keys",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_fingerprint_has_expected_keys()"
     },
     {
@@ -1016,7 +1016,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_fingerprint.py",
       "source_location": "L25",
       "id": "test_fingerprint_test_fingerprint_is_deterministic_for_the_same_tree",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_fingerprint_is_deterministic_for_the_same_tree()"
     },
     {
@@ -1025,7 +1025,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_fingerprint.py",
       "source_location": "L29",
       "id": "test_fingerprint_test_fingerprint_changes_when_reward_file_changes",
-      "community": 4,
+      "community": 6,
       "norm_label": "test_fingerprint_changes_when_reward_file_changes()"
     },
     {
@@ -1034,7 +1034,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_llm_policy.py"
     },
     {
@@ -1043,7 +1043,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L12",
       "id": "test_llm_policy_fake_generate",
-      "community": 7,
+      "community": 5,
       "norm_label": "_fake_generate()"
     },
     {
@@ -1052,7 +1052,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L22",
       "id": "test_llm_policy_obs_with_call",
-      "community": 7,
+      "community": 5,
       "norm_label": "_obs_with_call()"
     },
     {
@@ -1061,7 +1061,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L32",
       "id": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_valid_completion_returns_the_parsed_action()"
     },
     {
@@ -1070,7 +1070,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L43",
       "id": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_unparseable_completion_falls_back_and_is_counted_invalid()"
     },
     {
@@ -1079,7 +1079,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L55",
       "id": "test_llm_policy_test_out_of_range_completion_also_falls_back",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_out_of_range_completion_also_falls_back()"
     },
     {
@@ -1088,7 +1088,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L64",
       "id": "test_llm_policy_test_validity_rate_accumulates_across_calls",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_validity_rate_accumulates_across_calls()"
     },
     {
@@ -1097,7 +1097,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L80",
       "id": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_first_call_with_empty_info_has_no_feedback_line()"
     },
     {
@@ -1106,7 +1106,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L89",
       "id": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_subsequent_call_with_info_renders_feedback()"
     },
     {
@@ -1115,17 +1115,35 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L101",
       "id": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
-      "community": 7,
+      "community": 5,
       "norm_label": "test_oracle_arm_names_the_raga_dial_hidden_does_not()"
+    },
+    {
+      "label": "test_run_llm_over_eval_set_reports_progress_with_eta()",
+      "file_type": "code",
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L117",
+      "id": "test_llm_policy_test_run_llm_over_eval_set_reports_progress_with_eta",
+      "community": 5,
+      "norm_label": "test_run_llm_over_eval_set_reports_progress_with_eta()"
+    },
+    {
+      "label": "test_run_llm_over_eval_set_is_silent_without_progress()",
+      "file_type": "code",
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L127",
+      "id": "test_llm_policy_test_run_llm_over_eval_set_is_silent_without_progress",
+      "community": 5,
+      "norm_label": "test_run_llm_over_eval_set_is_silent_without_progress()"
     },
     {
       "label": "A 22-dim obs with call_phrase slots (8-11) set to `swaras`, and dial     (15) at",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L23",
-      "id": "test_llm_policy_rationale_23",
-      "community": 7,
-      "norm_label": "a 22-dim obs with call_phrase slots (8-11) set to `swaras`, and dial     (15) at"
+      "community": 5,
+      "norm_label": "a 22-dim obs with call_phrase slots (8-11) set to `swaras`, and dial     (15) at",
+      "id": "test_llm_policy_rationale_23"
     },
     {
       "label": "test_metrics.py",
@@ -1321,45 +1339,45 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L21",
-      "id": "test_metrics_rationale_21",
       "community": 0,
-      "norm_label": "a hand-built steprecord for testing a metric formula in isolation,     without n"
+      "norm_label": "a hand-built steprecord for testing a metric formula in isolation,     without n",
+      "id": "test_metrics_rationale_21"
     },
     {
       "label": "safe_set_cycle never violates a forbidden-note rule in either raga \u2014     exactly",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L40",
-      "id": "test_metrics_rationale_40",
       "community": 0,
-      "norm_label": "safe_set_cycle never violates a forbidden-note rule in either raga \u2014     exactly"
+      "norm_label": "safe_set_cycle never violates a forbidden-note rule in either raga \u2014     exactly",
+      "id": "test_metrics_rationale_40"
     },
     {
       "label": "A 3-step episode never reaches CALL_EVERY=8, so there are no     call-response p",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L140",
-      "id": "test_metrics_rationale_140",
       "community": 0,
-      "norm_label": "a 3-step episode never reaches call_every=8, so there are no     call-response p"
+      "norm_label": "a 3-step episode never reaches call_every=8, so there are no     call-response p",
+      "id": "test_metrics_rationale_140"
     },
     {
       "label": "call_echo (added by the 2026-10 ML retrain fix, docs/RETRAIN_PLAN.md)     must c",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L148",
-      "id": "test_metrics_rationale_148",
       "community": 0,
-      "norm_label": "call_echo (added by the 2026-10 ml retrain fix, docs/retrain_plan.md)     must c"
+      "norm_label": "call_echo (added by the 2026-10 ml retrain fix, docs/retrain_plan.md)     must c",
+      "id": "test_metrics_rationale_148"
     },
     {
       "label": "valid_raga_adherence (pre-registered) only counts forbidden_note;     hard_rule_",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L205",
-      "id": "test_metrics_rationale_205",
       "community": 0,
-      "norm_label": "valid_raga_adherence (pre-registered) only counts forbidden_note;     hard_rule_"
+      "norm_label": "valid_raga_adherence (pre-registered) only counts forbidden_note;     hard_rule_",
+      "id": "test_metrics_rationale_205"
     },
     {
       "label": "test_policies.py",
@@ -1465,9 +1483,9 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_policies.py",
       "source_location": "L61",
-      "id": "test_policies_rationale_61",
       "community": 3,
-      "norm_label": "sanity check that it's genuinely not validity-aware \u2014 distinguishes     it from"
+      "norm_label": "sanity check that it's genuinely not validity-aware \u2014 distinguishes     it from",
+      "id": "test_policies_rationale_61"
     },
     {
       "label": "test_rollout.py",
@@ -1475,7 +1493,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_eval_tests_test_rollout_py",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout.py"
     },
     {
@@ -1484,7 +1502,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L6",
       "id": "test_rollout_cycling_policy",
-      "community": 5,
+      "community": 4,
       "norm_label": "_cycling_policy()"
     },
     {
@@ -1493,7 +1511,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L20",
       "id": "test_rollout_test_rollout_is_deterministic_across_invocations",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_is_deterministic_across_invocations()"
     },
     {
@@ -1502,7 +1520,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L33",
       "id": "test_rollout_test_rollout_runs_full_episode_length",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_runs_full_episode_length()"
     },
     {
@@ -1511,7 +1529,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L40",
       "id": "test_rollout_test_drift_schedule_switches_raga_mid_episode",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_drift_schedule_switches_raga_mid_episode()"
     },
     {
@@ -1520,7 +1538,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L49",
       "id": "test_rollout_test_trajectory_records_its_own_switch_steps",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_trajectory_records_its_own_switch_steps()"
     },
     {
@@ -1529,7 +1547,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L56",
       "id": "test_rollout_test_trajectory_switch_steps_empty_when_no_schedule",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_trajectory_switch_steps_empty_when_no_schedule()"
     },
     {
@@ -1538,7 +1556,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L69",
       "id": "test_rollout_fixed_call_phrase",
-      "community": 5,
+      "community": 4,
       "norm_label": "_fixed_call_phrase()"
     },
     {
@@ -1547,7 +1565,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L73",
       "id": "test_rollout_random_call_phrase",
-      "community": 5,
+      "community": 4,
       "norm_label": "_random_call_phrase()"
     },
     {
@@ -1556,7 +1574,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L77",
       "id": "test_rollout_test_rollout_without_call_phrase_fn_never_submits_a_call",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_without_call_phrase_fn_never_submits_a_call()"
     },
     {
@@ -1565,7 +1583,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L86",
       "id": "test_rollout_test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence()"
     },
     {
@@ -1574,7 +1592,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L99",
       "id": "test_rollout_test_rollout_call_sequence_is_deterministic_for_the_same_seed",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_call_sequence_is_deterministic_for_the_same_seed()"
     },
     {
@@ -1583,7 +1601,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L110",
       "id": "test_rollout_test_rollout_from_state_submits_no_call_unless_given_a_call_fn",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_submits_no_call_unless_given_a_call_fn()"
     },
     {
@@ -1592,7 +1610,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L128",
       "id": "test_rollout_test_rollout_from_state_continues_from_the_snapshot_not_from_scratch",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_continues_from_the_snapshot_not_from_scratch()"
     },
     {
@@ -1601,7 +1619,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L144",
       "id": "test_rollout_test_rollout_from_state_caps_at_episode_length",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_caps_at_episode_length()"
     },
     {
@@ -1610,7 +1628,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L158",
       "id": "test_rollout_test_rollout_from_state_is_deterministic_for_a_deterministic_policy",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_is_deterministic_for_a_deterministic_policy()"
     },
     {
@@ -1619,7 +1637,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L176",
       "id": "test_rollout_test_rollout_from_state_matches_a_manual_env_replay",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_matches_a_manual_env_replay()"
     },
     {
@@ -1628,7 +1646,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L200",
       "id": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_applies_a_switch_inside_the_horizon()"
     },
     {
@@ -1637,7 +1655,7 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L215",
       "id": "test_rollout_test_rollout_from_state_injects_calls_when_given_a_call_fn",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_rollout_from_state_injects_calls_when_given_a_call_fn()"
     },
     {
@@ -1645,7 +1663,7 @@
       "file_type": "rationale",
       "source_file": "eval\\tests\\test_rollout.py",
       "source_location": "L7",
-      "community": 3,
+      "community": 0,
       "norm_label": "a scripted, deterministic policy: ignores obs/info, cycles a fixed     action li",
       "id": "test_rollout_rationale_7"
     },
@@ -1654,27 +1672,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L78",
-      "id": "test_rollout_rationale_78",
       "community": 0,
-      "norm_label": "default/backward-compatible behaviour: omitting call_phrase_fn (every     call"
+      "norm_label": "default/backward-compatible behaviour: omitting call_phrase_fn (every     call",
+      "id": "test_rollout_rationale_78"
     },
     {
       "label": "Default: no call injection \u2014 only an explicit call_phrase_fn (the     source ep",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L111",
-      "id": "test_rollout_rationale_111",
-      "community": 0,
-      "norm_label": "default: no call injection \u2014 only an explicit call_phrase_fn (the     source ep"
+      "community": 3,
+      "norm_label": "default: no call injection \u2014 only an explicit call_phrase_fn (the     source ep",
+      "id": "test_rollout_rationale_111"
     },
     {
       "label": "The whole point: rollout_from_state's reward must agree with hand-     stepping",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L177",
-      "id": "test_rollout_rationale_177",
       "community": 0,
-      "norm_label": "the whole point: rollout_from_state's reward must agree with hand-     stepping"
+      "norm_label": "the whole point: rollout_from_state's reward must agree with hand-     stepping",
+      "id": "test_rollout_rationale_177"
     },
     {
       "label": "__init__.py",
@@ -1691,7 +1709,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_openenv_server_server_py",
-      "community": 11,
+      "community": 9,
       "norm_label": "server.py"
     },
     {
@@ -1700,7 +1718,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L55",
       "id": "server_steprequest",
-      "community": 11,
+      "community": 9,
       "norm_label": "steprequest"
     },
     {
@@ -1709,7 +1727,7 @@
       "source_file": "",
       "source_location": "",
       "id": "basemodel",
-      "community": 11,
+      "community": 9,
       "norm_label": "basemodel"
     },
     {
@@ -1718,7 +1736,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L58",
       "id": "server_resetrequest",
-      "community": 11,
+      "community": 9,
       "norm_label": "resetrequest"
     },
     {
@@ -1727,7 +1745,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L62",
       "id": "server_dialrequest",
-      "community": 11,
+      "community": 9,
       "norm_label": "dialrequest"
     },
     {
@@ -1736,7 +1754,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L65",
       "id": "server_callrequest",
-      "community": 11,
+      "community": 9,
       "norm_label": "callrequest"
     },
     {
@@ -1745,7 +1763,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L70",
       "id": "server_inferrequest",
-      "community": 11,
+      "community": 9,
       "norm_label": "inferrequest"
     },
     {
@@ -1754,7 +1772,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L87",
       "id": "server_load_inference_model",
-      "community": 11,
+      "community": 9,
       "norm_label": "_load_inference_model()"
     },
     {
@@ -1763,7 +1781,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L131",
       "id": "server_reset",
-      "community": 11,
+      "community": 9,
       "norm_label": "reset()"
     },
     {
@@ -1772,7 +1790,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L143",
       "id": "server_step",
-      "community": 5,
+      "community": 4,
       "norm_label": "step()"
     },
     {
@@ -1781,7 +1799,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L167",
       "id": "server_set_dial",
-      "community": 6,
+      "community": 7,
       "norm_label": "set_dial()"
     },
     {
@@ -1790,7 +1808,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L178",
       "id": "server_submit_call",
-      "community": 11,
+      "community": 9,
       "norm_label": "submit_call()"
     },
     {
@@ -1799,7 +1817,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L189",
       "id": "server_state",
-      "community": 11,
+      "community": 9,
       "norm_label": "state()"
     },
     {
@@ -1808,7 +1826,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L205",
       "id": "server_infer",
-      "community": 11,
+      "community": 9,
       "norm_label": "infer()"
     },
     {
@@ -1817,7 +1835,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L251",
       "id": "server_health",
-      "community": 1,
+      "community": 9,
       "norm_label": "health()"
     },
     {
@@ -1825,27 +1843,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L88",
-      "id": "server_rationale_88",
-      "community": 11,
-      "norm_label": "lazily load base model + lora adapter. cached after first call."
+      "community": 9,
+      "norm_label": "lazily load base model + lora adapter. cached after first call.",
+      "id": "server_rationale_88"
     },
     {
       "label": "Human submits a 4-note call phrase. Agent will respond on next steps.",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L179",
-      "id": "server_rationale_179",
-      "community": 11,
-      "norm_label": "human submits a 4-note call phrase. agent will respond on next steps."
+      "community": 9,
+      "norm_label": "human submits a 4-note call phrase. agent will respond on next steps.",
+      "id": "server_rationale_179"
     },
     {
       "label": "Runs the trained policy on the environment's *current* observation and     retu",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\server.py",
       "source_location": "L209",
-      "id": "server_rationale_209",
-      "community": 11,
-      "norm_label": "runs the trained policy on the environment's *current* observation and     retu"
+      "community": 9,
+      "norm_label": "runs the trained policy on the environment's *current* observation and     retu",
+      "id": "server_rationale_209"
     },
     {
       "label": "test_server.py",
@@ -1853,7 +1871,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_openenv_server_tests_test_server_py",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_server.py"
     },
     {
@@ -1862,7 +1880,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L20",
       "id": "test_server_reset_env",
-      "community": 9,
+      "community": 10,
       "norm_label": "_reset_env()"
     },
     {
@@ -1871,7 +1889,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L25",
       "id": "test_server_test_reset_clears_last_step_feedback",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_reset_clears_last_step_feedback()"
     },
     {
@@ -1880,7 +1898,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L33",
       "id": "test_server_test_step_sets_last_step_feedback_from_the_actual_outcome",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_step_sets_last_step_feedback_from_the_actual_outcome()"
     },
     {
@@ -1889,7 +1907,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L43",
       "id": "test_server_test_step_sets_last_step_feedback_for_a_penalised_action",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_step_sets_last_step_feedback_for_a_penalised_action()"
     },
     {
@@ -1898,7 +1916,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L53",
       "id": "test_server_test_last_step_feedback_reflects_only_the_most_recent_step",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_last_step_feedback_reflects_only_the_most_recent_step()"
     },
     {
@@ -1907,7 +1925,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L61",
       "id": "test_server_test_last_step_feedback_is_rule_agnostic",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_last_step_feedback_is_rule_agnostic()"
     },
     {
@@ -1916,7 +1934,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L70",
       "id": "test_server_test_last_step_feedback_integrates_with_render_prompt_for_every_arm",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_last_step_feedback_integrates_with_render_prompt_for_every_arm()"
     },
     {
@@ -1925,7 +1943,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L88",
       "id": "test_server_test_root_serves_the_ui_index_page",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_root_serves_the_ui_index_page()"
     },
     {
@@ -1934,7 +1952,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L94",
       "id": "test_server_test_static_mount_serves_an_app_module",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_static_mount_serves_an_app_module()"
     },
     {
@@ -1943,7 +1961,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L100",
       "id": "test_server_test_api_routes_still_take_priority_over_the_static_mount",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_api_routes_still_take_priority_over_the_static_mount()"
     },
     {
@@ -1952,7 +1970,7 @@
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L109",
       "id": "test_server_test_call_rejects_out_of_range_swaras",
-      "community": 9,
+      "community": 10,
       "norm_label": "test_call_rejects_out_of_range_swaras()"
     },
     {
@@ -1960,7 +1978,7 @@
       "file_type": "rationale",
       "source_file": "openenv_server\\tests\\test_server.py",
       "source_location": "L62",
-      "community": 9,
+      "community": 10,
       "norm_label": "the whole point of claim b's channel: it says outcome, never why.",
       "id": "test_server_rationale_62"
     },
@@ -1969,7 +1987,7 @@
       "file_type": "rationale",
       "source_file": "openenv_server\\tests\\test_server.py",
       "source_location": "L71",
-      "community": 9,
+      "community": 10,
       "norm_label": "confirms _last_step_feedback is exactly the shape /infer feeds into     render_p",
       "id": "test_server_rationale_71"
     },
@@ -1978,7 +1996,7 @@
       "file_type": "rationale",
       "source_file": "openenv_server\\tests\\test_server.py",
       "source_location": "L101",
-      "community": 9,
+      "community": 10,
       "norm_label": "the mount is at \"/\" \u2014 this is what guarantees /reset, /step etc.     never get s",
       "id": "test_server_rationale_101"
     },
@@ -1987,9 +2005,9 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\openenv_server\\tests\\test_server.py",
       "source_location": "L110",
-      "id": "test_server_rationale_110",
-      "community": 9,
-      "norm_label": "calls are swaras 0-11; anything else used to reach set_call() and     then crash"
+      "community": 10,
+      "norm_label": "calls are swaras 0-11; anything else used to reach set_call() and     then crash",
+      "id": "test_server_rationale_110"
     },
     {
       "label": "__init__.py",
@@ -2015,7 +2033,7 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_paper_scripts_baseline_stats_py",
-      "community": 4,
+      "community": 6,
       "norm_label": "baseline_stats.py"
     },
     {
@@ -2024,7 +2042,7 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L38",
       "id": "baseline_stats_wilcoxon_signed_rank",
-      "community": 4,
+      "community": 6,
       "norm_label": "wilcoxon_signed_rank()"
     },
     {
@@ -2033,7 +2051,7 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L70",
       "id": "baseline_stats_paired_bootstrap_ci",
-      "community": 4,
+      "community": 6,
       "norm_label": "paired_bootstrap_ci()"
     },
     {
@@ -2042,7 +2060,7 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L78",
       "id": "baseline_stats_hard_violation_decay",
-      "community": 4,
+      "community": 6,
       "norm_label": "hard_violation_decay()"
     },
     {
@@ -2051,7 +2069,7 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L90",
       "id": "baseline_stats_main",
-      "community": 4,
+      "community": 6,
       "norm_label": "main()"
     },
     {
@@ -2059,18 +2077,18 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L1",
-      "id": "baseline_stats_rationale_1",
-      "community": 4,
-      "norm_label": "paper statistics for the four scripted baselines (experiment_plan.md \u00a711).  re"
+      "community": 6,
+      "norm_label": "paper statistics for the four scripted baselines (experiment_plan.md \u00a711).  re",
+      "id": "baseline_stats_rationale_1"
     },
     {
       "label": "Two-sided Wilcoxon signed-rank test, normal approximation with tie     correcti",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L39",
-      "id": "baseline_stats_rationale_39",
-      "community": 4,
-      "norm_label": "two-sided wilcoxon signed-rank test, normal approximation with tie     correcti"
+      "community": 6,
+      "norm_label": "two-sided wilcoxon signed-rank test, normal approximation with tie     correcti",
+      "id": "baseline_stats_rationale_39"
     },
     {
       "label": "lint_tex.py",
@@ -2095,9 +2113,9 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\lint_tex.py",
       "source_location": "L1",
-      "id": "lint_tex_rationale_1",
       "community": 18,
-      "norm_label": "mechanical pre-compile checks for paper/main.tex: every \\\\cite key exists in ref"
+      "norm_label": "mechanical pre-compile checks for paper/main.tex: every \\\\cite key exists in ref",
+      "id": "lint_tex_rationale_1"
     },
     {
       "label": "__init__.py",
@@ -2150,7 +2168,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_training_train_grpo_py",
-      "community": 6,
+      "community": 7,
       "norm_label": "train_grpo.py"
     },
     {
@@ -2159,7 +2177,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L68",
       "id": "train_grpo_sample_drift_schedule",
-      "community": 6,
+      "community": 7,
       "norm_label": "sample_drift_schedule()"
     },
     {
@@ -2168,7 +2186,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L83",
       "id": "train_grpo_build_dataset",
-      "community": 6,
+      "community": 7,
       "norm_label": "build_dataset()"
     },
     {
@@ -2177,7 +2195,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L149",
       "id": "train_grpo_make_step_reward_fn",
-      "community": 6,
+      "community": 7,
       "norm_label": "make_step_reward_fn()"
     },
     {
@@ -2186,7 +2204,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L203",
       "id": "train_grpo_build_arg_parser",
-      "community": 6,
+      "community": 7,
       "norm_label": "build_arg_parser()"
     },
     {
@@ -2195,7 +2213,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L217",
       "id": "train_grpo_main",
-      "community": 6,
+      "community": 7,
       "norm_label": "main()"
     },
     {
@@ -2203,27 +2221,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L69",
-      "id": "train_grpo_rationale_69",
-      "community": 6,
-      "norm_label": "one drift event per training episode, sampled uniformly over     drift_window,"
+      "community": 7,
+      "norm_label": "one drift event per training episode, sampled uniformly over     drift_window,",
+      "id": "train_grpo_rationale_69"
     },
     {
       "label": "Each row is one decision point sampled from a reference episode: walk     a fre",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L84",
-      "id": "train_grpo_rationale_84",
-      "community": 6,
-      "norm_label": "each row is one decision point sampled from a reference episode: walk     a fre"
+      "community": 7,
+      "norm_label": "each row is one decision point sampled from a reference episode: walk     a fre",
+      "id": "train_grpo_rationale_84"
     },
     {
       "label": "Returns a TRL reward_funcs-compatible callable bound to `arm`. GRPO     scores",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L150",
-      "id": "train_grpo_rationale_150",
-      "community": 6,
-      "norm_label": "returns a trl reward_funcs-compatible callable bound to `arm`. grpo     scores"
+      "community": 7,
+      "norm_label": "returns a trl reward_funcs-compatible callable bound to `arm`. grpo     scores",
+      "id": "train_grpo_rationale_150"
     },
     {
       "label": "__init__.py",
@@ -2240,7 +2258,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L1",
       "id": "d_raaga_trial_1_training_tests_test_train_grpo_py",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_train_grpo.py"
     },
     {
@@ -2249,7 +2267,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L37",
       "id": "test_train_grpo_test_sample_drift_schedule_respects_control_condition_rate",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_sample_drift_schedule_respects_control_condition_rate()"
     },
     {
@@ -2258,7 +2276,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L58",
       "id": "test_train_grpo_test_build_dataset_produces_expected_columns",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_produces_expected_columns()"
     },
     {
@@ -2267,7 +2285,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L72",
       "id": "test_train_grpo_test_build_dataset_spans_both_pre_and_post_switch_snapshots",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_spans_both_pre_and_post_switch_snapshots()"
     },
     {
@@ -2276,7 +2294,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L80",
       "id": "test_train_grpo_test_build_dataset_snapshots_include_feedback_except_at_step_zero",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_snapshots_include_feedback_except_at_step_zero()"
     },
     {
@@ -2285,7 +2303,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L93",
       "id": "test_train_grpo_test_build_dataset_oracle_arm_names_the_opening_raga",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_oracle_arm_names_the_opening_raga()"
     },
     {
@@ -2294,7 +2312,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L103",
       "id": "test_train_grpo_test_build_dataset_some_snapshots_carry_a_live_call",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_some_snapshots_carry_a_live_call()"
     },
     {
@@ -2303,7 +2321,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L119",
       "id": "test_train_grpo_test_build_dataset_hidden_arm_call_injection_does_not_leak_raga_name",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_build_dataset_hidden_arm_call_injection_does_not_leak_raga_name()"
     },
     {
@@ -2312,7 +2330,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L141",
       "id": "test_train_grpo_test_step_reward_matches_a_manual_state_replay",
-      "community": 5,
+      "community": 4,
       "norm_label": "test_step_reward_matches_a_manual_state_replay()"
     },
     {
@@ -2321,7 +2339,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L176",
       "id": "test_train_grpo_test_step_reward_is_deterministic_for_the_same_mc_seed",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_step_reward_is_deterministic_for_the_same_mc_seed()"
     },
     {
@@ -2330,7 +2348,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L187",
       "id": "test_train_grpo_test_step_reward_reflects_the_same_action_becoming_valid_after_a_switch",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_step_reward_reflects_the_same_action_becoming_valid_after_a_switch()"
     },
     {
@@ -2339,7 +2357,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L214",
       "id": "test_train_grpo_test_step_reward_penalises_malformed_completion_without_crashing",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_step_reward_penalises_malformed_completion_without_crashing()"
     },
     {
@@ -2348,7 +2366,7 @@
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L235",
       "id": "test_train_grpo_test_full_pipeline_runs_without_gpu_stack_for_20_steps_worth_of_data",
-      "community": 6,
+      "community": 7,
       "norm_label": "test_full_pipeline_runs_without_gpu_stack_for_20_steps_worth_of_data()"
     },
     {
@@ -2356,27 +2374,27 @@
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L104",
-      "id": "test_train_grpo_rationale_104",
-      "community": 6,
-      "norm_label": "call_every=8, so any snapshot taken at step_count >= 8 should have     had at l"
+      "community": 7,
+      "norm_label": "call_every=8, so any snapshot taken at step_count >= 8 should have     had at l",
+      "id": "test_train_grpo_rationale_104"
     },
     {
       "label": "Extends the leak-safety guarantee (test_build_dataset_produces_     expected_co",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L120",
-      "id": "test_train_grpo_rationale_120",
-      "community": 6,
-      "norm_label": "extends the leak-safety guarantee (test_build_dataset_produces_     expected_co"
+      "community": 7,
+      "norm_label": "extends the leak-safety guarantee (test_build_dataset_produces_     expected_co",
+      "id": "test_train_grpo_rationale_120"
     },
     {
       "label": "The whole premise of Claim B: whether an action is good depends on     the (inv",
       "file_type": "rationale",
       "source_file": "D:\\Raaga_trial_1\\training\\tests\\test_train_grpo.py",
       "source_location": "L188",
-      "id": "test_train_grpo_rationale_188",
-      "community": 6,
-      "norm_label": "the whole premise of claim b: whether an action is good depends on     the (inv"
+      "community": 7,
+      "norm_label": "the whole premise of claim b: whether an action is good depends on     the (inv",
+      "id": "test_train_grpo_rationale_188"
     },
     {
       "label": "__init__.py",
@@ -2528,7 +2546,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\app.js",
       "source_location": "L375",
       "id": "app_onbeat",
-      "community": 10,
+      "community": 11,
       "norm_label": "onbeat()"
     },
     {
@@ -2816,7 +2834,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L1",
       "id": "ui_audio_tabla_js",
-      "community": 10,
+      "community": 11,
       "norm_label": "tabla.js"
     },
     {
@@ -2825,7 +2843,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L20",
       "id": "tabla_tabla",
-      "community": 10,
+      "community": 11,
       "norm_label": "tabla"
     },
     {
@@ -2834,7 +2852,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L21",
       "id": "tabla_tabla_constructor",
-      "community": 10,
+      "community": 11,
       "norm_label": ".constructor()"
     },
     {
@@ -2843,7 +2861,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L43",
       "id": "tabla_tabla_start",
-      "community": 10,
+      "community": 11,
       "norm_label": ".start()"
     },
     {
@@ -2861,7 +2879,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L57",
       "id": "tabla_tabla_syncbeat",
-      "community": 10,
+      "community": 11,
       "norm_label": ".syncbeat()"
     },
     {
@@ -2870,7 +2888,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L62",
       "id": "tabla_tabla_setbpm",
-      "community": 10,
+      "community": 11,
       "norm_label": ".setbpm()"
     },
     {
@@ -2879,7 +2897,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L74",
       "id": "tabla_tabla_msuntilnextbeat",
-      "community": 10,
+      "community": 11,
       "norm_label": ".msuntilnextbeat()"
     },
     {
@@ -2888,7 +2906,7 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L79",
       "id": "tabla_tabla_tick",
-      "community": 10,
+      "community": 11,
       "norm_label": "._tick()"
     },
     {
@@ -3149,7 +3167,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\river.js",
       "source_location": "L180",
       "id": "river_river_reset",
-      "community": 5,
+      "community": 4,
       "norm_label": ".reset()"
     },
     {
@@ -3158,7 +3176,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L1",
       "id": "d_raaga_trial_1_ui_stage_talamandala_js",
-      "community": 10,
+      "community": 11,
       "norm_label": "talamandala.js"
     },
     {
@@ -3167,7 +3185,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L14",
       "id": "talamandala_talamandala",
-      "community": 10,
+      "community": 11,
       "norm_label": "talamandala"
     },
     {
@@ -3176,7 +3194,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L15",
       "id": "talamandala_talamandala_constructor",
-      "community": 10,
+      "community": 11,
       "norm_label": ".constructor()"
     },
     {
@@ -3185,7 +3203,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L43",
       "id": "talamandala_talamandala_paintplayhead",
-      "community": 10,
+      "community": 11,
       "norm_label": "._paintplayhead()"
     },
     {
@@ -3194,7 +3212,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L52",
       "id": "talamandala_talamandala_buildcountdowndots",
-      "community": 10,
+      "community": 11,
       "norm_label": "._buildcountdowndots()"
     },
     {
@@ -3203,7 +3221,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L68",
       "id": "talamandala_talamandala_drawstatic",
-      "community": 10,
+      "community": 11,
       "norm_label": "._drawstatic()"
     },
     {
@@ -3212,7 +3230,7 @@
       "source_file": "D:\\Raaga_trial_1\\ui\\stage\\talaMandala.js",
       "source_location": "L98",
       "id": "talamandala_talamandala_setbeat",
-      "community": 10,
+      "community": 11,
       "norm_label": ".setbeat()"
     },
     {
@@ -3277,6 +3295,15 @@
       "id": "tween_looppulse",
       "community": 1,
       "norm_label": "looppulse()"
+    },
+    {
+      "label": "Runs `policy` over the fixed eval set (or its first `limit`     episodes), each",
+      "file_type": "rationale",
+      "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
+      "source_location": "L31",
+      "community": 0,
+      "norm_label": "runs `policy` over the fixed eval set (or its first `limit`     episodes), each",
+      "id": "evaluate_llm_rationale_31"
     },
     {
       "label": "Human submits a 4-note call phrase. Agent will respond on next steps.",
@@ -4946,7 +4973,7 @@
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "d_raaga_trial_1_eval_evaluate_py",
@@ -5045,8 +5072,8 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L91",
       "weight": 1.0,
-      "_src": "baseline_stats_main",
-      "_tgt": "evaluate_run_policy_over_eval_set",
+      "_src": "evaluate_run_policy_over_eval_set",
+      "_tgt": "baseline_stats_main",
       "source": "evaluate_run_policy_over_eval_set",
       "target": "baseline_stats_main"
     },
@@ -5105,8 +5132,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
       "source_location": "L89",
       "weight": 1.0,
-      "_src": "evaluate_llm_main",
-      "_tgt": "evaluate_save_result",
+      "_src": "evaluate_save_result",
+      "_tgt": "evaluate_llm_main",
       "source": "evaluate_save_result",
       "target": "evaluate_llm_main"
     },
@@ -5166,9 +5193,9 @@
       "weight": 0.8,
       "_src": "evaluate_rationale_53",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "evaluate_rationale_53",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "uses",
@@ -5178,15 +5205,15 @@
       "weight": 0.8,
       "_src": "evaluate_rationale_53",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "evaluate_rationale_53",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "d_raaga_trial_1_eval_policies_py",
@@ -5198,7 +5225,7 @@
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "d_raaga_trial_1_eval_rollout_py",
@@ -5210,7 +5237,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L30",
+      "source_location": "L34",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "evaluate_llm_run_llm_over_eval_set",
@@ -5222,7 +5249,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L54",
+      "source_location": "L75",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "evaluate_llm_build_arg_parser",
@@ -5234,7 +5261,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L69",
+      "source_location": "L90",
       "weight": 1.0,
       "_src": "d_raaga_trial_1_eval_evaluate_llm_py",
       "_tgt": "evaluate_llm_main",
@@ -5246,7 +5273,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L86",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "evaluate_llm_main",
       "_tgt": "evaluate_llm_run_llm_over_eval_set",
@@ -5258,12 +5285,12 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L31",
+      "source_location": "L37",
       "weight": 1.0,
-      "_src": "evaluate_llm_rationale_31",
+      "_src": "evaluate_llm_rationale_37",
       "_tgt": "evaluate_llm_run_llm_over_eval_set",
       "source": "evaluate_llm_run_llm_over_eval_set",
-      "target": "evaluate_llm_rationale_31",
+      "target": "evaluate_llm_rationale_37",
       "confidence_score": 1.0
     },
     {
@@ -5292,9 +5319,33 @@
     },
     {
       "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_src": "test_llm_policy_test_run_llm_over_eval_set_reports_progress_with_eta",
+      "_tgt": "evaluate_llm_run_llm_over_eval_set",
+      "source": "evaluate_llm_run_llm_over_eval_set",
+      "target": "test_llm_policy_test_run_llm_over_eval_set_reports_progress_with_eta"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L130",
+      "weight": 1.0,
+      "_src": "test_llm_policy_test_run_llm_over_eval_set_is_silent_without_progress",
+      "_tgt": "evaluate_llm_run_llm_over_eval_set",
+      "source": "evaluate_llm_run_llm_over_eval_set",
+      "target": "test_llm_policy_test_run_llm_over_eval_set_is_silent_without_progress"
+    },
+    {
+      "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L70",
+      "source_location": "L91",
       "weight": 1.0,
       "_src": "evaluate_llm_main",
       "_tgt": "evaluate_llm_build_arg_parser",
@@ -5318,11 +5369,11 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 0.8,
-      "_src": "evaluate_llm_rationale_31",
+      "_src": "evaluate_llm_rationale_37",
       "_tgt": "rollout_driftschedule",
-      "source": "evaluate_llm_rationale_31",
+      "source": "evaluate_llm_rationale_37",
       "target": "rollout_driftschedule",
       "confidence_score": 0.5
     },
@@ -5330,11 +5381,11 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 0.8,
-      "_src": "evaluate_llm_rationale_31",
+      "_src": "evaluate_llm_rationale_37",
       "_tgt": "rollout_trajectory",
-      "source": "evaluate_llm_rationale_31",
+      "source": "evaluate_llm_rationale_37",
       "target": "rollout_trajectory",
       "confidence_score": 0.5
     },
@@ -5477,8 +5528,8 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L126",
       "weight": 1.0,
-      "_src": "baseline_stats_main",
-      "_tgt": "fingerprint_compute_fingerprint",
+      "_src": "fingerprint_compute_fingerprint",
+      "_tgt": "baseline_stats_main",
       "source": "fingerprint_compute_fingerprint",
       "target": "baseline_stats_main"
     },
@@ -5560,11 +5611,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L9",
       "weight": 0.8,
-      "_src": "test_llm_policy_rationale_23",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_rationale_23",
+      "confidence_score": 0.5,
       "source": "llm_policy_llmpolicystats",
-      "target": "test_llm_policy_rationale_23",
-      "confidence_score": 0.5
+      "target": "test_llm_policy_rationale_23"
     },
     {
       "relation": "calls",
@@ -5573,8 +5624,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L34",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_valid_completion_returns_the_parsed_action"
     },
@@ -5585,8 +5636,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L45",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid"
     },
@@ -5597,8 +5648,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L57",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_out_of_range_completion_also_falls_back",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_out_of_range_completion_also_falls_back",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_out_of_range_completion_also_falls_back"
     },
@@ -5609,8 +5660,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L70",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_validity_rate_accumulates_across_calls",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_validity_rate_accumulates_across_calls",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_validity_rate_accumulates_across_calls"
     },
@@ -5621,8 +5672,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L82",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line"
     },
@@ -5633,8 +5684,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L91",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_subsequent_call_with_info_renders_feedback"
     },
@@ -5645,8 +5696,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L103",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
-      "_tgt": "llm_policy_llmpolicystats",
+      "_src": "llm_policy_llmpolicystats",
+      "_tgt": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
       "source": "llm_policy_llmpolicystats",
       "target": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not"
     },
@@ -5681,8 +5732,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L35",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_valid_completion_returns_the_parsed_action"
     },
@@ -5693,8 +5744,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L46",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid"
     },
@@ -5705,8 +5756,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L58",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_out_of_range_completion_also_falls_back",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_out_of_range_completion_also_falls_back",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_out_of_range_completion_also_falls_back"
     },
@@ -5717,8 +5768,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L71",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_validity_rate_accumulates_across_calls",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_validity_rate_accumulates_across_calls",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_validity_rate_accumulates_across_calls"
     },
@@ -5729,8 +5780,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L83",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line"
     },
@@ -5741,8 +5792,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L92",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_subsequent_call_with_info_renders_feedback"
     },
@@ -5753,8 +5804,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L105",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
-      "_tgt": "llm_policy_build_policy",
+      "_src": "llm_policy_build_policy",
+      "_tgt": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
       "source": "llm_policy_build_policy",
       "target": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not"
     },
@@ -6149,8 +6200,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L217",
       "weight": 1.0,
-      "_src": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
-      "_tgt": "metrics_valid_raga_adherence",
+      "_src": "metrics_valid_raga_adherence",
+      "_tgt": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
       "source": "metrics_valid_raga_adherence",
       "target": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation"
     },
@@ -6197,8 +6248,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L218",
       "weight": 1.0,
-      "_src": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
-      "_tgt": "metrics_hard_rule_adherence",
+      "_src": "metrics_hard_rule_adherence",
+      "_tgt": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
       "source": "metrics_hard_rule_adherence",
       "target": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation"
     },
@@ -6497,8 +6548,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L155",
       "weight": 1.0,
-      "_src": "test_metrics_test_jugalbandi_coherence_includes_call_echo",
-      "_tgt": "metrics_jugalbandi_coherence",
+      "_src": "metrics_jugalbandi_coherence",
+      "_tgt": "test_metrics_test_jugalbandi_coherence_includes_call_echo",
       "source": "metrics_jugalbandi_coherence",
       "target": "test_metrics_test_jugalbandi_coherence_includes_call_echo"
     },
@@ -6533,8 +6584,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L160",
       "weight": 1.0,
-      "_src": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events",
-      "_tgt": "metrics_call_echo_rate",
+      "_src": "metrics_call_echo_rate",
+      "_tgt": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events",
       "source": "metrics_call_echo_rate",
       "target": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events"
     },
@@ -6545,8 +6596,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L174",
       "weight": 1.0,
-      "_src": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed",
-      "_tgt": "metrics_call_echo_rate",
+      "_src": "metrics_call_echo_rate",
+      "_tgt": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed",
       "source": "metrics_call_echo_rate",
       "target": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed"
     },
@@ -6702,9 +6753,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_59",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_59",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6714,9 +6765,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_72",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_72",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6726,9 +6777,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_116",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_116",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6750,9 +6801,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_171",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_171",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6762,9 +6813,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_181",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_181",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6774,9 +6825,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_206",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_206",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6786,9 +6837,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_214",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_214",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6798,9 +6849,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_236",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_236",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6810,9 +6861,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_253",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_253",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6822,9 +6873,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_265",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_265",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "uses",
@@ -6834,9 +6885,9 @@
       "weight": 0.8,
       "_src": "metrics_rationale_334",
       "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
       "source": "metrics_rationale_334",
-      "target": "rollout_trajectory",
-      "confidence_score": 0.5
+      "target": "rollout_trajectory"
     },
     {
       "relation": "imports_from",
@@ -7025,8 +7076,8 @@
       "source_file": "training\\train_grpo.py",
       "source_location": "L110",
       "weight": 1.0,
-      "_src": "train_grpo_build_dataset",
-      "_tgt": "policies_random_valid_policy",
+      "_src": "policies_random_valid_policy",
+      "_tgt": "train_grpo_build_dataset",
       "source": "policies_random_valid_policy",
       "target": "train_grpo_build_dataset"
     },
@@ -7061,8 +7112,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_policies.py",
       "source_location": "L21",
       "weight": 1.0,
-      "_src": "test_policies_test_sample_call_phrase_is_raga_valid",
-      "_tgt": "policies_sample_call_phrase",
+      "_src": "policies_sample_call_phrase",
+      "_tgt": "test_policies_test_sample_call_phrase_is_raga_valid",
       "source": "policies_sample_call_phrase",
       "target": "test_policies_test_sample_call_phrase_is_raga_valid"
     },
@@ -7073,8 +7124,8 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L144",
       "weight": 1.0,
-      "_src": "train_grpo_build_dataset",
-      "_tgt": "policies_sample_call_phrase",
+      "_src": "policies_sample_call_phrase",
+      "_tgt": "train_grpo_build_dataset",
       "source": "policies_sample_call_phrase",
       "target": "train_grpo_build_dataset"
     },
@@ -7314,9 +7365,9 @@
       "weight": 0.8,
       "_src": "policies_rationale_46",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "policies_rationale_46",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "uses",
@@ -7326,9 +7377,9 @@
       "weight": 0.8,
       "_src": "policies_rationale_57",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "policies_rationale_57",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "uses",
@@ -7338,9 +7389,9 @@
       "weight": 0.8,
       "_src": "policies_rationale_75",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "policies_rationale_75",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "uses",
@@ -7350,9 +7401,9 @@
       "weight": 0.8,
       "_src": "policies_rationale_99",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "policies_rationale_99",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "uses",
@@ -7362,9 +7413,9 @@
       "weight": 0.8,
       "_src": "policies_rationale_116",
       "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
       "source": "policies_rationale_116",
-      "target": "rollout_driftschedule",
-      "confidence_score": 0.5
+      "target": "rollout_driftschedule"
     },
     {
       "relation": "contains",
@@ -7505,8 +7556,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L37",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_valid_completion_returns_the_parsed_action",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_valid_completion_returns_the_parsed_action"
     },
@@ -7517,8 +7568,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L48",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_unparseable_completion_falls_back_and_is_counted_invalid"
     },
@@ -7529,8 +7580,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L60",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_out_of_range_completion_also_falls_back",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_out_of_range_completion_also_falls_back",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_out_of_range_completion_also_falls_back"
     },
@@ -7541,8 +7592,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L74",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_validity_rate_accumulates_across_calls",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_validity_rate_accumulates_across_calls",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_validity_rate_accumulates_across_calls"
     },
@@ -7553,8 +7604,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L85",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_first_call_with_empty_info_has_no_feedback_line"
     },
@@ -7565,8 +7616,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
       "source_location": "L95",
       "weight": 1.0,
-      "_src": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "test_llm_policy_test_subsequent_call_with_info_renders_feedback",
       "source": "rollout_policy",
       "target": "test_llm_policy_test_subsequent_call_with_info_renders_feedback"
     },
@@ -7601,8 +7652,8 @@
       "source_file": "training\\train_grpo.py",
       "source_location": "L131",
       "weight": 1.0,
-      "_src": "train_grpo_build_dataset",
-      "_tgt": "rollout_policy",
+      "_src": "rollout_policy",
+      "_tgt": "train_grpo_build_dataset",
       "source": "rollout_policy",
       "target": "train_grpo_build_dataset"
     },
@@ -7636,11 +7687,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_21",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_metrics_rationale_21",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_metrics_rationale_21",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_21"
     },
     {
       "relation": "uses",
@@ -7648,11 +7699,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_40",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_metrics_rationale_40",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_metrics_rationale_40",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_40"
     },
     {
       "relation": "uses",
@@ -7660,11 +7711,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_140",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_metrics_rationale_140",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_metrics_rationale_140",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_140"
     },
     {
       "relation": "uses",
@@ -7672,11 +7723,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_148",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_metrics_rationale_148",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_metrics_rationale_148",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_148"
     },
     {
       "relation": "uses",
@@ -7684,11 +7735,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_205",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_metrics_rationale_205",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_metrics_rationale_205",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_205"
     },
     {
       "relation": "uses",
@@ -7696,11 +7747,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_policies.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "test_policies_rationale_61",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_policies_rationale_61",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_policies_rationale_61",
-      "confidence_score": 0.5
+      "target": "test_policies_rationale_61"
     },
     {
       "relation": "uses",
@@ -7720,11 +7771,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_78",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_rollout_rationale_78",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_rollout_rationale_78",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_78"
     },
     {
       "relation": "uses",
@@ -7732,11 +7783,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_111",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_rollout_rationale_111",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_rollout_rationale_111",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_111"
     },
     {
       "relation": "uses",
@@ -7744,11 +7795,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_177",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_rollout_rationale_177",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "test_rollout_rationale_177",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_177"
     },
     {
       "relation": "uses",
@@ -7756,11 +7807,11 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L50",
       "weight": 0.8,
-      "_src": "train_grpo_rationale_69",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "train_grpo_rationale_69",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "train_grpo_rationale_69",
-      "confidence_score": 0.5
+      "target": "train_grpo_rationale_69"
     },
     {
       "relation": "uses",
@@ -7768,11 +7819,11 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L50",
       "weight": 0.8,
-      "_src": "train_grpo_rationale_84",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "train_grpo_rationale_84",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "train_grpo_rationale_84",
-      "confidence_score": 0.5
+      "target": "train_grpo_rationale_84"
     },
     {
       "relation": "uses",
@@ -7780,11 +7831,11 @@
       "source_file": "D:\\Raaga_trial_1\\training\\train_grpo.py",
       "source_location": "L50",
       "weight": 0.8,
-      "_src": "train_grpo_rationale_150",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "train_grpo_rationale_150",
+      "confidence_score": 0.5,
       "source": "rollout_driftschedule",
-      "target": "train_grpo_rationale_150",
-      "confidence_score": 0.5
+      "target": "train_grpo_rationale_150"
     },
     {
       "relation": "calls",
@@ -7925,8 +7976,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L208",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon",
       "source": "rollout_driftschedule",
       "target": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon"
     },
@@ -7945,11 +7996,23 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "_src": "evaluate_llm_rationale_31",
+      "_tgt": "rollout_driftschedule",
+      "confidence_score": 0.5,
+      "source": "rollout_driftschedule",
+      "target": "evaluate_llm_rationale_31"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "eval\\evaluate.py",
       "source_location": "L30",
       "weight": 0.8,
-      "_src": "evaluate_rationale_52",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "evaluate_rationale_52",
       "confidence_score": 0.5,
       "source": "rollout_driftschedule",
       "target": "evaluate_rationale_52"
@@ -7960,8 +8023,8 @@
       "source_file": "eval\\policies.py",
       "source_location": "L22",
       "weight": 0.8,
-      "_src": "policies_rationale_34",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "policies_rationale_34",
       "confidence_score": 0.5,
       "source": "rollout_driftschedule",
       "target": "policies_rationale_34"
@@ -7972,8 +8035,8 @@
       "source_file": "eval\\policies.py",
       "source_location": "L22",
       "weight": 0.8,
-      "_src": "policies_rationale_45",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "policies_rationale_45",
       "confidence_score": 0.5,
       "source": "rollout_driftschedule",
       "target": "policies_rationale_45"
@@ -7984,8 +8047,8 @@
       "source_file": "eval\\policies.py",
       "source_location": "L22",
       "weight": 0.8,
-      "_src": "policies_rationale_63",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "policies_rationale_63",
       "confidence_score": 0.5,
       "source": "rollout_driftschedule",
       "target": "policies_rationale_63"
@@ -7996,8 +8059,8 @@
       "source_file": "eval\\policies.py",
       "source_location": "L22",
       "weight": 0.8,
-      "_src": "policies_rationale_80",
-      "_tgt": "rollout_driftschedule",
+      "_src": "rollout_driftschedule",
+      "_tgt": "policies_rationale_80",
       "confidence_score": 0.5,
       "source": "rollout_driftschedule",
       "target": "policies_rationale_80"
@@ -8129,8 +8192,8 @@
       "source_file": "training\\train_grpo.py",
       "source_location": "L105",
       "weight": 1.0,
-      "_src": "train_grpo_build_dataset",
-      "_tgt": "rollout_driftschedule_as_dict",
+      "_src": "rollout_driftschedule_as_dict",
+      "_tgt": "train_grpo_build_dataset",
       "source": "rollout_driftschedule_as_dict",
       "target": "train_grpo_build_dataset"
     },
@@ -8152,11 +8215,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_21",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_rationale_21",
+      "confidence_score": 0.5,
       "source": "rollout_steprecord",
-      "target": "test_metrics_rationale_21",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_21"
     },
     {
       "relation": "uses",
@@ -8164,11 +8227,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_40",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_rationale_40",
+      "confidence_score": 0.5,
       "source": "rollout_steprecord",
-      "target": "test_metrics_rationale_40",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_40"
     },
     {
       "relation": "uses",
@@ -8176,11 +8239,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_140",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_rationale_140",
+      "confidence_score": 0.5,
       "source": "rollout_steprecord",
-      "target": "test_metrics_rationale_140",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_140"
     },
     {
       "relation": "uses",
@@ -8188,11 +8251,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_148",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_rationale_148",
+      "confidence_score": 0.5,
       "source": "rollout_steprecord",
-      "target": "test_metrics_rationale_148",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_148"
     },
     {
       "relation": "uses",
@@ -8200,11 +8263,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_205",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_rationale_205",
+      "confidence_score": 0.5,
       "source": "rollout_steprecord",
-      "target": "test_metrics_rationale_205",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_205"
     },
     {
       "relation": "calls",
@@ -8213,8 +8276,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L25",
       "weight": 1.0,
-      "_src": "test_metrics_step",
-      "_tgt": "rollout_steprecord",
+      "_src": "rollout_steprecord",
+      "_tgt": "test_metrics_step",
       "source": "rollout_steprecord",
       "target": "test_metrics_step"
     },
@@ -8248,11 +8311,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_21",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_rationale_21",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_metrics_rationale_21",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_21"
     },
     {
       "relation": "uses",
@@ -8260,11 +8323,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_40",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_rationale_40",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_metrics_rationale_40",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_40"
     },
     {
       "relation": "uses",
@@ -8272,11 +8335,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_140",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_rationale_140",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_metrics_rationale_140",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_140"
     },
     {
       "relation": "uses",
@@ -8284,11 +8347,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_148",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_rationale_148",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_metrics_rationale_148",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_148"
     },
     {
       "relation": "uses",
@@ -8296,11 +8359,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L17",
       "weight": 0.8,
-      "_src": "test_metrics_rationale_205",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_rationale_205",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_metrics_rationale_205",
-      "confidence_score": 0.5
+      "target": "test_metrics_rationale_205"
     },
     {
       "relation": "uses",
@@ -8320,11 +8383,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_78",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_rollout_rationale_78",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_rollout_rationale_78",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_78"
     },
     {
       "relation": "uses",
@@ -8332,11 +8395,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_111",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_rollout_rationale_111",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_rollout_rationale_111",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_111"
     },
     {
       "relation": "uses",
@@ -8344,11 +8407,11 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L3",
       "weight": 0.8,
-      "_src": "test_rollout_rationale_177",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_rollout_rationale_177",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "test_rollout_rationale_177",
-      "confidence_score": 0.5
+      "target": "test_rollout_rationale_177"
     },
     {
       "relation": "uses",
@@ -8356,11 +8419,11 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L24",
       "weight": 0.8,
-      "_src": "baseline_stats_rationale_1",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "baseline_stats_rationale_1",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "baseline_stats_rationale_1",
-      "confidence_score": 0.5
+      "target": "baseline_stats_rationale_1"
     },
     {
       "relation": "uses",
@@ -8368,11 +8431,11 @@
       "source_file": "D:\\Raaga_trial_1\\paper\\scripts\\baseline_stats.py",
       "source_location": "L24",
       "weight": 0.8,
-      "_src": "baseline_stats_rationale_39",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "baseline_stats_rationale_39",
+      "confidence_score": 0.5,
       "source": "rollout_trajectory",
-      "target": "baseline_stats_rationale_39",
-      "confidence_score": 0.5
+      "target": "baseline_stats_rationale_39"
     },
     {
       "relation": "calls",
@@ -8381,8 +8444,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L151",
       "weight": 1.0,
-      "_src": "test_metrics_test_jugalbandi_coherence_includes_call_echo",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_test_jugalbandi_coherence_includes_call_echo",
       "source": "rollout_trajectory",
       "target": "test_metrics_test_jugalbandi_coherence_includes_call_echo"
     },
@@ -8393,8 +8456,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L159",
       "weight": 1.0,
-      "_src": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events",
       "source": "rollout_trajectory",
       "target": "test_metrics_test_call_echo_rate_is_nan_with_no_call_events"
     },
@@ -8405,8 +8468,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L165",
       "weight": 1.0,
-      "_src": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed",
       "source": "rollout_trajectory",
       "target": "test_metrics_test_call_echo_rate_counts_fraction_of_calls_actually_echoed"
     },
@@ -8417,10 +8480,22 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_metrics.py",
       "source_location": "L208",
       "weight": 1.0,
-      "_src": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation",
       "source": "rollout_trajectory",
       "target": "test_metrics_test_hard_rule_adherence_counts_every_hard_rule_violation"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "D:\\Raaga_trial_1\\eval\\evaluate_llm.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "_src": "evaluate_llm_rationale_31",
+      "_tgt": "rollout_trajectory",
+      "confidence_score": 0.5,
+      "source": "rollout_trajectory",
+      "target": "evaluate_llm_rationale_31"
     },
     {
       "relation": "uses",
@@ -8428,8 +8503,8 @@
       "source_file": "eval\\evaluate.py",
       "source_location": "L30",
       "weight": 0.8,
-      "_src": "evaluate_rationale_52",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "evaluate_rationale_52",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "evaluate_rationale_52"
@@ -8440,8 +8515,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_56",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_56",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_56"
@@ -8452,8 +8527,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_93",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_93",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_93"
@@ -8464,8 +8539,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_125",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_125",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_125"
@@ -8476,8 +8551,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_168",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_168",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_168"
@@ -8488,8 +8563,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_176",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_176",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_176"
@@ -8500,8 +8575,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_195",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_195",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_195"
@@ -8512,8 +8587,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_207",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_207",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_207"
@@ -8524,8 +8599,8 @@
       "source_file": "eval\\metrics.py",
       "source_location": "L18",
       "weight": 0.8,
-      "_src": "metrics_rationale_263",
-      "_tgt": "rollout_trajectory",
+      "_src": "rollout_trajectory",
+      "_tgt": "metrics_rationale_263",
       "confidence_score": 0.5,
       "source": "rollout_trajectory",
       "target": "metrics_rationale_263"
@@ -8585,8 +8660,8 @@
       "source_file": "eval\\rollout.py",
       "source_location": "L82",
       "weight": 1.0,
-      "_src": "server_set_dial",
-      "_tgt": "rollout_run_steps",
+      "_src": "rollout_run_steps",
+      "_tgt": "server_set_dial",
       "source": "rollout_run_steps",
       "target": "server_set_dial"
     },
@@ -8597,8 +8672,8 @@
       "source_file": "eval\\rollout.py",
       "source_location": "L86",
       "weight": 1.0,
-      "_src": "server_step",
-      "_tgt": "rollout_run_steps",
+      "_src": "rollout_run_steps",
+      "_tgt": "server_step",
       "source": "rollout_run_steps",
       "target": "server_step"
     },
@@ -8897,8 +8972,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L82",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_without_call_phrase_fn_never_submits_a_call",
-      "_tgt": "rollout_rollout",
+      "_src": "rollout_rollout",
+      "_tgt": "test_rollout_test_rollout_without_call_phrase_fn_never_submits_a_call",
       "source": "rollout_rollout",
       "target": "test_rollout_test_rollout_without_call_phrase_fn_never_submits_a_call"
     },
@@ -8909,8 +8984,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L88",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence",
-      "_tgt": "rollout_rollout",
+      "_src": "rollout_rollout",
+      "_tgt": "test_rollout_test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence",
       "source": "rollout_rollout",
       "target": "test_rollout_test_rollout_with_call_phrase_fn_submits_calls_on_the_env_cadence"
     },
@@ -8921,8 +8996,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L101",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_call_sequence_is_deterministic_for_the_same_seed",
-      "_tgt": "rollout_rollout",
+      "_src": "rollout_rollout",
+      "_tgt": "test_rollout_test_rollout_call_sequence_is_deterministic_for_the_same_seed",
       "source": "rollout_rollout",
       "target": "test_rollout_test_rollout_call_sequence_is_deterministic_for_the_same_seed"
     },
@@ -8945,8 +9020,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L119",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_from_state_submits_no_call_unless_given_a_call_fn",
-      "_tgt": "rollout_rollout_from_state",
+      "_src": "rollout_rollout_from_state",
+      "_tgt": "test_rollout_test_rollout_from_state_submits_no_call_unless_given_a_call_fn",
       "source": "rollout_rollout_from_state",
       "target": "test_rollout_test_rollout_from_state_submits_no_call_unless_given_a_call_fn"
     },
@@ -9005,8 +9080,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L206",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon",
-      "_tgt": "rollout_rollout_from_state",
+      "_src": "rollout_rollout_from_state",
+      "_tgt": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon",
       "source": "rollout_rollout_from_state",
       "target": "test_rollout_test_rollout_from_state_applies_a_switch_inside_the_horizon"
     },
@@ -9017,8 +9092,8 @@
       "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_rollout.py",
       "source_location": "L221",
       "weight": 1.0,
-      "_src": "test_rollout_test_rollout_from_state_injects_calls_when_given_a_call_fn",
-      "_tgt": "rollout_rollout_from_state",
+      "_src": "rollout_rollout_from_state",
+      "_tgt": "test_rollout_test_rollout_from_state_injects_calls_when_given_a_call_fn",
       "source": "rollout_rollout_from_state",
       "target": "test_rollout_test_rollout_from_state_injects_calls_when_given_a_call_fn"
     },
@@ -9308,6 +9383,30 @@
       "_tgt": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
       "source": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
       "target": "test_llm_policy_test_oracle_arm_names_the_raga_dial_hidden_does_not",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L117",
+      "weight": 1.0,
+      "_src": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
+      "_tgt": "test_llm_policy_test_run_llm_over_eval_set_reports_progress_with_eta",
+      "source": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
+      "target": "test_llm_policy_test_run_llm_over_eval_set_reports_progress_with_eta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\Raaga_trial_1\\eval\\tests\\test_llm_policy.py",
+      "source_location": "L127",
+      "weight": 1.0,
+      "_src": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
+      "_tgt": "test_llm_policy_test_run_llm_over_eval_set_is_silent_without_progress",
+      "source": "d_raaga_trial_1_eval_tests_test_llm_policy_py",
+      "target": "test_llm_policy_test_run_llm_over_eval_set_is_silent_without_progress",
       "confidence_score": 1.0
     },
     {
@@ -10505,8 +10604,8 @@
       "source_file": "eval\\tests\\test_rollout.py",
       "source_location": "L69",
       "weight": 1.0,
-      "_src": "server_step",
-      "_tgt": "test_rollout_test_rollout_from_state_continues_from_the_snapshot_not_from_scratch",
+      "_src": "test_rollout_test_rollout_from_state_continues_from_the_snapshot_not_from_scratch",
+      "_tgt": "server_step",
       "source": "test_rollout_test_rollout_from_state_continues_from_the_snapshot_not_from_scratch",
       "target": "server_step"
     },
@@ -10529,8 +10628,8 @@
       "source_file": "eval\\tests\\test_rollout.py",
       "source_location": "L85",
       "weight": 1.0,
-      "_src": "server_step",
-      "_tgt": "test_rollout_test_rollout_from_state_caps_at_episode_length",
+      "_src": "test_rollout_test_rollout_from_state_caps_at_episode_length",
+      "_tgt": "server_step",
       "source": "test_rollout_test_rollout_from_state_caps_at_episode_length",
       "target": "server_step"
     },
@@ -10553,8 +10652,8 @@
       "source_file": "eval\\tests\\test_rollout.py",
       "source_location": "L99",
       "weight": 1.0,
-      "_src": "server_step",
-      "_tgt": "test_rollout_test_rollout_from_state_is_deterministic_for_a_deterministic_policy",
+      "_src": "test_rollout_test_rollout_from_state_is_deterministic_for_a_deterministic_policy",
+      "_tgt": "server_step",
       "source": "test_rollout_test_rollout_from_state_is_deterministic_for_a_deterministic_policy",
       "target": "server_step"
     },
@@ -10589,8 +10688,8 @@
       "source_file": "eval\\tests\\test_rollout.py",
       "source_location": "L120",
       "weight": 1.0,
-      "_src": "server_step",
-      "_tgt": "test_rollout_test_rollout_from_state_matches_a_manual_env_replay",
+      "_src": "test_rollout_test_rollout_from_state_matches_a_manual_env_replay",
+      "_tgt": "server_step",
       "source": "test_rollout_test_rollout_from_state_matches_a_manual_env_replay",
       "target": "server_step"
     },
@@ -12281,8 +12380,8 @@
       "source_file": "ui\\app.js",
       "source_location": "L124",
       "weight": 1.0,
-      "_src": "tabla_tabla_start",
-      "_tgt": "app_startperformance",
+      "_src": "app_startperformance",
+      "_tgt": "tabla_tabla_start",
       "source": "app_startperformance",
       "target": "tabla_tabla_start"
     },
@@ -12341,8 +12440,8 @@
       "source_file": "ui\\app.js",
       "source_location": "L158",
       "weight": 1.0,
-      "_src": "tabla_tabla_stop",
-      "_tgt": "app_resetperformance",
+      "_src": "app_resetperformance",
+      "_tgt": "tabla_tabla_stop",
       "source": "app_resetperformance",
       "target": "tabla_tabla_stop"
     },
@@ -12869,8 +12968,8 @@
       "source_file": "ui\\audio\\tabla.js",
       "source_location": "L91",
       "weight": 1.0,
-      "_src": "tabla_tabla_tick",
-      "_tgt": "app_onbeat",
+      "_src": "app_onbeat",
+      "_tgt": "tabla_tabla_tick",
       "source": "app_onbeat",
       "target": "tabla_tabla_tick"
     },
@@ -12893,8 +12992,8 @@
       "source_file": "ui\\app.js",
       "source_location": "L368",
       "weight": 1.0,
-      "_src": "tabla_tabla_stop",
-      "_tgt": "app_endperformance",
+      "_src": "app_endperformance",
+      "_tgt": "tabla_tabla_stop",
       "source": "app_endperformance",
       "target": "tabla_tabla_stop"
     },

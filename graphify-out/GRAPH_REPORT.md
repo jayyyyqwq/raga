@@ -1,12 +1,12 @@
-# Graph Report - D:\Raaga_trial_1  (2026-10-07)
+# Graph Report - D:\Raaga_trial_1  (2026-10-08)
 
 ## Corpus Check
-- 42 files · ~77,745 words
+- 42 files · ~79,122 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 484 nodes · 867 edges · 46 communities detected
-- Extraction: 64% EXTRACTED · 36% INFERRED · 0% AMBIGUOUS · INFERRED: 310 edges (avg confidence: 0.72)
+- 487 nodes · 873 edges · 46 communities detected
+- Extraction: 64% EXTRACTED · 36% INFERRED · 0% AMBIGUOUS · INFERRED: 314 edges (avg confidence: 0.72)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -58,8 +58,8 @@
 - [[_COMMUNITY_Community 45|Community 45]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `DriftSchedule` - 51 edges
-2. `Trajectory` - 46 edges
+1. `DriftSchedule` - 52 edges
+2. `Trajectory` - 47 edges
 3. `rollout()` - 33 edges
 4. `Jugalbandi (project)` - 24 edges
 5. `runAiTurn()` - 22 edges
@@ -72,14 +72,14 @@
 ## Surprising Connections (you probably didn't know these)
 - `Cycles Sa, Ga, Pa, Ni (madhya register, sixteenth notes) forever.     Names the` --uses--> `DriftSchedule`  [INFERRED]
   D:\Raaga_trial_1\eval\policies.py → D:\Raaga_trial_1\eval\rollout.py
-- `One drift event per training episode, sampled uniformly over     DRIFT_WINDOW,` --uses--> `DriftSchedule`  [INFERRED]
-  D:\Raaga_trial_1\training\train_grpo.py → D:\Raaga_trial_1\eval\rollout.py
-- `Each row is one decision point sampled from a reference episode: walk     a fre` --uses--> `DriftSchedule`  [INFERRED]
-  D:\Raaga_trial_1\training\train_grpo.py → D:\Raaga_trial_1\eval\rollout.py
-- `Returns a TRL reward_funcs-compatible callable bound to `arm`. GRPO     scores` --uses--> `DriftSchedule`  [INFERRED]
-  D:\Raaga_trial_1\training\train_grpo.py → D:\Raaga_trial_1\eval\rollout.py
-- `Runs policy_factory(episode) over every episode in the fixed,     shared eval se` --uses--> `DriftSchedule`  [INFERRED]
-  eval\evaluate.py → D:\Raaga_trial_1\eval\rollout.py
+- `DriftSchedule` --uses--> `One drift event per training episode, sampled uniformly over     DRIFT_WINDOW,`  [INFERRED]
+  D:\Raaga_trial_1\eval\rollout.py → D:\Raaga_trial_1\training\train_grpo.py
+- `DriftSchedule` --uses--> `Each row is one decision point sampled from a reference episode: walk     a fre`  [INFERRED]
+  D:\Raaga_trial_1\eval\rollout.py → D:\Raaga_trial_1\training\train_grpo.py
+- `DriftSchedule` --uses--> `Returns a TRL reward_funcs-compatible callable bound to `arm`. GRPO     scores`  [INFERRED]
+  D:\Raaga_trial_1\eval\rollout.py → D:\Raaga_trial_1\training\train_grpo.py
+- `Runs `policy` over the fixed eval set (or its first `limit`     episodes), each` --uses--> `DriftSchedule`  [INFERRED]
+  D:\Raaga_trial_1\eval\evaluate_llm.py → D:\Raaga_trial_1\eval\rollout.py
 
 ## Hyperedges (group relationships)
 - **Full Jugalbandi Reward Function (5 layers)** — reward_hard_rules, reward_soft_rules, reward_sequence_level, reward_jugalbandi, reward_drift_specific [EXTRACTED 1.00]
@@ -90,11 +90,11 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
-Nodes (73): Runs policy_factory(episode) over every episode in the fixed,     shared eval se, action_validity_rate(), adaptation_success_rate_at_k(), AdaptationSpeed, _adherence_split(), AdherenceSplit, call_echo_rate(), compute_all_metrics() (+65 more)
+Nodes (74): Runs `policy` over the fixed eval set (or its first `limit`     episodes), each, Runs policy_factory(episode) over every episode in the fixed,     shared eval se, action_validity_rate(), adaptation_success_rate_at_k(), AdaptationSpeed, _adherence_split(), AdherenceSplit, call_echo_rate() (+66 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
-Nodes (29): applyTheme(), beginYourTurn(), buildEscalationStrip(), delay(), endPerformance(), finishYourTurn(), highlightEscalation(), init() (+21 more)
+Nodes (28): applyTheme(), beginYourTurn(), buildEscalationStrip(), delay(), endPerformance(), finishYourTurn(), highlightEscalation(), init() (+20 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.04
@@ -105,36 +105,36 @@ Cohesion: 0.08
 Nodes (33): random_uniform_policy(), random_valid_policy(), Plays random-valid normally, but the instant the dial switches, it     "cheats", Uniform over all 96 actions, with no awareness of which notes are     even legal, Uniformly samples a note valid in the *currently active* raga (read     directly, Uniform over all 96 actions, with no awareness of which notes are     even legal, Uniformly samples a note valid in the *currently active* raga (read     directly, Cycles Sa, Ga, Pa, Ni (madhya register, sixteenth notes) forever.     Names the (+25 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.1
-Nodes (28): hard_violation_decay(), main(), paired_bootstrap_ci(), Paper statistics for the four scripted baselines (EXPERIMENT_PLAN.md §11).  Re, Two-sided Wilcoxon signed-rank test, normal approximation with tie     correcti, wilcoxon_signed_rank(), build_arg_parser(), main() (+20 more)
-
-### Community 5 - "Community 5"
 Cohesion: 0.17
 Nodes (25): Run one full episode in-process, from a fresh reset, and return every     step', rollout()'s sibling for continuing from a mid-episode snapshot instead     of a, Shared step loop for rollout() and rollout_from_state() — the one     place a S, rollout(), rollout_from_state(), _run_steps(), StepRecord, step() (+17 more)
 
+### Community 5 - "Community 5"
+Cohesion: 0.15
+Nodes (25): build_arg_parser(), main(), Runs `policy` over the fixed eval set (or its first `limit`     episodes), each, run_llm_over_eval_set(), _build_policy(), LLMPolicyStats, make_llm_policy(), Loads `adapter_repo` (a local path or HF Hub repo id — anything     `PeftModel. (+17 more)
+
 ### Community 6 - "Community 6"
-Cohesion: 0.13
-Nodes (23): set_dial(), CALL_EVERY=8, so any snapshot taken at step_count >= 8 should have     had at l, Extends the leak-safety guarantee (test_build_dataset_produces_     expected_co, The whole premise of Claim B: whether an action is good depends on     the (inv, test_build_dataset_hidden_arm_call_injection_does_not_leak_raga_name(), test_build_dataset_oracle_arm_names_the_opening_raga(), test_build_dataset_produces_expected_columns(), test_build_dataset_snapshots_include_feedback_except_at_step_zero() (+15 more)
+Cohesion: 0.11
+Nodes (24): hard_violation_decay(), main(), paired_bootstrap_ci(), Paper statistics for the four scripted baselines (EXPERIMENT_PLAN.md §11).  Re, Two-sided Wilcoxon signed-rank test, normal approximation with tie     correcti, wilcoxon_signed_rank(), main(), Runs policy_factory(episode) over every episode in the fixed,     shared eval se (+16 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.22
-Nodes (19): _build_policy(), LLMPolicyStats, make_llm_policy(), Loads `adapter_repo` (a local path or HF Hub repo id — anything     `PeftModel., What eval.metrics.action_validity_rate needs. A Trajectory only     contains st, Returns an eval.rollout.Policy-shaped callable. `fallback_action` is     substi, Protocol, Policy (+11 more)
+Cohesion: 0.13
+Nodes (23): set_dial(), CALL_EVERY=8, so any snapshot taken at step_count >= 8 should have     had at l, Extends the leak-safety guarantee (test_build_dataset_produces_     expected_co, The whole premise of Claim B: whether an action is good depends on     the (inv, test_build_dataset_hidden_arm_call_injection_does_not_leak_raga_name(), test_build_dataset_oracle_arm_names_the_opening_raga(), test_build_dataset_produces_expected_columns(), test_build_dataset_snapshots_include_feedback_except_at_step_zero() (+15 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.1
 Nodes (23): Adaptation Bonus (3x for new-raga pakad within 5 steps), Bhairav forbidden: natural Re & natural Dha, Bhairav komal Re and komal Dha, Bhairav Pakads, Bhairav samvadi: Sa (0), Bhairav vadi: Ma (5), Bhairav valid notes {0,1,4,5,7,8,11}, Drift Mechanic (slider 0.0-1.0) (+15 more)
 
 ### Community 9 - "Community 9"
+Cohesion: 0.17
+Nodes (13): BaseModel, CallRequest, DialRequest, health(), infer(), InferRequest, _load_inference_model(), Human submits a 4-note call phrase. Agent will respond on next steps. (+5 more)
+
+### Community 10 - "Community 10"
 Cohesion: 0.12
 Nodes (8): The mount is at "/" — this is what guarantees /reset, /step etc.     never get s, Calls are swaras 0-11; anything else used to reach set_call() and     then crash, The whole point of Claim B's channel: it says outcome, never why., Confirms _last_step_feedback is exactly the shape /infer feeds into     render_p, test_api_routes_still_take_priority_over_the_static_mount(), test_call_rejects_out_of_range_swaras(), test_last_step_feedback_integrates_with_render_prompt_for_every_arm(), test_last_step_feedback_is_rule_agnostic()
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.17
 Nodes (3): onBeat(), Tabla, TalaMandala
-
-### Community 11 - "Community 11"
-Cohesion: 0.18
-Nodes (12): BaseModel, CallRequest, DialRequest, infer(), InferRequest, _load_inference_model(), Human submits a 4-note call phrase. Agent will respond on next steps., Runs the trained policy on the environment's *current* observation and     retu (+4 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.22
@@ -331,16 +331,16 @@ Nodes (1): The whole premise of Claim B: whether an action is good depends on   
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `step()` connect `Community 5` to `Community 1`, `Community 11`, `Community 6`?**
+- **Why does `step()` connect `Community 4` to `Community 9`, `Community 1`, `Community 7`?**
   _High betweenness centrality (0.119) - this node is a cross-community bridge._
-- **Why does `runAiTurn()` connect `Community 1` to `Community 10`, `Community 11`, `Community 5`, `Community 15`?**
+- **Why does `runAiTurn()` connect `Community 1` to `Community 9`, `Community 11`, `Community 4`, `Community 15`?**
   _High betweenness centrality (0.119) - this node is a cross-community bridge._
-- **Why does `rollout()` connect `Community 5` to `Community 0`, `Community 3`, `Community 4`?**
-  _High betweenness centrality (0.106) - this node is a cross-community bridge._
-- **Are the 48 inferred relationships involving `DriftSchedule` (e.g. with `Runs policy_factory(episode) over every episode in the fixed,     shared eval se` and `Runs `policy` over the fixed eval set (or its first `limit`     episodes), each`) actually correct?**
-  _`DriftSchedule` has 48 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 43 inferred relationships involving `Trajectory` (e.g. with `Runs policy_factory(episode) over every episode in the fixed,     shared eval se` and `Runs `policy` over the fixed eval set (or its first `limit`     episodes), each`) actually correct?**
-  _`Trajectory` has 43 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `rollout()` connect `Community 4` to `Community 0`, `Community 3`, `Community 5`, `Community 6`?**
+  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+- **Are the 49 inferred relationships involving `DriftSchedule` (e.g. with `Runs policy_factory(episode) over every episode in the fixed,     shared eval se` and `Runs `policy` over the fixed eval set (or its first `limit`     episodes), each`) actually correct?**
+  _`DriftSchedule` has 49 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 44 inferred relationships involving `Trajectory` (e.g. with `Runs policy_factory(episode) over every episode in the fixed,     shared eval se` and `Runs `policy` over the fixed eval set (or its first `limit`     episodes), each`) actually correct?**
+  _`Trajectory` has 44 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 28 inferred relationships involving `rollout()` (e.g. with `run_policy_over_eval_set()` and `run_llm_over_eval_set()`) actually correct?**
   _`rollout()` has 28 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 12 inferred relationships involving `runAiTurn()` (e.g. with `.setTurn()` and `.setEnabled()`) actually correct?**
