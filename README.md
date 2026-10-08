@@ -27,26 +27,20 @@ framing and related-work notes: [`docs/research.md`](docs/research.md).
   See `docs/RETRAIN_PLAN.md`'s audit note and `docs/EXPERIMENT_PLAN.md` §7.9.
 - Paper draft: [`paper/`](paper/).
 
-## Training on Colab — 4 steps
+## Training on Colab — 3 steps
 
-This repo is **private** on GitHub, so Colab can't clone it anonymously. Upload a zip instead:
-
-1. Double-click **`make_training_zip.bat`** in this folder. It builds `raga.zip` from the committed
-   tree (`git archive`, so uncommitted changes are *not* included — commit first).
-2. Open `training/train_grpo.ipynb` in Colab (`File → Upload notebook`, or the badge below — Colab
-   asks to authorise GitHub for a private repo), then drag `raga.zip` into the Files panel (folder
-   icon, left sidebar).
-3. `Runtime → Change runtime type → T4 GPU` (free tier) → `Save`.
-4. `Runtime → Run all`. Cell 1 finds the zip and uses it instead of cloning.
+This repo is public on GitHub, so Colab opens and clones it directly — no download, no zip upload.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/jayyyyqwq/raga/blob/main/training/train_grpo.ipynb)
 
-Alternatively, add a `GH_TOKEN` Colab secret (a fine-grained, read-only token for this repo) and
-Cell 1 clones with it instead of needing the zip.
+1. **Click the badge above.** It opens `training/train_grpo.ipynb` in Colab.
+2. `Runtime → Change runtime type → T4 GPU` (free tier) → `Save`.
+3. `Runtime → Run all`. Approve the Google Drive prompt when Cell 2 asks.
 
-That's it — then wait. Takes roughly 45–60 minutes; the trained model saves itself to
-your Google Drive automatically, no further action needed. Everything below is optional extra
-context, not required steps.
+Training (1000 steps) takes roughly 2.5–3.5 hours; Cell 9's 200-episode evaluation adds roughly
+20–45 minutes. Keep the tab active — Colab's free tier disconnects idle sessions after ~90 minutes.
+If it does disconnect, just `Run all` again: Cell 6 resumes from the last checkpoint saved to Drive.
+The adapter and the evaluation result both land in Drive under `jugalbandi/jugalbandi-grpo-hidden-v3/`.
 
 **If Cell 1 raises `RuntimeError: pip install did not actually install: [...]`** — that's the
 install-verification check doing its job: `requirements-train.txt`'s `unsloth` pin has gone stale
@@ -54,8 +48,9 @@ against whatever PyPI/Colab ships now. Scroll up in that cell's output for pip's
 see `requirements-train.txt`'s header comment for how to re-pin it (this has happened twice before;
 the fix is always the same shape).
 
-The zip always wins over cloning when both are possible, so it's also the way to test a specific
-committed state.
+To train a specific committed state instead of `main` (or if GitHub is unreachable), double-click
+**`make_training_zip.bat`**, drag the resulting `raga.zip` into Colab's Files panel (folder icon,
+left sidebar) before running Cell 1 — a zip always wins over cloning.
 
 ### What about Hugging Face?
 
